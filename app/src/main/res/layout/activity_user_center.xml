@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scrollView2"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageButton
+            android:id="@+id/uc_ib_back"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:src="@drawable/ic_arrow_back_black_24dp"
+            android:background="#0000"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/uc_civ_user_img"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginStart="60dp"
+            android:layout_marginTop="100dp"
+            android:layout_marginBottom="8dp"
+            android:src="@mipmap/ic_launcher"
+            app:civ_border_color="#FFE600"
+            app:civ_border_width="2dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/uc_tv_user_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="User_name"
+            android:textColor="#000"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@+id/uc_civ_user_img"
+            app:layout_constraintStart_toStartOf="@+id/uc_civ_user_img"
+            app:layout_constraintTop_toBottomOf="@+id/uc_civ_user_img" />
+
+        <TextView
+            android:id="@+id/uc_tv_user_gender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="gender"
+            android:textColor="#000"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@id/uc_tv_user_friends"
+            app:layout_constraintTop_toBottomOf="@id/uc_tv_user_followers" />
+
+        <TextView
+            android:id="@+id/uc_tv_user_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="location"
+            android:textColor="#000"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/uc_tv_user_friends"
+            app:layout_constraintTop_toBottomOf="@+id/uc_tv_user_gender" />
+
+
+        <TextView
+            android:id="@+id/uc_tv_user_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="8dp"
+            android:text="descripction"
+            android:textColor="#000"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/uc_tv_user_name" />
+
+        <TextView
+            android:id="@+id/uc_tv_user_friends"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="friends"
+            android:textColor="#000"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/uc_civ_user_img"
+            app:layout_constraintTop_toTopOf="@+id/uc_civ_user_img" />
+
+
+        <TextView
+            android:id="@+id/uc_tv_user_followers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="followers"
+            android:textColor="#000"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/uc_tv_user_friends"
+            app:layout_constraintTop_toBottomOf="@id/uc_tv_user_friends" />
+
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/uc_rv_user_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/uc_tv_user_description">
+        </android.support.v7.widget.RecyclerView>
+
+
+    </android.support.constraint.ConstraintLayout>
+
+
+</ScrollView>

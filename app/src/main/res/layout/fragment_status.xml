@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Fragments.StatusFragment">
+
+    <LinearLayout
+        android:id="@+id/status_topbar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:fitsSystemWindows="true"
+        android:orientation="vertical"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/status_topbar_text"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:text="MiniBo"
+            android:textSize="18sp"
+            android:textColor="#FDFF683C"
+            android:layout_marginStart="25dp"
+            android:gravity="center"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E2E2E2"
+            app:layout_constraintBottom_toBottomOf="@id/status_topbar_text">
+        </TextView>
+
+    </LinearLayout>
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/status_refreshlayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/status_topbar">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/status_recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </android.support.v7.widget.RecyclerView>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/status_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
+        android:backgroundTint="@color/colorMain"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:borderWidth="0dp"
+        app:elevation="4dp"
+        app:rippleColor="#B83F1A"
+        app:fabSize="mini"/>
+
+
+
+</android.support.constraint.ConstraintLayout>
