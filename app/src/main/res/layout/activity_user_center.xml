@@ -48,30 +48,6 @@
             app:layout_constraintStart_toStartOf="@+id/uc_civ_user_img"
             app:layout_constraintTop_toBottomOf="@+id/uc_civ_user_img" />
 
-        <TextView
-            android:id="@+id/uc_tv_user_gender"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="gender"
-            android:textColor="#000"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@id/uc_tv_user_friends"
-            app:layout_constraintTop_toBottomOf="@id/uc_tv_user_followers" />
-
-        <TextView
-            android:id="@+id/uc_tv_user_location"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="location"
-            android:textColor="#000"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@+id/uc_tv_user_friends"
-            app:layout_constraintTop_toBottomOf="@+id/uc_tv_user_gender" />
-
 
         <TextView
             android:id="@+id/uc_tv_user_description"
@@ -89,32 +65,19 @@
             app:layout_constraintTop_toBottomOf="@+id/uc_tv_user_name" />
 
         <TextView
-            android:id="@+id/uc_tv_user_friends"
-            android:layout_width="wrap_content"
+            android:id="@+id/uc_tv_user_msg"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
-            android:text="friends"
+            android:text="msg"
             android:textColor="#000"
-            android:textSize="18sp"
-            android:textStyle="bold"
+            android:textSize="13sp"
+            app:layout_constraintBottom_toBottomOf="@+id/uc_tv_user_name"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/uc_civ_user_img"
             app:layout_constraintTop_toTopOf="@+id/uc_civ_user_img" />
-
-
-        <TextView
-            android:id="@+id/uc_tv_user_followers"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="followers"
-            android:textColor="#000"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@+id/uc_tv_user_friends"
-            app:layout_constraintTop_toBottomOf="@id/uc_tv_user_friends" />
 
 
         <android.support.v7.widget.RecyclerView

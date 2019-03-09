@@ -7,7 +7,7 @@
     tools:context=".Fragments.StatusFragment">
 
     <LinearLayout
-        android:id="@+id/status_topbar"
+        android:id="@+id/fg_status_topbar"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:fitsSystemWindows="true"
@@ -15,7 +15,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/status_topbar_text"
+            android:id="@+id/fg_status_topbar_text"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -29,27 +29,28 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="#E2E2E2"
-            app:layout_constraintBottom_toBottomOf="@id/status_topbar_text">
+            app:layout_constraintBottom_toBottomOf="@id/fg_status_topbar_text">
         </TextView>
 
     </LinearLayout>
 
     <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/status_refreshlayout"
+        android:id="@+id/fg_status_refreshlayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/status_topbar">
+        app:layout_constraintTop_toBottomOf="@id/fg_status_topbar">
 
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/status_recyclerview"
+            android:id="@+id/fg_status_recyclerview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="#F0F0F0">
         </android.support.v7.widget.RecyclerView>
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/status_fab"
+        android:id="@+id/fg_status_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="12dp"

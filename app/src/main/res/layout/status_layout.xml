@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="15dp"
+    android:layout_marginBottom="8dp"
+    android:background="#fff">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/status_card_user_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@mipmap/ic_launcher"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/status_card_user_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:text="User_name"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:textColor="@color/colorMain"
+        app:layout_constraintLeft_toRightOf="@id/status_card_user_icon"
+        app:layout_constraintTop_toTopOf="@id/status_card_user_icon"/>
+
+    <TextView
+        android:id="@+id/status_card_create_at"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="create_at"
+        android:textSize="13sp"
+        app:layout_constraintLeft_toLeftOf="@id/status_card_user_name"
+        app:layout_constraintTop_toBottomOf="@id/status_card_user_name"
+        app:layout_constraintBottom_toBottomOf="@id/status_card_user_icon"/>
+
+    <LinearLayout
+        android:id="@+id/status_card_context"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/status_card_user_icon">
+
+        <TextView
+            android:id="@+id/status_card_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:gravity="start|center"
+            android:lineSpacingExtra="6dp"
+            android:text="status_text"
+            android:textColor="#000"
+            android:textSize="14sp"/>
+
+
+        <com.zzy.minibo.MyViews.NineGlideView
+            android:id="@+id/status_card_images"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:gravity="center"
+            android:horizontalSpacing="2dp"
+            android:numColumns="3"
+            android:scrollbars="none"
+            android:verticalSpacing="2dp"
+            android:visibility="gone"
+            app:mSpacing="4dp">
+        </com.zzy.minibo.MyViews.NineGlideView>
+
+        <LinearLayout
+            android:id="@+id/status_card_repost_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#F7F7F7"
+            android:padding="4dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/status_card_repost_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:ellipsize="end"
+                android:gravity="start|center"
+                android:lineSpacingExtra="6dp"
+                android:text="status_repost_text"
+                android:textColor="#000"
+                android:textSize="14sp"/>
+
+            <com.zzy.minibo.MyViews.NineGlideView
+                android:id="@+id/status_card_repost_images"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:gravity="center"
+                android:horizontalSpacing="2dp"
+                android:numColumns="3"
+                android:verticalSpacing="2dp"
+                android:visibility="gone"
+                app:mSpacing="4dp">
+            </com.zzy.minibo.MyViews.NineGlideView>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:gravity="start"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/status_card_context">
+
+        <TextView
+            android:id="@+id/status_card_repost"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="40dp"
+            android:drawableStart="@drawable/ic_share_black_24dp"
+            android:gravity="center"
+            android:textColor="#b9b9b9"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/status_card_comment"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="40dp"
+            android:drawableStart="@drawable/ic_comment_black_24dp"
+            android:gravity="center"
+            android:textColor="#b9b9b9"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/status_card_like"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="40dp"
+            android:drawableStart="@drawable/ic_favorite"
+            android:gravity="center"
+            android:textColor="#b9b9b9"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>

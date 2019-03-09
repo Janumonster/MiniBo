@@ -411,7 +411,7 @@ public class User implements Parcelable{
                 mUser.setAllow_all_act_msg(jsonObject.getBoolean("allow_all_act_msg"));
                 mUser.setAllow_all_comment(jsonObject.getBoolean("allow_all_comment"));
                 mUser.setGeo_enabled(jsonObject.getBoolean("geo_enabled"));
-                Log.d(TAG, "getUserInfoFromJSON: " + mUser.toString());
+//                Log.d(TAG, "getUserInfoFromJSON: " + mUser.toString());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
