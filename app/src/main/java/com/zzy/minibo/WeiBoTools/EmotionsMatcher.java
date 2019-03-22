@@ -1,0 +1,211 @@
+package com.zzy.minibo.WeiBoTools;
+
+import android.util.ArrayMap;
+
+import com.zzy.minibo.R;
+
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.Objects;
+
+public final class EmotionsMatcher {
+
+    private static Map<String,String> mEmotions = new ArrayMap<>();
+
+    private static boolean isReady = false;
+
+    public static void initEmotions(){
+        mEmotions.put("[吃瓜]", "chigua");
+        mEmotions.put("[允悲]","kuxiao");
+        mEmotions.put("[坏笑]","huaixiao");
+        mEmotions.put("[笑cry]","xiaoku");
+        mEmotions.put("[馋嘴]","chanzui");
+        mEmotions.put("[拜拜]","baibai");
+        mEmotions.put("[右哼哼]","youhengheng");
+        mEmotions.put("[左哼哼]","zuohengheng");
+        mEmotions.put("[怒骂]","zhouma");
+        mEmotions.put("[顶]","ding");
+        mEmotions.put("[微笑]","weixioa02");
+        mEmotions.put("[偷笑]","touxiao");
+        mEmotions.put("[舔屏]","tianping");
+        mEmotions.put("[亲亲]","qinqin");
+        mEmotions.put("[太开心]","taikaixin");
+        mEmotions.put("[挤眼]","jiyan");
+        mEmotions.put("[衰]","shuai");
+        mEmotions.put("[感冒]","kouzhao");
+        mEmotions.put("[可怜]","kelian");
+        mEmotions.put("[汗]","han");
+        mEmotions.put("[色]","huaxin");
+        mEmotions.put("[可爱]","keai");
+        mEmotions.put("[钱]","qian");
+        mEmotions.put("[思考]","sikao");
+        mEmotions.put("[生病]","shengbing");
+        mEmotions.put("[困]","kun");
+        mEmotions.put("[互粉]","hufen02");
+        mEmotions.put("[睡]","shuijiao");
+        mEmotions.put("[并不简单]","bingbujiandan");
+        mEmotions.put("[害羞]","haixiu");
+        mEmotions.put("[费解]","wenhao");
+        mEmotions.put("[挖鼻]","wabi");
+        mEmotions.put("[悲伤]","beishang");
+        mEmotions.put("[打脸]","dalian");
+        mEmotions.put("[抓狂]","zhuakuang");
+        mEmotions.put("[哈哈]","haha");
+        mEmotions.put("[傻眼]","shayan");
+        mEmotions.put("[晕]","yun");
+        mEmotions.put("[鄙视]","bishi");
+        mEmotions.put("[哼]","heng");
+        mEmotions.put("[哈欠]","dahaqian");
+        mEmotions.put("[泪]","leimu");
+        mEmotions.put("[怒]","nu");
+        mEmotions.put("[闭嘴]","bizui");
+        mEmotions.put("[疑问]","ningwen");
+        mEmotions.put("[白眼]","landelini");
+        mEmotions.put("[吐]","tu");
+        mEmotions.put("[黑线]","heixian");
+        mEmotions.put("[委屈]","weiqu");
+        mEmotions.put("[笑而不语]","xiaoerbuyu");
+        mEmotions.put("[阴险]","yinxian");
+        mEmotions.put("[嘘]","xu");
+        mEmotions.put("[嘻嘻]","xixi");
+        mEmotions.put("[爱你]","aini");
+        mEmotions.put("[吃惊]","chijing");
+        mEmotions.put("[污]","wu");
+        mEmotions.put("[鼓掌]","guzhang");
+        mEmotions.put("[憧憬]","chongjing");
+        mEmotions.put("[酷]","ku");
+        mEmotions.put("[失望]","shiwang");
+        mEmotions.put("[good]","good");
+        mEmotions.put("[弱]","ruo");
+        mEmotions.put("[耶]","ye");
+        mEmotions.put("[来]","guolai");
+        mEmotions.put("[握手]","woshou");
+        mEmotions.put("[加油]","jiayou");
+        mEmotions.put("[haha]","hahashoushi");
+        mEmotions.put("[拳头]","quantou");
+        mEmotions.put("[赞]","zan");
+        mEmotions.put("[ok]","ok");
+        mEmotions.put("[NO]","no");
+        mEmotions.put("[作揖]","zuoyi");
+        mEmotions.put("[中国赞]","zhongguozan");
+        mEmotions.put("[广告]","guanggao_t");
+        mEmotions.put("[doge]","doge02");
+        mEmotions.put("[喵喵]","miaomiao");
+        mEmotions.put("[二哈]","erha");
+        mEmotions.put("[抱抱]","baobao");
+        mEmotions.put("[摊手]","tanshou");
+        mEmotions.put("[跪了]","gui");
+        mEmotions.put("[小仙女]","xiaoxiannv");
+        mEmotions.put("[给你小心心]","qixi2018_xiaoxinxin");
+        mEmotions.put("[蚁人]","manwei_yiren");
+        mEmotions.put("[黄蜂女]","manwei_huangfengnv");
+        mEmotions.put("[星星]","hot_star171109");
+        mEmotions.put("[半星]","hot_halfstar");
+        mEmotions.put("[空星]","hot_blankstar");
+        mEmotions.put("[草泥马]","caonima");
+        mEmotions.put("[浮云]","yunduo");
+        mEmotions.put("[沙尘暴]","shachenbao");
+        mEmotions.put("[给力]","geili");
+        mEmotions.put("[男孩儿]","nanhai");
+        mEmotions.put("[女孩儿]","nvhai");
+        mEmotions.put("[奥特曼]","aoteman");
+        mEmotions.put("[话筒]","huatong");
+        mEmotions.put("[礼物]","liwu");
+        mEmotions.put("[飞机]","feiji");
+        mEmotions.put("[干杯]","ganbei");
+        mEmotions.put("[围脖]","weibo");
+        mEmotions.put("[钟]","zhong");
+        mEmotions.put("[肥皂]","feizao");
+        mEmotions.put("[浪]","xinlang");
+        mEmotions.put("[最右]","remen_zuiyou180605");
+        mEmotions.put("[五仁月饼]","yuebing");
+        mEmotions.put("[吃狗粮]","qixi2018_chigouliang");
+        mEmotions.put("[蜡烛]","lazhu");
+        mEmotions.put("[心]","xin");
+        mEmotions.put("[月亮]","yueliang");
+        mEmotions.put("[围观]","weiguan");
+        mEmotions.put("[蛋糕]","dangao");
+        mEmotions.put("[微风]","weifeng");
+        mEmotions.put("[音乐]","yinyue");
+        mEmotions.put("[猪头]","zhutou");
+        mEmotions.put("[鲜花]","xianhua");
+        mEmotions.put("[太阳]","taiyang");
+        mEmotions.put("[下雨]","yu");
+        mEmotions.put("[伤心]","xinsui");
+        mEmotions.put("[兔子]","tuzi");
+        mEmotions.put("[骷髅]","kulou");
+        mEmotions.put("[照相机]","xiangji");
+        mEmotions.put("[熊猫]","xiongmao");
+        mEmotions.put("[喜]","xizi");
+        mEmotions.put("[绿丝带]","lvsidai");
+        mEmotions.put("[威武]","weiwu");
+        mEmotions.put("[弗莱见钱眼开]","richdog_org");
+        mEmotions.put("[看涨]","kanzhangv2_org");
+        mEmotions.put("[看跌]","kandiev2_org");
+        mEmotions.put("[带着微博去旅行]","eventtravel_org");
+        mEmotions.put("[偷乐]","lxhtouxiao_org");
+        mEmotions.put("[笑哈哈]","lxhwahaha_org");
+        mEmotions.put("[羞嗒嗒]","lxhxiudada_org");
+        mEmotions.put("[好爱啊]","lxhainio_org");
+        mEmotions.put("[赞啊]","lxhzan_org");
+        mEmotions.put("[求关注]","lxhqiuguanzhu_org");
+        mEmotions.put("[好喜欢]","lxhlike_org");
+        mEmotions.put("[米奇喜欢]","mickey_xihuan");
+        mEmotions.put("[米奇飞吻]","mickey_feiwen");
+        mEmotions.put("[米奇大哭]","mickey_daku");
+        mEmotions.put("[米奇比心]","mickey_bixin");
+        mEmotions.put("[Aloha]","mickey_aloha");
+        mEmotions.put("[米奇爱你]","mickey_aini");
+        mEmotions.put("[钢铁侠]","fulian3_gangtiexia01");
+        mEmotions.put("[美国队长]","fulian3_meiguoduizhang01");
+        mEmotions.put("[浩克]","fulian3_haoke01");
+        mEmotions.put("[雷神]","fulian3_leishen01");
+        mEmotions.put("[洛基]","fulian3_luoji01");
+        mEmotions.put("[蜘蛛侠]","fulian3_zhizhuxia01");
+        mEmotions.put("[奇异博士]","fulian3_qiyiboshi01");
+        mEmotions.put("[黑寡妇]","fulian3_heiguafu01");
+        mEmotions.put("[冬兵]","fulian3_dongbing01");
+        mEmotions.put("[格鲁特]","fulian3_gelute01");
+        mEmotions.put("[哆啦A梦花心]","dorahaose_org");
+        mEmotions.put("[哆啦A梦害怕]","dorahaipa_org");
+        mEmotions.put("[哆啦A梦吃惊]","dorachijing_org");
+        mEmotions.put("[哆啦A梦汗]","dorahan");
+        mEmotions.put("[哆啦A梦微笑]","jqmweixiao_org");
+        mEmotions.put("[伴我同行]","jqmbwtxing_org");
+        mEmotions.put("[静香微笑]","jiqimaojingxiang_org");
+        mEmotions.put("[大雄微笑]","jiqimaodaxiong_org");
+        mEmotions.put("[胖虎微笑]","jiqimaopanghu_org");
+        mEmotions.put("[小夫微笑]","jiqimaoxiaofu_org");
+        mEmotions.put("[哆啦A梦笑]","dora_xiao");
+        mEmotions.put("[哆啦A梦无奈]","dora_wunai");
+        mEmotions.put("[哆啦A梦美味]","dora_meiwei");
+        mEmotions.put("[哆啦A梦开心]","dora_kaixin");
+        mEmotions.put("[哆啦A梦亲亲]","dora_qinqin");
+        mEmotions.put("[小黄人微笑]","xhrnew_weixiao");
+        mEmotions.put("[小黄人剪刀手]","xhrnew_jiandaoshou");
+        mEmotions.put("[小黄人不屑]","xhrnew_buxie");
+        mEmotions.put("[小黄人高兴]","xhrnew_gaoxing");
+        mEmotions.put("[小黄人惊讶]","xhrnew_jingya_t");
+        mEmotions.put("[小黄人委屈]","weiqu");
+        mEmotions.put("[小黄人坏笑]","xhrnew_huaixiao_t");
+        mEmotions.put("[小黄人白眼]","xhrnew_baiyan");
+        mEmotions.put("[小黄人无奈]","xhrnew_wunai");
+        mEmotions.put("[小黄人得意]","xhrnew_deyi");
+        isReady = true;
+    }
+
+    public static int getEomtions(String value){
+        try {
+            String str = mEmotions.get(value);
+            if (isReady && str != null){
+                Field field = R.drawable.class.getField(str);
+                return field.getInt(new R.drawable());
+            }
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+}

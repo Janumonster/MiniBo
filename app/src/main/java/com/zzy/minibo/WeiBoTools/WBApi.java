@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.zzy.minibo.WeiBoTools.AllParams.ParamsOfStatusTL;
 import com.zzy.minibo.WeiBoTools.AllParams.ParamsOfUserInfo;
+import com.zzy.minibo.WeiBoTools.AllParams.ParamsOfUserTimeLine;
 
 import java.io.IOException;
 import java.util.Map;
@@ -22,6 +23,10 @@ public final class WBApi {
     private static final String USER_INFO = "https://api.weibo.com/2/users/show.json";
     //获取用户及其所关注的人的微博，默认20条
     private static final String STATUSES_HOME_TIMELINE = "https://api.weibo.com/2/statuses/home_timeline.json";
+
+    private static final String EMOTIONS = "https://api.weibo.com/2/emotions.json";
+
+    private static final String STATUS_USER_TIMELINE = "https://api.weibo.com/2/statuses/user_timeline.json";
 
     /**
      * 构建get的含参地址
@@ -97,7 +102,7 @@ public final class WBApi {
         map.put("count",String.valueOf(params.getCount()));
         map.put("page",String.valueOf(params.getPage()));
         map.put("base_app",String.valueOf(params.getBase_app()));
-        map.put("feature",String.valueOf(params.getFeture()));
+        map.put("feature",String.valueOf(params.getFeature()));
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -120,4 +125,65 @@ public final class WBApi {
         }).start();
     }
 
+    public static void getStatusUserTimeLine(ParamsOfUserTimeLine params, final HttpCallBack callBack){
+        final Map<String,String> map = new ArrayMap<>();
+        map.put("source",params.getSource());
+        map.put("access_token",params.getAccess_token());
+        map.put("uid",params.getUid());
+        map.put("since_id",String.valueOf(params.getSince_id()));
+        map.put("max_id",String.valueOf(params.getMax_id()));
+        map.put("count",String.valueOf(params.getCount()));
+        map.put("page",String.valueOf(params.getPage()));
+        map.put("base_app",String.valueOf(params.getBase_app()));
+        map.put("feature",String.valueOf(params.getFeature()));
+        map.put("trim_user",String.valueOf(params.getTrim_user()));
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder()
+                        .get()
+                        .url(buildURLWithParams(STATUS_USER_TIMELINE,map))
+                        .build();
+                try {
+                    Response response = client.newCall(request).execute();
+                    if (response != null){
+                        String str = response.body().string();
+                        callBack.onFinish(str);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+
+    public static void getWBEmotions(String access_token,final HttpCallBack callBack){
+        final Map<String,String> map = new ArrayMap<>();
+        map.put("source",Constants.APP_KEY);
+        map.put("access_token",access_token);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OkHttpClient client = new OkHttpClient();
+
+                Request request = new Request.Builder()
+                        .get()
+                        .url(buildURLWithParams(EMOTIONS,map))
+                        .build();
+
+                try {
+                    Response response = client.newCall(request).execute();
+                    if (response.isSuccessful()){
+                        callBack.onFinish(response.body().string());
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        }).start();
+    }
 }

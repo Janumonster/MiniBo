@@ -2,8 +2,8 @@ package com.zzy.minibo.Adapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +15,7 @@ import com.bumptech.glide.Glide;
 import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.MyViews.NineGlideView;
 import com.zzy.minibo.R;
+import com.zzy.minibo.WeiBoTools.TextFilter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,7 +83,8 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
         viewHolder.userName.setText(status.getUser().getScreen_name());
         viewHolder.createTime.setText(status.getCreated_at());
         //待修改
-        viewHolder.statusText.setText(status.getText());
+        viewHolder.statusText.setText(TextFilter.statusTextFliter(context,status.getText()));
+        viewHolder.statusText.setMovementMethod(LinkMovementMethod.getInstance());
         viewHolder.statusRepostNum.setText(status.getReposts_count());
         viewHolder.statusCommentNum.setText(status.getComments_count());
         viewHolder.statusLikeNum.setText(status.getAttitudes_count());
@@ -92,7 +94,7 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
         if (status.getPic_urls().size() >=1) {
             viewHolder.statusPictures.setVisibility(View.VISIBLE);
             for (int m = 0;m<status.getPic_urls().size();m++){
-                list.add(0,status.getBmiddle_pic()+status.getPic_urls().get(m));
+                list.add(status.getBmiddle_pic()+status.getPic_urls().get(m));
             }
             viewHolder.statusPictures.setUrlList(list);
         } else {
@@ -103,12 +105,13 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
         if (status.getRetweeted_status() != null) {
             viewHolder.repostStatusLayout.setVisibility(View.VISIBLE);
             Status s = status.getRetweeted_status();
-            viewHolder.repostStatusText.setText(s.getUser().getScreen_name() + ":" + s.getText());
+            viewHolder.repostStatusText.setText(TextFilter.statusTextFliter(context,"@"+s.getUser().getScreen_name() + ":" + s.getText()));
+            viewHolder.repostStatusText.setMovementMethod(LinkMovementMethod.getInstance());
             //转发微博是否是图片微博
             if (s.getPic_urls().size() >=1) {
                 viewHolder.repostStatusImages.setVisibility(View.VISIBLE);
-                for (int n = 0 ; n < status.getPic_urls().size() ; n++){
-                    list.add(0,status.getBmiddle_pic()+status.getRetweeted_status().getPic_urls().get(n));
+                for (int n = 0 ; n < s.getPic_urls().size() ; n++){
+                    list.add(status.getBmiddle_pic()+status.getRetweeted_status().getPic_urls().get(n));
                 }
                 viewHolder.repostStatusImages.setUrlList(list);
             }else {
@@ -118,7 +121,7 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
             viewHolder.repostStatusLayout.setVisibility(View.GONE);
         }
 
-        if (i >= statuses.size()-3){
+        if (i >= statuses.size()-1){
             isGetBottom = true;
         }else {
             isGetBottom = false;

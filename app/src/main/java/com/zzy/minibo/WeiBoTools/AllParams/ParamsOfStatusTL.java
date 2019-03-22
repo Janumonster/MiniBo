@@ -18,7 +18,7 @@ public class ParamsOfStatusTL {
     //是否只获取当前应用的数据。0为否（返回所有数据），1为是（仅当前应用），默认0
     private int base_app;
     //返回值中user字段的开关，0：返回完整的user数据，1：只返回user_id
-    private int feture;
+    private int feature;
 
     private ParamsOfStatusTL(Builder builder){
 
@@ -28,7 +28,7 @@ public class ParamsOfStatusTL {
         this.count = builder.count;
         this.page = builder.page;
         this.base_app = builder.base_app;
-        this.feture = builder.feature;
+        this.feature = builder.feature;
     }
 
     public String getSource() {
@@ -87,12 +87,12 @@ public class ParamsOfStatusTL {
         this.base_app = base_app;
     }
 
-    public int getFeture() {
-        return feture;
+    public int getFeature() {
+        return feature;
     }
 
-    public void setFeture(int feture) {
-        this.feture = feture;
+    public void setFeature(int feature) {
+        this.feature = feature;
     }
 
     public static class Builder{

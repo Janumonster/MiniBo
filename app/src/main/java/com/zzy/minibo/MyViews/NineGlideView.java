@@ -5,6 +5,7 @@ import android.util.AttributeSet;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.zzy.minibo.R;
 
 import java.util.List;
 
@@ -26,18 +27,25 @@ public class NineGlideView extends NineImageLayout {
 
     @Override
     protected boolean displayOneImage(ClickImageView imageView, String url, int parentWidth) {
-        Glide.with(mContext).load(url).into(imageView);
-        setOneImageLayout(imageView,imageView.getWidth(),imageView.getHeight());
+
+        Glide.with(mContext)
+                .load(url)
+                .placeholder(R.drawable.ic_photo_size_select_actual_grey_400_24dp)
+                .into(imageView);
         return false;
     }
 
     @Override
     protected void displayImage(ClickImageView imageView, String url) {
-        Glide.with(mContext).load(url).into(imageView);
+        Glide.with(mContext)
+                .load(url)
+                .placeholder(R.drawable.ic_photo_size_select_actual_grey_400_24dp)
+                .into(imageView);
     }
 
     @Override
     protected void onClickImage(int postion, String url, List<String> urlList) {
         Toast.makeText(mContext,"点击了第"+postion+"张图片",Toast.LENGTH_SHORT).show();
     }
+
 }
