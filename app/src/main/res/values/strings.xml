@@ -7,4 +7,21 @@
     <string name="friends">关注</string>
     <string name="fans">粉丝</string>
     <string name="user_center">个人中心</string>
+    <string name="user_name">User_name</string>
+    <string name="location">location</string>
+    <string name="description">description</string>
+    <string name="fans_cn">粉丝</string>
+    <string name="zero">0</string>
+    <string name="friends_cn">关注</string>
+    <string name="all_status">全部微博</string>
+    <string name="at_me">\@我的</string>
+    <string name="comment_cn">评论</string>
+    <string name="zan_cn">赞</string>
+    <string name="minibo">MiniBo</string>
+    <string name="home">Home</string>
+    <string name="menu">Menu</string>
+    <string name="get_premission_cn">授权登录</string>
+    <string name="create_at">create_at</string>
+    <string name="status_text">status_text</string>
+    <string name="status_repost_text">status_repost_text</string>
 </resources>

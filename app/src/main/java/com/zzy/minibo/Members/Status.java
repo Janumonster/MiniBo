@@ -1,8 +1,11 @@
 package com.zzy.minibo.Members;
 
+import android.content.Context;
+import android.text.SpannableStringBuilder;
 import android.util.Log;
 
-import com.zzy.minibo.WeiBoTools.TextFilter;
+import com.zzy.minibo.WBListener.StatusTypeListener;
+import com.zzy.minibo.Utils.TextFilter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,7 +20,9 @@ public class Status {
 
     private int type = Type.TYPE_NORMAL;
 
-    private String videoURL = null;
+    private URLHolder statusUrl = null;
+
+    private SpannableStringBuilder spanText;
 
     //创建时间 "Thu Sep 20 11:15:36 +0800 2018"
     private String create_at;
@@ -60,6 +65,14 @@ public class Status {
     //是否是长微博
     private boolean isLongText;
 
+    public SpannableStringBuilder getSpanText() {
+        return spanText;
+    }
+
+    public void setSpanText(SpannableStringBuilder spanText) {
+        this.spanText = spanText;
+    }
+
     public int getType() {
         return type;
     }
@@ -68,12 +81,12 @@ public class Status {
         this.type = type;
     }
 
-    public String getVideoURL() {
-        return videoURL;
+    public URLHolder getStatusUrl() {
+        return statusUrl;
     }
 
-    public void setVideoURL(String videoURL) {
-        this.videoURL = videoURL;
+    public void setStatusUrl(URLHolder statusUrl) {
+        this.statusUrl = statusUrl;
     }
 
     public String getCreated_at() {
@@ -242,15 +255,21 @@ public class Status {
      * @return
      */
 
-    public static Status getStatusFromJson(String json){
+    public static Status getStatusFromJson(Context context,String json){
         if (null != json){
-            Status status = new Status();
+            final Status status = new Status();
             try {
                 JSONObject jsonObject = new JSONObject(json);
                 status.setCreated_at(jsonObject.getString("created_at"));
                 status.setId(jsonObject.getLong("id"));
                 status.setIdstr(jsonObject.getString("idstr"));
                 status.setText(jsonObject.getString("text"));
+                status.setSpanText(TextFilter.statusTextFliter(context, status.getText(), new StatusTypeListener() {
+                    @Override
+                    public void videoUrL(String url) {
+                        Log.d(TAG, "LinkTest:"+url+"  "+status.getUser().getScreen_name());
+                    }
+                }));
 //                status.setTextLength(jsonObject.getInt("textLength"));
                 status.setFavroited(jsonObject.getBoolean("favorited"));
                 status.setTruncated(jsonObject.getBoolean("truncated"));
@@ -261,29 +280,22 @@ public class Status {
                     str = str.substring(32,str.length());
                     urls.add(str);
                 }
-//                Log.d(TAG, "getStatusFromJson: "+urls.size());
                 status.setPic_urls(urls);
 //                status.setGeo(jsonObject.getString("Geo"));
                 User user = User.makeJsonObjectToUser(jsonObject.getJSONObject("user"));
-//                Log.d(TAG, "getStatusFromJson: "+jsonObject.getJSONObject("user"));
                 status.setUser(user);
                 status.setSource(jsonObject.getString("source"));
                 status.setReposts_count(jsonObject.getString("reposts_count"));
                 status.setComments_count(jsonObject.getString("comments_count"));
                 status.setAttitudes_count(jsonObject.getString("attitudes_count"));
                 status.setLongText(jsonObject.getBoolean("isLongText"));
-                status.setVideoURL(TextFilter.IsVideoStatus(status.getText()));
-                status.setRetweeted_status(Status.getStatusFromJson(jsonObject.getString("retweeted_status")));
+                status.setRetweeted_status(Status.getStatusFromJson(context,jsonObject.getString("retweeted_status")));
                 //判断是否是图片原创类型
                 if (urls.size() > 0){
                     status.setType(Type.TYPE_IMAGE);
                     if (urls.size() >=1){
                         status.setType(Type.TYPE_IMAGES);
                     }
-                }
-                //判断是否是视频原创类型
-                if (status.getVideoURL() != null){
-                    status.setType(Type.TYPE_VIDEO);
                 }
                 //判断是否为转发
                 if (status.getRetweeted_status() != null){
@@ -292,7 +304,7 @@ public class Status {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-//            Log.d(TAG, "getStatusFromJson: "+status.user.getScreen_name()+" "+status.reposts_count+" "+status.comments_count+" "+status.attitudes_count+"\n"+status.getVideoURL()+"\n"+status.getType());
+//            Log.d(TAG, "getStatusFromJson: "+status.user.getScreen_name()+" "+status.reposts_count+" "+status.comments_count+" "+status.attitudes_count+"\n"+status.getStatusUrl()+"\n"+status.getType());
             return status;
         }else {
             return null;

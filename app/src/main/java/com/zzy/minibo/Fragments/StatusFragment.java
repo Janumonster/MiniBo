@@ -21,9 +21,9 @@ import com.zzy.minibo.Adapter.StatusAdapter;
 import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.Members.StatusTimeLine;
 import com.zzy.minibo.R;
-import com.zzy.minibo.WeiBoTools.AllParams.ParamsOfStatusTL;
-import com.zzy.minibo.WeiBoTools.HttpCallBack;
-import com.zzy.minibo.WeiBoTools.WBApi;
+import com.zzy.minibo.Utils.AllParams.ParamsOfStatusTL;
+import com.zzy.minibo.Utils.HttpCallBack;
+import com.zzy.minibo.Utils.WBApiConnector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,8 +36,10 @@ public class StatusFragment extends Fragment {
     private static final int MESSAGE_FROM_INITIAL = 1;
     private static final int MESSAGE_FROM_GET_MORE = 2;
     private static final int MESSAGE_FROM_ERROR = 3;
+    public static final int RECYCLERVIEW_CACHE_SIZE = 20;
 
     private List<Status> statusList = new ArrayList<>();
+    private List<Status> statusListCache = new ArrayList<>();
     private StatusAdapter statusAdapter;
     private StatusTimeLine statusTimeLine = new StatusTimeLine();
     private Oauth2AccessToken accessToken;
@@ -47,6 +49,7 @@ public class StatusFragment extends Fragment {
     private LinearLayout progress_layout;
 
     private boolean isBottom = false;
+    private int page = 1;
 
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler(){
@@ -58,21 +61,25 @@ public class StatusFragment extends Fragment {
                     LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
                     linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
                     mStatus_rv.setLayoutManager(linearLayoutManager);
+                    mStatus_rv.setItemViewCacheSize(RECYCLERVIEW_CACHE_SIZE);
                     mStatus_rv.setAdapter(statusAdapter);
                     break;
                 case MESSAGE_FROM_REFRESH:
                     swipeRefreshLayout.setRefreshing(false);
-                    if (msg.arg1 == 0){
+                    if (statusListCache.size() == 0){
                         Toast.makeText(getContext(),"已经最新了！！",Toast.LENGTH_SHORT).show();
                     }else {
+                        statusList.clear();
+                        statusList.addAll(statusListCache);
                         statusAdapter.notifyDataSetChanged();
-                        Toast.makeText(getContext(),"更新了"+msg.arg1+"条微博",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(),"更新了"+statusListCache.size()+"条微博",Toast.LENGTH_SHORT).show();
                     }
                     break;
                 case MESSAGE_FROM_GET_MORE:
+                    statusList.addAll(statusListCache);
                     progress_layout.setVisibility(View.GONE);
                     statusAdapter.notifyDataSetChanged();
-                    Toast.makeText(getContext(),"增加了"+msg.arg1+"条微博",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(),"增加了"+statusListCache.size()+"条微博",Toast.LENGTH_SHORT).show();
                     break;
                 case MESSAGE_FROM_ERROR:
                     swipeRefreshLayout.setRefreshing(false);
@@ -123,22 +130,24 @@ public class StatusFragment extends Fragment {
         return view;
     }
 
+    /**
+     * 加载更多微博
+     */
     private void getMoreStatus() {
         progress_layout.setVisibility(View.VISIBLE);
         if (accessToken != null){
             ParamsOfStatusTL params = new ParamsOfStatusTL.Builder()
                     .access_token(accessToken.getToken())
-                    .max_id(statusTimeLine.getMax_id())
+                    .page(++page)
                     .build();
-            WBApi.getStatusesHomeTimeline(params, new HttpCallBack() {
+            WBApiConnector.getStatusesHomeTimeline(params, new HttpCallBack() {
                 @Override
-                public void onFinish(String response) {
-                    StatusTimeLine timeLine = StatusTimeLine.getStatusesLine(response);
-                    statusTimeLine.setMax_id(timeLine.getMax_id());
-                    statusList.addAll(timeLine.getStatuses());
+                public void onSuccess(String response) {
+                    StatusTimeLine timeLine = StatusTimeLine.getStatusesLine(getContext(),response);
+                    statusListCache.clear();
+                    statusListCache.addAll(timeLine.getStatuses());
                     Message message = new Message();
                     message.what = MESSAGE_FROM_GET_MORE;
-                    message.arg1 = timeLine.getStatuses().size();
                     handler.sendMessage(message);
                 }
 
@@ -152,15 +161,18 @@ public class StatusFragment extends Fragment {
         }
     }
 
+    /**
+     * 初始化微博列表，第一次请求
+     */
     private void getInitialStatus() {
         if (accessToken != null){
             ParamsOfStatusTL paramsOfStatusTL = new ParamsOfStatusTL.Builder()
                     .access_token(accessToken.getToken())
                     .build();
-            WBApi.getStatusesHomeTimeline(paramsOfStatusTL, new HttpCallBack() {
+            WBApiConnector.getStatusesHomeTimeline(paramsOfStatusTL, new HttpCallBack() {
                 @Override
-                public void onFinish(String response) {
-                    statusTimeLine = StatusTimeLine.getStatusesLine(response);
+                public void onSuccess(String response) {
+                    statusTimeLine = StatusTimeLine.getStatusesLine(getContext(),response);
                     statusList = statusTimeLine.getStatuses();
                     Message message = new Message();
                     message.what = MESSAGE_FROM_INITIAL;
@@ -177,6 +189,10 @@ public class StatusFragment extends Fragment {
         }
     }
 
+
+    /**
+     * 刷新微博
+     */
     private void initRefreshLayout() {
         swipeRefreshLayout.setProgressViewOffset(true,0,120);
         swipeRefreshLayout.setSize(SwipeRefreshLayout.DEFAULT);
@@ -185,15 +201,17 @@ public class StatusFragment extends Fragment {
             @Override
             public void onRefresh() {
                 //刷新过程
-                ParamsOfStatusTL paramsOfStatusTL = new ParamsOfStatusTL.Builder()
+                final ParamsOfStatusTL paramsOfStatusTL = new ParamsOfStatusTL.Builder()
                         .access_token(accessToken.getToken())
                         .since_id(statusTimeLine.getSince_id())
                         .build();
-                WBApi.getStatusesHomeTimeline(paramsOfStatusTL, new HttpCallBack() {
+                WBApiConnector.getStatusesHomeTimeline(paramsOfStatusTL, new HttpCallBack() {
                     @Override
-                    public void onFinish(String response) {
-//                        statusTimeLine = StatusTimeLine.getStatusesLine(response);
-                        statusList.addAll(statusTimeLine.getStatuses());
+                    public void onSuccess(String response) {
+                        statusTimeLine = StatusTimeLine.getStatusesLine(getContext(),response);
+                        statusListCache.clear();
+                        statusListCache.addAll(statusTimeLine.getStatuses());
+                        page = 1;
                         Message message = new Message();
                         message.what = MESSAGE_FROM_REFRESH;
                         handler.sendMessage(message);

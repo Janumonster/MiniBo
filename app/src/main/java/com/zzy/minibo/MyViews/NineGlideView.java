@@ -30,7 +30,7 @@ public class NineGlideView extends NineImageLayout {
 
         Glide.with(mContext)
                 .load(url)
-                .placeholder(R.drawable.ic_photo_size_select_actual_grey_400_24dp)
+                .placeholder(R.drawable.loading_drawable)
                 .into(imageView);
         return false;
     }
@@ -39,7 +39,7 @@ public class NineGlideView extends NineImageLayout {
     protected void displayImage(ClickImageView imageView, String url) {
         Glide.with(mContext)
                 .load(url)
-                .placeholder(R.drawable.ic_photo_size_select_actual_grey_400_24dp)
+                .placeholder(R.drawable.loading_drawable)
                 .into(imageView);
     }
 

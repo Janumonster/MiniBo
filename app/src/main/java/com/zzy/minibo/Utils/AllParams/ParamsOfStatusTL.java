@@ -1,6 +1,6 @@
-package com.zzy.minibo.WeiBoTools.AllParams;
+package com.zzy.minibo.Utils.AllParams;
 
-import com.zzy.minibo.WeiBoTools.Constants;
+import com.zzy.minibo.Utils.Constants;
 
 public class ParamsOfStatusTL {
     //Appkey

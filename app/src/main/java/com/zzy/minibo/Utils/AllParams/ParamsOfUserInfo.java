@@ -1,4 +1,4 @@
-package com.zzy.minibo.WeiBoTools.AllParams;
+package com.zzy.minibo.Utils.AllParams;
 
 public class ParamsOfUserInfo {
 

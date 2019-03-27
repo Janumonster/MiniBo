@@ -1,4 +1,4 @@
-package com.zzy.minibo.WeiBoTools;
+package com.zzy.minibo.Utils.WBClickSpan;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -9,13 +9,12 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class SingleClickSpan extends ClickableSpan {
-
+public class StatusDetialClickSpan extends ClickableSpan {
     private String str;
 
     private Context mContext ;
 
-    public SingleClickSpan(Context context, String string){
+    public StatusDetialClickSpan(Context context, String string){
         this.mContext = context;
         this.str = string;
     }

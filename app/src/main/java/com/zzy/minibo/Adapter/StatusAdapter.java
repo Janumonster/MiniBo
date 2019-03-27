@@ -3,6 +3,8 @@ package com.zzy.minibo.Adapter;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,12 +12,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.zzy.minibo.Members.Status;
+import com.zzy.minibo.MyViews.ClickImageView;
 import com.zzy.minibo.MyViews.NineGlideView;
 import com.zzy.minibo.R;
-import com.zzy.minibo.WeiBoTools.TextFilter;
+import com.zzy.minibo.Utils.WBClickSpan.UserIdClickSpan;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,10 +48,13 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
         TextView statusRepostNum;
         TextView statusCommentNum;
         TextView statusLikeNum;
+        ClickImageView statusOneImage;
         NineGlideView statusPictures;
 
         LinearLayout repostStatusLayout;
+        TextView repostUsername;
         TextView repostStatusText;
+        ClickImageView repostStatusOneImage;
         NineGlideView repostStatusImages;
 
         public ViewHolder(@NonNull View itemView) {
@@ -59,9 +66,12 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
             statusRepostNum = itemView.findViewById(R.id.status_card_repost);
             statusCommentNum = itemView.findViewById(R.id.status_card_comment);
             statusLikeNum = itemView.findViewById(R.id.status_card_like);
+            statusOneImage = itemView.findViewById(R.id.status_card_one_image);
             statusPictures = itemView.findViewById(R.id.status_card_images);
             repostStatusLayout = itemView.findViewById(R.id.status_card_repost_layout);
+            repostUsername = itemView.findViewById(R.id.status_card_repost_name);
             repostStatusText = itemView.findViewById(R.id.status_card_repost_text);
+            repostStatusOneImage = itemView.findViewById(R.id.status_card_repost_one_image);
             repostStatusImages = itemView.findViewById(R.id.status_card_repost_images);
         }
     }
@@ -78,12 +88,12 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
     @Override
     public void onBindViewHolder(@NonNull StatusAdapter.ViewHolder viewHolder, int i) {
         final Status status = statuses.get(i);
-        Log.d(TAG, "onBindViewHolder: "+status.getUser().getName()+" "+status.getType());
+//        Log.d(TAG, "onBindViewHolder: "+status.getUser().getName()+" "+status.getType());
         Glide.with(context).load(status.getUser().getAvatar_large()).into(viewHolder.userImage);
         viewHolder.userName.setText(status.getUser().getScreen_name());
         viewHolder.createTime.setText(status.getCreated_at());
         //待修改
-        viewHolder.statusText.setText(TextFilter.statusTextFliter(context,status.getText()));
+        viewHolder.statusText.setText(status.getSpanText());
         viewHolder.statusText.setMovementMethod(LinkMovementMethod.getInstance());
         viewHolder.statusRepostNum.setText(status.getReposts_count());
         viewHolder.statusCommentNum.setText(status.getComments_count());
@@ -91,13 +101,25 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
         //用于存放完整中等品质图片地址
         List<String> list = new ArrayList<>();
         //是否图片微博
-        if (status.getPic_urls().size() >=1) {
+        if (status.getPic_urls().size() == 1){
+            viewHolder.statusPictures.setVisibility(View.GONE);
+            viewHolder.statusOneImage.setVisibility(View.VISIBLE);
+            Glide.with(context).load(status.getBmiddle_pic()+status.getPic_urls().get(0)).into(viewHolder.statusOneImage);
+            viewHolder.statusOneImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(context,"点击了一张图片",Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else if (status.getPic_urls().size() >1) {
+            viewHolder.statusOneImage.setVisibility(View.GONE);
             viewHolder.statusPictures.setVisibility(View.VISIBLE);
             for (int m = 0;m<status.getPic_urls().size();m++){
                 list.add(status.getBmiddle_pic()+status.getPic_urls().get(m));
             }
             viewHolder.statusPictures.setUrlList(list);
         } else {
+            viewHolder.statusOneImage.setVisibility(View.GONE);
             viewHolder.statusPictures.setVisibility(View.GONE);
         }
 
@@ -105,19 +127,37 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
         if (status.getRetweeted_status() != null) {
             viewHolder.repostStatusLayout.setVisibility(View.VISIBLE);
             Status s = status.getRetweeted_status();
-            viewHolder.repostStatusText.setText(TextFilter.statusTextFliter(context,"@"+s.getUser().getScreen_name() + ":" + s.getText()));
+            UserIdClickSpan userIdClickSpan = new UserIdClickSpan(context,"@"+status.getRetweeted_status().getUser().getScreen_name());
+            SpannableString spannableString = new SpannableString("@"+status.getRetweeted_status().getUser().getScreen_name());
+            spannableString.setSpan(userIdClickSpan,0,spannableString.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+            viewHolder.repostUsername.setText(spannableString);
+            viewHolder.repostUsername.setMovementMethod(LinkMovementMethod.getInstance());
+            viewHolder.repostStatusText.setText(status.getRetweeted_status().getSpanText());
             viewHolder.repostStatusText.setMovementMethod(LinkMovementMethod.getInstance());
             //转发微博是否是图片微博
-            if (s.getPic_urls().size() >=1) {
+            if (s.getPic_urls().size() == 1){
+                viewHolder.repostStatusImages.setVisibility(View.GONE);
+                viewHolder.repostStatusOneImage.setVisibility(View.VISIBLE);
+                Glide.with(context).load(status.getRetweeted_status().getBmiddle_pic()+status.getRetweeted_status().getPic_urls().get(0)).into(viewHolder.repostStatusOneImage);
+                viewHolder.repostStatusOneImage.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(context,"点击了一张转发图片",Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else if (s.getPic_urls().size() >1) {
+                viewHolder.repostStatusOneImage.setVisibility(View.GONE);
                 viewHolder.repostStatusImages.setVisibility(View.VISIBLE);
                 for (int n = 0 ; n < s.getPic_urls().size() ; n++){
                     list.add(status.getBmiddle_pic()+status.getRetweeted_status().getPic_urls().get(n));
                 }
                 viewHolder.repostStatusImages.setUrlList(list);
             }else {
+                viewHolder.repostStatusOneImage.setVisibility(View.GONE);
                 viewHolder.repostStatusImages.setVisibility(View.GONE);
             }
         }else {
+            viewHolder.repostStatusOneImage.setVisibility(View.GONE);
             viewHolder.repostStatusLayout.setVisibility(View.GONE);
         }
 

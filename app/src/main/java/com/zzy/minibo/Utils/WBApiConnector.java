@@ -1,11 +1,14 @@
-package com.zzy.minibo.WeiBoTools;
+package com.zzy.minibo.Utils;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.ArrayMap;
 import android.util.Log;
 
-import com.zzy.minibo.WeiBoTools.AllParams.ParamsOfStatusTL;
-import com.zzy.minibo.WeiBoTools.AllParams.ParamsOfUserInfo;
-import com.zzy.minibo.WeiBoTools.AllParams.ParamsOfUserTimeLine;
+import com.sina.weibo.sdk.auth.Oauth2AccessToken;
+import com.zzy.minibo.Utils.AllParams.ParamsOfStatusTL;
+import com.zzy.minibo.Utils.AllParams.ParamsOfUserInfo;
+import com.zzy.minibo.Utils.AllParams.ParamsOfUserTimeLine;
 
 import java.io.IOException;
 import java.util.Map;
@@ -15,9 +18,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public final class WBApi {
+public final class WBApiConnector {
 
-    private static String TAG = "WBApi";
+    private static String TAG = "WBApiConnector";
 
     //获取用户信息的地址
     private static final String USER_INFO = "https://api.weibo.com/2/users/show.json";
@@ -27,6 +30,8 @@ public final class WBApi {
     private static final String EMOTIONS = "https://api.weibo.com/2/emotions.json";
 
     private static final String STATUS_USER_TIMELINE = "https://api.weibo.com/2/statuses/user_timeline.json";
+
+    private static final String SHORT_URL_EXPEND = "https://api.weibo.com/2/short_url/expand.json";
 
     /**
      * 构建get的含参地址
@@ -79,9 +84,10 @@ public final class WBApi {
                     if (response.isSuccessful()){
                         String str = response.body().string();
                         Log.d(TAG, "run: "+str);
-                        callBack.onFinish(str);
+                        callBack.onSuccess(str);
                     }
                 } catch (IOException e) {
+                    callBack.onError(e);
                     e.printStackTrace();
                 }
             }
@@ -116,15 +122,21 @@ public final class WBApi {
                     if (response != null){
                         String str = response.body().string();
 //                        Log.d(TAG, "run: "+str);
-                        callBack.onFinish(str);
+                        callBack.onSuccess(str);
                     }
                 } catch (IOException e) {
+                    callBack.onError(e);
                     e.printStackTrace();
                 }
             }
         }).start();
     }
 
+    /**
+     * 获取指定用户的微博时间线
+     * @param params 参数
+     * @param callBack 回调监听
+     */
     public static void getStatusUserTimeLine(ParamsOfUserTimeLine params, final HttpCallBack callBack){
         final Map<String,String> map = new ArrayMap<>();
         map.put("source",params.getSource());
@@ -149,9 +161,10 @@ public final class WBApi {
                     Response response = client.newCall(request).execute();
                     if (response != null){
                         String str = response.body().string();
-                        callBack.onFinish(str);
+                        callBack.onSuccess(str);
                     }
                 } catch (IOException e) {
+                    callBack.onError(e);
                     e.printStackTrace();
                 }
             }
@@ -159,7 +172,33 @@ public final class WBApi {
     }
 
 
-    public static void getWBEmotions(String access_token,final HttpCallBack callBack){
+    public static void getShortUrlType(Oauth2AccessToken accessToken, String url, final HttpCallBack callBack){
+        final Map<String,String> map = new ArrayMap<>();
+        map.put("source",Constants.APP_KEY);
+        map.put("access_token",accessToken.getToken());
+        map.put("url_short",url);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder()
+                        .get()
+                        .url(buildURLWithParams(SHORT_URL_EXPEND,map))
+                        .build();
+                try {
+                    Response response = client.newCall(request).execute();
+                    if (response.isSuccessful()){
+                        callBack.onSuccess(response.body().string());
+                    }
+                } catch (IOException e) {
+                    callBack.onError(e);
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    public static void getWBEmotions(String access_token, final HttpCallBack callBack){
         final Map<String,String> map = new ArrayMap<>();
         map.put("source",Constants.APP_KEY);
         map.put("access_token",access_token);
@@ -172,13 +211,13 @@ public final class WBApi {
                         .get()
                         .url(buildURLWithParams(EMOTIONS,map))
                         .build();
-
                 try {
                     Response response = client.newCall(request).execute();
                     if (response.isSuccessful()){
-                        callBack.onFinish(response.body().string());
+                        callBack.onSuccess(response.body().string());
                     }
                 } catch (IOException e) {
+                    callBack.onError(e);
                     e.printStackTrace();
                 }
 

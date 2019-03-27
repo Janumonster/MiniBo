@@ -4,4 +4,8 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
     <color name="colorMain">#FDFF683C</color>
+
+    <color name="bcakgroundColor">#B3B3B3</color>
+    <color name="usercenterLightTextColor">#999999</color>
+    <color name="repostStatusBackgroundColor">#F3F3F3</color>
 </resources>

@@ -19,7 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:text="MiniBo"
+            android:text="@string/minibo"
             android:textSize="18sp"
             android:textColor="#FDFF683C"
             android:layout_marginStart="25dp"
@@ -44,7 +44,8 @@
             android:id="@+id/fg_status_recyclerview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#F0F0F0">
+            android:background="#F0F0F0"
+            android:scrollbars="vertical">
         </android.support.v7.widget.RecyclerView>
 
     </android.support.v4.widget.SwipeRefreshLayout>
@@ -65,6 +66,29 @@
         app:rippleColor="#B83F1A"
         app:fabSize="mini"/>
 
+    <LinearLayout
+        android:id="@+id/fg_status_progressbar"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:orientation="horizontal"
+        android:background="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="gone">
 
+        <ProgressBar
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            style="@style/mProgressBar_circle"
+            android:layout_gravity="center"
+            android:layout_marginStart="20dp"
+            />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="8dp"
+            android:text="正在加载更多..."
+            android:textSize="13sp"
+            android:gravity="center"/>
+    </LinearLayout>
 </android.support.constraint.ConstraintLayout>

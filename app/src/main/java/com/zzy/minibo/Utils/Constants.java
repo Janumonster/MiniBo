@@ -1,4 +1,4 @@
-package com.zzy.minibo.WeiBoTools;
+package com.zzy.minibo.Utils;
 
 public interface Constants {
 

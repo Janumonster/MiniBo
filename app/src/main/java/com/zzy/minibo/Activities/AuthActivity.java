@@ -3,10 +3,8 @@ package com.zzy.minibo.Activities;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.view.accessibility.AccessibilityManager;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -18,7 +16,7 @@ import com.sina.weibo.sdk.auth.WbAuthListener;
 import com.sina.weibo.sdk.auth.WbConnectErrorMessage;
 import com.sina.weibo.sdk.auth.sso.SsoHandler;
 import com.zzy.minibo.R;
-import com.zzy.minibo.WeiBoTools.Constants;
+import com.zzy.minibo.Utils.Constants;
 
 public class AuthActivity extends BaseActivity {
 

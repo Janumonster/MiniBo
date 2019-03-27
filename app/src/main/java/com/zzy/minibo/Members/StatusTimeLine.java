@@ -1,5 +1,6 @@
 package com.zzy.minibo.Members;
 
+import android.content.Context;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -64,7 +65,7 @@ public class StatusTimeLine {
         this.total_number = total_number;
     }
 
-    public static StatusTimeLine getStatusesLine(String json){
+    public static StatusTimeLine getStatusesLine(Context context,String json){
         if (null != json){
             StatusTimeLine statusesTimeLine = new StatusTimeLine();
             try {
@@ -72,7 +73,7 @@ public class StatusTimeLine {
                 JSONArray jsonArray = jsonObject.getJSONArray("statuses");
                 List<Status> statuses = new ArrayList<>();
                 for (int i = 0;i<jsonArray.length();i++){
-                    Status status = Status.getStatusFromJson(jsonArray.getString(i));
+                    Status status = Status.getStatusFromJson(context,jsonArray.getString(i));
                     statuses.add(status);
                 }
                 statusesTimeLine.setStatuses(statuses);

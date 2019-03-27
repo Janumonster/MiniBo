@@ -1,4 +1,4 @@
-package com.zzy.minibo.WeiBoTools;
+package com.zzy.minibo.Utils;
 
 import android.content.Context;
 import android.graphics.Canvas;

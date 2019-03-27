@@ -19,9 +19,9 @@ import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.Members.StatusTimeLine;
 import com.zzy.minibo.Members.User;
 import com.zzy.minibo.R;
-import com.zzy.minibo.WeiBoTools.AllParams.ParamsOfUserTimeLine;
-import com.zzy.minibo.WeiBoTools.HttpCallBack;
-import com.zzy.minibo.WeiBoTools.WBApi;
+import com.zzy.minibo.Utils.AllParams.ParamsOfUserTimeLine;
+import com.zzy.minibo.Utils.HttpCallBack;
+import com.zzy.minibo.Utils.WBApiConnector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,10 +112,10 @@ public class UserCenterActivity extends BaseActivity {
                 .screen_name(mUser.getScreen_name())
                 .feature(FEATURE_ALL)
                 .build();
-        WBApi.getStatusUserTimeLine(paramsOfUserTimeLine, new HttpCallBack() {
+        WBApiConnector.getStatusUserTimeLine(paramsOfUserTimeLine, new HttpCallBack() {
             @Override
-            public void onFinish(String response) {
-                StatusTimeLine statusTimeLine = StatusTimeLine.getStatusesLine(response);
+            public void onSuccess(String response) {
+                StatusTimeLine statusTimeLine = StatusTimeLine.getStatusesLine(getApplicationContext(),response);
                 statusList.addAll(statusTimeLine.getStatuses());
                 Message message = new Message();
                 message.what = 0;
