@@ -6,10 +6,14 @@ import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.litepal.LitePal;
+import org.litepal.crud.LitePalSupport;
 
-public class User implements Parcelable{
+public class User extends LitePalSupport implements Parcelable{
 
     private static String TAG = User.class.getName();
+
+    private String statusId = null;
 
     private String UID = null;//用户UID
     private long id = 0;//用户UID，int型
@@ -50,6 +54,14 @@ public class User implements Parcelable{
 
 
     /**********************************************************************************************/
+    public String getStatusId() {
+        return statusId;
+    }
+
+    public void setStatusId(String statusId) {
+        this.statusId = statusId;
+    }
+
     public String getUID() {
         return UID;
     }
@@ -412,6 +424,9 @@ public class User implements Parcelable{
                 mUser.setAllow_all_comment(jsonObject.getBoolean("allow_all_comment"));
                 mUser.setGeo_enabled(jsonObject.getBoolean("geo_enabled"));
 //                Log.d(TAG, "getUserInfoFromJSON: " + mUser.toString());
+                if (!LitePal.isExist(User.class,"UID = ?",mUser.UID)){
+                    mUser.save();
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }

@@ -3,7 +3,8 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
-    <color name="colorMain">#FDFF683C</color>
+    <color name="colorMain">#18D3DA</color>
+    <color name="colorMainDark">#A1F2F3F5</color>
 
     <color name="bcakgroundColor">#B3B3B3</color>
     <color name="usercenterLightTextColor">#999999</color>

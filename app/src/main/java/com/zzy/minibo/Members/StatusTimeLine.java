@@ -18,6 +18,7 @@ public class StatusTimeLine {
     private List<Status> statuses = new ArrayList<>();
     //未知
     private boolean hasvisible ;
+
     //该组微博的最小微博ID
     private String since_id;
     //该组微博的最大微博ID
@@ -81,6 +82,7 @@ public class StatusTimeLine {
                 statusesTimeLine.setTotal_number(jsonObject.getInt("total_number"));
                 statusesTimeLine.setSince_id(jsonObject.getString("since_id"));
                 statusesTimeLine.setMax_id(jsonObject.getString("max_id"));
+
                 Log.d(TAG, "getStatusesLine: "+ statusesTimeLine.toString());
             } catch (JSONException e) {
                 e.printStackTrace();

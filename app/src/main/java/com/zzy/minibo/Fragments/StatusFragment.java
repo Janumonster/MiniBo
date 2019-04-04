@@ -1,10 +1,12 @@
 package com.zzy.minibo.Fragments;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,6 +19,7 @@ import android.widget.Toast;
 
 import com.sina.weibo.sdk.auth.AccessTokenKeeper;
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
+import com.zzy.minibo.Activities.StatusActivity;
 import com.zzy.minibo.Adapter.StatusAdapter;
 import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.Members.StatusTimeLine;
@@ -24,6 +27,9 @@ import com.zzy.minibo.R;
 import com.zzy.minibo.Utils.AllParams.ParamsOfStatusTL;
 import com.zzy.minibo.Utils.HttpCallBack;
 import com.zzy.minibo.Utils.WBApiConnector;
+
+import org.litepal.LitePal;
+import org.litepal.exceptions.DataSupportException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +46,7 @@ public class StatusFragment extends Fragment {
 
     private List<Status> statusList = new ArrayList<>();
     private List<Status> statusListCache = new ArrayList<>();
+    private List<Status> statusListFromDB = new ArrayList<>();
     private StatusAdapter statusAdapter;
     private StatusTimeLine statusTimeLine = new StatusTimeLine();
     private Oauth2AccessToken accessToken;
@@ -47,6 +54,8 @@ public class StatusFragment extends Fragment {
     private RecyclerView mStatus_rv;
     private SwipeRefreshLayout swipeRefreshLayout;
     private LinearLayout progress_layout;
+
+    private FloatingActionButton floatingMenu;
 
     private boolean isBottom = false;
     private int page = 1;
@@ -57,7 +66,7 @@ public class StatusFragment extends Fragment {
         public void handleMessage(Message msg) {
             switch (msg.what){
                 case MESSAGE_FROM_INITIAL:
-                    statusAdapter = new StatusAdapter(statusList,getContext());
+                    statusAdapter = new StatusAdapter(statusListFromDB,getContext());
                     LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
                     linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
                     mStatus_rv.setLayoutManager(linearLayoutManager);
@@ -67,19 +76,25 @@ public class StatusFragment extends Fragment {
                 case MESSAGE_FROM_REFRESH:
                     swipeRefreshLayout.setRefreshing(false);
                     if (statusListCache.size() == 0){
-                        Toast.makeText(getContext(),"已经最新了！！",Toast.LENGTH_SHORT).show();
+                        Toast relresh_none_toast = Toast.makeText(getContext(),null,Toast.LENGTH_SHORT);
+                        relresh_none_toast.setText("已经最新了！！(•ᴗ•)");
+                        relresh_none_toast.show();
                     }else {
                         statusList.clear();
                         statusList.addAll(statusListCache);
                         statusAdapter.notifyDataSetChanged();
-                        Toast.makeText(getContext(),"更新了"+statusListCache.size()+"条微博",Toast.LENGTH_SHORT).show();
+                        Toast refresh_toast = Toast.makeText(getContext(),null,Toast.LENGTH_SHORT);
+                        refresh_toast.setText("更新了"+statusListCache.size()+"条微博");
+                        refresh_toast.show();
                     }
                     break;
                 case MESSAGE_FROM_GET_MORE:
                     statusList.addAll(statusListCache);
                     progress_layout.setVisibility(View.GONE);
                     statusAdapter.notifyDataSetChanged();
-                    Toast.makeText(getContext(),"增加了"+statusListCache.size()+"条微博",Toast.LENGTH_SHORT).show();
+                    Toast get_more_toast = Toast.makeText(getContext(),null,Toast.LENGTH_SHORT);
+                    get_more_toast.setText("微博 +"+statusListCache.size()+"_(:з」∠)_");
+                    get_more_toast.show();
                     break;
                 case MESSAGE_FROM_ERROR:
                     swipeRefreshLayout.setRefreshing(false);
@@ -105,7 +120,17 @@ public class StatusFragment extends Fragment {
         mStatus_rv = view.findViewById(R.id.fg_status_recyclerview);
         swipeRefreshLayout = view.findViewById(R.id.fg_status_refreshlayout);
         progress_layout = view.findViewById(R.id.fg_status_progressbar);
+        floatingMenu = view.findViewById(R.id.fg_status_fab);
+        floatingMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getContext().startActivity(new Intent(getContext(), StatusActivity.class));
+            }
+        });
         accessToken = AccessTokenKeeper.readAccessToken(getContext());
+
+        statusListFromDB = LitePal.findAll(Status.class);
+
         getInitialStatus();
         mStatus_rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -138,14 +163,14 @@ public class StatusFragment extends Fragment {
         if (accessToken != null){
             ParamsOfStatusTL params = new ParamsOfStatusTL.Builder()
                     .access_token(accessToken.getToken())
-                    .page(++page)
+                    .max_id(statusTimeLine.getMax_id())
                     .build();
             WBApiConnector.getStatusesHomeTimeline(params, new HttpCallBack() {
                 @Override
                 public void onSuccess(String response) {
-                    StatusTimeLine timeLine = StatusTimeLine.getStatusesLine(getContext(),response);
+                    statusTimeLine = StatusTimeLine.getStatusesLine(getContext(),response);
                     statusListCache.clear();
-                    statusListCache.addAll(timeLine.getStatuses());
+                    statusListCache.addAll(statusTimeLine.getStatuses());
                     Message message = new Message();
                     message.what = MESSAGE_FROM_GET_MORE;
                     handler.sendMessage(message);
@@ -174,6 +199,9 @@ public class StatusFragment extends Fragment {
                 public void onSuccess(String response) {
                     statusTimeLine = StatusTimeLine.getStatusesLine(getContext(),response);
                     statusList = statusTimeLine.getStatuses();
+//                    if (statusList.size() == 0){
+//                        statusList.addAll(statusListFromDB);
+//                    }
                     Message message = new Message();
                     message.what = MESSAGE_FROM_INITIAL;
                     handler.sendMessage(message);

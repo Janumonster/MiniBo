@@ -3,11 +3,14 @@ package com.zzy.minibo.Utils.WBClickSpan;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
+import android.support.v4.graphics.ColorUtils;
 import android.text.TextPaint;
 import android.text.style.ClickableSpan;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.zzy.minibo.R;
 
 public class UserIdClickSpan extends ClickableSpan {
 
@@ -32,7 +35,7 @@ public class UserIdClickSpan extends ClickableSpan {
     @Override
     public void updateDrawState(@NonNull TextPaint ds) {
         super.updateDrawState(ds);
-        ds.setColor(0xff507daf);
+        ds.setColor(mContext.getResources().getColor(R.color.colorMain));
         ds.setUnderlineText(false);
     }
 }

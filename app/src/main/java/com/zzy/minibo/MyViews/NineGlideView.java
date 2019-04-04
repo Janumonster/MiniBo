@@ -1,7 +1,9 @@
 package com.zzy.minibo.MyViews;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.util.AttributeSet;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -27,11 +29,11 @@ public class NineGlideView extends NineImageLayout {
 
     @Override
     protected boolean displayOneImage(ClickImageView imageView, String url, int parentWidth) {
-
         Glide.with(mContext)
                 .load(url)
                 .placeholder(R.drawable.loading_drawable)
                 .into(imageView);
+        setOneImageLayout(imageView,480,480);
         return false;
     }
 

@@ -9,6 +9,8 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.zzy.minibo.R;
+
 public class StatusDetialClickSpan extends ClickableSpan {
     private String str;
 
@@ -31,7 +33,7 @@ public class StatusDetialClickSpan extends ClickableSpan {
     @Override
     public void updateDrawState(@NonNull TextPaint ds) {
         super.updateDrawState(ds);
-        ds.setColor(0xff507daf);
+        ds.setColor(mContext.getResources().getColor(R.color.colorMain));
         ds.setUnderlineText(false);
     }
 }
