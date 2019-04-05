@@ -42,7 +42,7 @@ public class StatusFragment extends Fragment {
     private static final int MESSAGE_FROM_INITIAL = 1;
     private static final int MESSAGE_FROM_GET_MORE = 2;
     private static final int MESSAGE_FROM_ERROR = 3;
-    public static final int RECYCLERVIEW_CACHE_SIZE = 20;
+    public static final int RECYCLERVIEW_CACHE_SIZE = 100;
 
     private List<Status> statusList = new ArrayList<>();
     private List<Status> statusListCache = new ArrayList<>();
@@ -66,7 +66,7 @@ public class StatusFragment extends Fragment {
         public void handleMessage(Message msg) {
             switch (msg.what){
                 case MESSAGE_FROM_INITIAL:
-                    statusAdapter = new StatusAdapter(statusListFromDB,getContext());
+                    statusAdapter = new StatusAdapter(statusList,getContext());
                     LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
                     linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
                     mStatus_rv.setLayoutManager(linearLayoutManager);
@@ -80,8 +80,7 @@ public class StatusFragment extends Fragment {
                         relresh_none_toast.setText("已经最新了！！(•ᴗ•)");
                         relresh_none_toast.show();
                     }else {
-                        statusList.clear();
-                        statusList.addAll(statusListCache);
+                        statusList.addAll(0,statusListCache);
                         statusAdapter.notifyDataSetChanged();
                         Toast refresh_toast = Toast.makeText(getContext(),null,Toast.LENGTH_SHORT);
                         refresh_toast.setText("更新了"+statusListCache.size()+"条微博");
@@ -128,8 +127,6 @@ public class StatusFragment extends Fragment {
             }
         });
         accessToken = AccessTokenKeeper.readAccessToken(getContext());
-
-        statusListFromDB = LitePal.findAll(Status.class);
 
         getInitialStatus();
         mStatus_rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -199,9 +196,10 @@ public class StatusFragment extends Fragment {
                 public void onSuccess(String response) {
                     statusTimeLine = StatusTimeLine.getStatusesLine(getContext(),response);
                     statusList = statusTimeLine.getStatuses();
-//                    if (statusList.size() == 0){
-//                        statusList.addAll(statusListFromDB);
-//                    }
+                    if (statusList.size() == 0){
+                        statusListFromDB = LitePal.limit(20).find(Status.class);
+                        statusList.addAll(statusListFromDB);
+                    }
                     Message message = new Message();
                     message.what = MESSAGE_FROM_INITIAL;
                     handler.sendMessage(message);

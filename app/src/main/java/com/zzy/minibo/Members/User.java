@@ -424,7 +424,7 @@ public class User extends LitePalSupport implements Parcelable{
                 mUser.setAllow_all_comment(jsonObject.getBoolean("allow_all_comment"));
                 mUser.setGeo_enabled(jsonObject.getBoolean("geo_enabled"));
 //                Log.d(TAG, "getUserInfoFromJSON: " + mUser.toString());
-                if (!LitePal.isExist(User.class,"UID = ?",mUser.UID)){
+                if (!LitePal.isExist(User.class,"UID = "+mUser.UID)){
                     mUser.save();
                 }
             } catch (JSONException e) {

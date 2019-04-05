@@ -18,7 +18,7 @@ import org.litepal.crud.LitePalSupport;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Status extends LitePalSupport{
+public class Status extends LitePalSupport implements Parcelable{
 
     /**
      * -------------自己的Field---------------------------------------------------------------------
@@ -84,6 +84,31 @@ public class Status extends LitePalSupport{
     }
 
 
+    protected Status(Parcel in) {
+        type = in.readInt();
+        isLike = in.readByte() != 0;
+        create_at = in.readString();
+        id = in.readLong();
+        idstr = in.readString();
+        text = in.readString();
+        textLength = in.readInt();
+        source = in.readString();
+        favroited = in.readByte() != 0;
+        truncated = in.readByte() != 0;
+        pic_urls = in.createStringArrayList();
+        thumbnail_pic = in.readString();
+        bmiddle_pic = in.readString();
+        original_pic = in.readString();
+        geo = in.readString();
+        user = in.readParcelable(User.class.getClassLoader());
+        retweeted_status = in.readParcelable(Status.class.getClassLoader());
+        reposts_count = in.readString();
+        comments_count = in.readString();
+        attitudes_count = in.readString();
+        isLongText = in.readByte() != 0;
+    }
+
+
     /**
      * 从json中获取数据，一定有的数据放前面，防止有些字段没有导致没有读取数据---------------------------
      * @param json
@@ -136,7 +161,7 @@ public class Status extends LitePalSupport{
                     status.setType(Type.TYPE_REPOST);
                 }
 
-                if(!LitePal.isExist(Status.class,"idstr = ?",status.getIdstr())){
+                if(!LitePal.isExist(Status.class,"idstr = "+status.getIdstr())){
                     //去重保存
                     status.save();
                 }
@@ -147,6 +172,52 @@ public class Status extends LitePalSupport{
         }else {
             return null;
         }
+    }
+
+    /**
+     * ---------------序列化------------------------------------------------------------------------
+     */
+
+    public static final Creator<Status> CREATOR = new Creator<Status>() {
+        @Override
+        public Status createFromParcel(Parcel in) {
+            return new Status(in);
+        }
+
+        @Override
+        public Status[] newArray(int size) {
+            return new Status[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(type);
+        dest.writeByte((byte) (isLike ? 1 : 0));
+        dest.writeString(create_at);
+        dest.writeLong(id);
+        dest.writeString(idstr);
+        dest.writeString(text);
+        dest.writeInt(textLength);
+        dest.writeString(source);
+        dest.writeByte((byte) (favroited ? 1 : 0));
+        dest.writeByte((byte) (truncated ? 1 : 0));
+        dest.writeStringList(pic_urls);
+        dest.writeString(thumbnail_pic);
+        dest.writeString(bmiddle_pic);
+        dest.writeString(original_pic);
+        dest.writeString(geo);
+        dest.writeParcelable(user, flags);
+        dest.writeParcelable(retweeted_status, flags);
+        dest.writeString(reposts_count);
+        dest.writeString(comments_count);
+        dest.writeString(attitudes_count);
+        dest.writeByte((byte) (isLongText ? 1 : 0));
     }
 
     /**
