@@ -57,7 +57,7 @@ public class ClickImageView extends android.support.v7.widget.AppCompatImageView
             case MotionEvent.ACTION_DOWN:
                 Drawable drawable = getDrawable();
                 if (drawable != null){
-                    drawable.mutate().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
+                    drawable.mutate().setColorFilter(Color.parseColor("#A1F2F3F5"), PorterDuff.Mode.MULTIPLY);
                 }
                 break;
             case MotionEvent.ACTION_MOVE:

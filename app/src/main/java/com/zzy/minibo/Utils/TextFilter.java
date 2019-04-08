@@ -18,6 +18,7 @@ import com.zzy.minibo.Utils.WBClickSpan.TopicClickSpan;
 import com.zzy.minibo.Utils.WBClickSpan.UserIdClickSpan;
 import com.zzy.minibo.Utils.WBClickSpan.WebUrlClickSpan;
 
+import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -142,7 +143,7 @@ public final class TextFilter {
 //
 //                            }
 //                        });
-                        SpannableString spannableStringUrl = new SpannableString("☍网页链接");
+                        SpannableString spannableStringUrl = new SpannableString("☍网页链接 ");
                         spannableStringUrl.setSpan(webUrlClickSpan,0,5,Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                         spannableStringBuilder.append(spannableStringUrl);
                         i = i + 19;
@@ -176,8 +177,86 @@ public final class TextFilter {
         return spannableStringBuilder;
     }
 
+    /**
+     * 时间过滤器
+     */
+    public static String TimeFliter(String time){
+        StringBuilder stringBuilder = new StringBuilder();
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int mYear = Integer.valueOf(time.substring(26));
+        if (year >= mYear + 1){
+            stringBuilder.append(mYear).append("-");
+            stringBuilder.append(getMonth(time.substring(4,7))).append("-").append(Integer.valueOf(time.substring(8,10)));
+            Log.d("TimeFliter ", "一年前："+stringBuilder.toString());
+            return stringBuilder.toString();
+        }else {
+            int month = calendar.get(Calendar.MONTH);
+            int mMonth = getMonth(time.substring(4,7));
+            if (month >= mMonth + 1){
+                stringBuilder.append(mMonth).append("-").append(Integer.valueOf(time.substring(8,10)));
+                Log.d("TimeFliter ", "一个月前："+stringBuilder.toString());
+                return stringBuilder.toString();
+            }else {
+                int day = calendar.get(Calendar.DAY_OF_MONTH);
+                int mDay = Integer.valueOf(time.substring(8,10));
+                if (day >= mDay + 1){
+                    stringBuilder.append(getMonth(time.substring(4,7))).append("-").append(mDay);
+                    Log.d("TimeFliter ", "1天前："+stringBuilder.toString());
+                    return stringBuilder.toString();
+                }else {
+                    int hour = calendar.get(Calendar.HOUR);
+                    int mHour = Integer.valueOf(time.substring(11,13));
+                    if (hour >= mHour + 1){
+                        stringBuilder.append(mHour).append(":").append(time.substring(14,16));
+                        Log.d("TimeFliter ", "1小时前："+stringBuilder.toString());
+                        return stringBuilder.toString();
+                    }else {
+                        int minute = calendar.get(Calendar.MINUTE);
+                        int mMinute = Integer.valueOf(time.substring(14,16));
+                        if (minute >= mMinute + 10){
+                            stringBuilder.append(mHour).append(":").append(mMinute);
+                            Log.d("TimeFliter ", "10分钟前："+stringBuilder.toString());
+                            return stringBuilder.toString();
+                        }else if (minute < mMinute + 10 && minute >= mMinute + 1){
+                            stringBuilder.append(minute - mMinute).append("分钟前");
+                            Log.d("TimeFliter ", "1分钟前，不超过10分钟："+stringBuilder.toString());
+                            return stringBuilder.toString();
+                        }else {
+                            stringBuilder.append("刚刚");
+                            Log.d("TimeFliter ", "不超过1分钟："+stringBuilder.toString());
+                            return stringBuilder.toString();
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-    public static boolean isSpecialChar(String str) {
+    private static int getMonth(String substring) {
+        switch (substring){
+            case "Jan":return 1;
+            case "Feb":return 2;
+            case "Mar":return 3;
+            case "Apr":return 4;
+            case "May":return 5;
+            case "Jun":return 6;
+            case "Jul":return 7;
+            case "Aug":return 8;
+            case "Sep":return 9;
+            case "Oct":return 10;
+            case "Nov":return 11;
+            case "Dec":return 12;
+        }
+        return 0;
+    }
+
+    /**
+     * 是否存在特殊字符
+     * @param str
+     * @return
+     */
+    private static boolean isSpecialChar(String str) {
         String regEx = "[ _`~!#$%^&*()+=|{}':;',\\[\\].<>/?~！#￥%……&*（）——+|{}【】‘；：”“’。，、？]|\n|\r|\t";
         Pattern p = Pattern.compile(regEx);
         Matcher m = p.matcher(str);

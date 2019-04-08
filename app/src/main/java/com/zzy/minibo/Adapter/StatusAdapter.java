@@ -105,7 +105,7 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
 //            viewHolder.userName.setText(u.getScreen_name());
 //        }
 
-        viewHolder.createTime.setText(status.getCreated_at());
+        viewHolder.createTime.setText(TextFilter.TimeFliter(status.getCreated_at()));
         //待修改
         viewHolder.statusText.setText(status.getSpanText());
 

@@ -55,7 +55,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/create_at"
-                android:textSize="13sp"
+                android:textSize="12sp"
+                android:textColor="@color/bcakgroundColor"
                 app:layout_constraintLeft_toLeftOf="@id/status_card_user_name"
                 app:layout_constraintTop_toBottomOf="@id/status_card_user_name"
                 app:layout_constraintBottom_toBottomOf="@id/status_card_user_icon"/>

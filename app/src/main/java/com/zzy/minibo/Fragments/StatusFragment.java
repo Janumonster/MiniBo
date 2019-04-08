@@ -135,9 +135,8 @@ public class StatusFragment extends Fragment {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (newState == RecyclerView.SCROLL_STATE_IDLE && statusAdapter.isNearBottom()){
                     isBottom = true;
-                    //刷新
+                    //加载更多
                     getMoreStatus();
-                    statusAdapter.notifyDataSetChanged();
                 }else {
                     isBottom = false;
                 }
