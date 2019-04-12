@@ -68,7 +68,7 @@
                 android:id="@+id/fg_menu_tv_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0"
+                android:text="@string/zero"
                 android:textColor="#000000"
                 android:textSize="15sp"
                 android:textStyle="bold" />
@@ -145,7 +145,7 @@
         android:layout_height="100dp"
         android:orientation="horizontal"
         android:baselineAligned="false"
-        app:layout_constraintTop_toBottomOf="@id/fg_menu_ll_top">
+        app:layout_constraintTop_toBottomOf="@+id/fg_menu_ll_top">
 
         <RelativeLayout
             android:layout_width="0dp"

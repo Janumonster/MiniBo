@@ -74,7 +74,7 @@ public class StatusTimeLine {
                 JSONArray jsonArray = jsonObject.getJSONArray("statuses");
                 List<Status> statuses = new ArrayList<>();
                 for (int i = 0;i<jsonArray.length();i++){
-                    Status status = Status.getStatusFromJson(context,jsonArray.getString(i));
+                    Status status = Status.getStatusFromJson(jsonArray.getString(i));
                     statuses.add(status);
                 }
                 statusesTimeLine.setStatuses(statuses);

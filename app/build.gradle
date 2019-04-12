@@ -49,5 +49,9 @@ dependencies {
 
     implementation 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
 
+    //litepal
     implementation 'org.litepal.android:java:3.0.0'
+
+    //photoView
+    implementation 'com.github.chrisbanes:PhotoView:2.0.0'
 }

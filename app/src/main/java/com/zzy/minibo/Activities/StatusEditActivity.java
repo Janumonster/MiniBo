@@ -5,11 +5,11 @@ import android.os.Bundle;
 
 import com.zzy.minibo.R;
 
-public class StatusDetialActivity extends AppCompatActivity {
+public class StatusEditActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_status_detail);
+        setContentView(R.layout.activity_status_edit);
     }
 }

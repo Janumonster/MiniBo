@@ -1,7 +1,7 @@
 package com.zzy.minibo.Utils;
 
 import android.content.Context;
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.text.SpannableString;
@@ -9,10 +9,7 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.util.Log;
 
-import com.sina.weibo.sdk.auth.AccessTokenKeeper;
-import com.sina.weibo.sdk.auth.Oauth2AccessToken;
-import com.zzy.minibo.Members.URLHolder;
-import com.zzy.minibo.WBListener.StatusTypeListener;
+import com.zzy.minibo.WBListener.StatusTextFliterCallback;
 import com.zzy.minibo.Utils.WBClickSpan.StatusDetialClickSpan;
 import com.zzy.minibo.Utils.WBClickSpan.TopicClickSpan;
 import com.zzy.minibo.Utils.WBClickSpan.UserIdClickSpan;
@@ -34,7 +31,7 @@ public final class TextFilter {
         return null;
     }
 
-    public static SpannableStringBuilder statusTextFliter(Context context, String text, final StatusTypeListener listener){
+    public static SpannableStringBuilder statusTextFliter(Context context, String text, final StatusTextFliterCallback callback){
         SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder();
         int i = 0;
         while (i < text.length()){
@@ -67,7 +64,7 @@ public final class TextFilter {
                     }
                     StringBuilder username = new StringBuilder();
                     username.append("@");
-                    while (text.charAt(id_start) != ':'&&text.charAt(id_start)!=' '&&text.charAt(id_start)!='@'&&text.charAt(id_start)!='：'&&text.charAt(id_start)!=','){
+                    while ( !isSpecialChar(String.valueOf(text.charAt(id_start)))){
                         username.append(text.charAt(id_start));
                         if (id_start < text.length() - 1){
                             id_start++;
@@ -134,7 +131,7 @@ public final class TextFilter {
 //                            public void onSuccess(String response) {
 //                                URLHolder urlHolder = URLHolder.getInstanceFromJSON(response);
 //                                if (urlHolder != null){
-//                                    listener.videoUrL("onSuccess: "+urlHolder.getUrl_short()+" type:"+urlHolder.getType());
+//                                    listener.callback("onSuccess: "+urlHolder.getUrl_short()+" type:"+urlHolder.getType());
 //                                }
 //                            }
 //
@@ -160,6 +157,7 @@ public final class TextFilter {
                             SpannableString spannableStringDetial = new SpannableString("全文");
                             spannableStringDetial.setSpan(statusDetialClickSpan,0,2,Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                             spannableStringBuilder.append(spannableStringDetial);
+                            callback.callback(matcher_long.group(0),true);
                             i = text.length();
                         }else {
                             spannableStringBuilder.append(text.charAt(i));
@@ -200,38 +198,68 @@ public final class TextFilter {
             }else {
                 int day = calendar.get(Calendar.DAY_OF_MONTH);
                 int mDay = Integer.valueOf(time.substring(8,10));
-                if (day >= mDay + 1){
+                if (day > mDay + 1){
                     stringBuilder.append(getMonth(time.substring(4,7))).append("-").append(mDay);
-                    Log.d("TimeFliter ", "1天前："+stringBuilder.toString());
+                    Log.d("TimeFliter ", "2天前："+stringBuilder.toString());
                     return stringBuilder.toString();
-                }else {
-                    int hour = calendar.get(Calendar.HOUR);
+                } else if(day == mDay + 1){
+                    stringBuilder.append("昨天 ").append(time.substring(11,16));
+                    Log.d("TimeFliter ", "1天前，不超过2天："+stringBuilder.toString());
+                    return stringBuilder.toString();
+                } else {
+                    int hour = calendar.get(Calendar.HOUR_OF_DAY);
                     int mHour = Integer.valueOf(time.substring(11,13));
-                    if (hour >= mHour + 1){
-                        stringBuilder.append(mHour).append(":").append(time.substring(14,16));
-                        Log.d("TimeFliter ", "1小时前："+stringBuilder.toString());
+                    int minute = calendar.get(Calendar.MINUTE);
+                    int mMinute = Integer.valueOf(time.substring(14,16));
+
+                    int totalTime = hour * 60 + minute;
+                    int mTotalTime = mHour * 60 + mMinute;
+
+                    int timePass = totalTime - mTotalTime;
+
+                    if(timePass >= 60){
+                        stringBuilder.append(timePass / 60).append("小时前");
+                        Log.d("TimeFliter ", "n小时前："+stringBuilder.toString());
+                        return stringBuilder.toString();
+                    }else if (timePass >= 1){
+                        stringBuilder.append(timePass).append("分钟前");
+                        Log.d("TimeFliter ", "1分钟前，不超过一小时："+stringBuilder.toString());
                         return stringBuilder.toString();
                     }else {
-                        int minute = calendar.get(Calendar.MINUTE);
-                        int mMinute = Integer.valueOf(time.substring(14,16));
-                        if (minute >= mMinute + 10){
-                            stringBuilder.append(mHour).append(":").append(mMinute);
-                            Log.d("TimeFliter ", "10分钟前："+stringBuilder.toString());
-                            return stringBuilder.toString();
-                        }else if (minute < mMinute + 10 && minute >= mMinute + 1){
-                            stringBuilder.append(minute - mMinute).append("分钟前");
-                            Log.d("TimeFliter ", "1分钟前，不超过10分钟："+stringBuilder.toString());
-                            return stringBuilder.toString();
-                        }else {
-                            stringBuilder.append("刚刚");
-                            Log.d("TimeFliter ", "不超过1分钟："+stringBuilder.toString());
-                            return stringBuilder.toString();
-                        }
+                        stringBuilder.append("刚刚");
+                        Log.d("TimeFliter ", "不超过1分钟："+stringBuilder.toString());
+                        return stringBuilder.toString();
                     }
                 }
             }
         }
     }
+
+
+    /**
+     * 数字过滤器
+     *
+     *
+     */
+    public static String NumberFliter(String num){
+        StringBuilder sb = new StringBuilder();
+        int m = 10000;
+        int b = 100000000;
+        int n = Integer.valueOf(num);
+        if (n > m && n < b){
+            int k = (n / 1000) % 10;//小数点后的数字
+            int a = n / m;//小数点前的数字
+            sb.append(a).append(".").append(k).append("万");
+            return sb.toString();
+        }else if (n >= b){
+            int j = (n / 10000000) % 10;
+            int c = n / b;
+            sb.append(c).append(".").append(j).append("亿");
+            return sb.toString();
+        }
+        return num;
+    }
+
 
     private static int getMonth(String substring) {
         switch (substring){
@@ -257,7 +285,7 @@ public final class TextFilter {
      * @return
      */
     private static boolean isSpecialChar(String str) {
-        String regEx = "[ _`~!#$%^&*()+=|{}':;',\\[\\].<>/?~！#￥%……&*（）——+|{}【】‘；：”“’。，、？]|\n|\r|\t";
+        String regEx = "[ `~!#$%^&*()+=|{}':;',\\[\\].<>/?~！#￥%……&*（）——+|{}【】‘；：”“’。，、？]|\n|\r|\t";
         Pattern p = Pattern.compile(regEx);
         Matcher m = p.matcher(str);
         return m.find();

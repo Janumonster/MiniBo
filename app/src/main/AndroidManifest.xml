@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.zzy.minibo">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -18,9 +19,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Activities.StatusDetialActivity"></activity>
-        <activity android:name=".Activities.StatusActivity" /> <!-- 启动页 -->
-        <activity android:name=".Activities.LanuchActivity">
+        <activity android:name=".Activities.webActivity"></activity>
+        <activity android:name=".Activities.StatusEditActivity" />
+        <activity android:name=".Activities.FriendshipActivity" />
+        <activity android:name=".Activities.MessageActivity" /> <!-- 启动界面 -->
+        <activity android:name=".Activities.LaunchActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,7 +31,11 @@
             </intent-filter>
         </activity> <!-- 授权页面 -->
         <activity android:name=".Activities.AuthActivity" /> <!-- 主界面 -->
-        <activity android:name=".Activities.MainActivity" />
+        <activity android:name=".Activities.MainActivity" /> <!-- 图片界面 -->
+        <activity
+            android:name=".Activities.PicturesActivity"
+            android:launchMode="singleTop" /> <!-- 微博界面 -->
+        <activity android:name=".Activities.StatusActivity" /> <!-- 用户中心 -->
         <activity android:name=".Activities.UserCenterActivity" />
     </application>
 

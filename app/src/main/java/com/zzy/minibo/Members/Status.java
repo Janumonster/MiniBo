@@ -3,22 +3,16 @@ package com.zzy.minibo.Members;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.text.SpannableStringBuilder;
-import android.util.Log;
-
-import com.zzy.minibo.WBListener.StatusTypeListener;
-import com.zzy.minibo.Utils.TextFilter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.litepal.LitePal;
-import org.litepal.crud.LitePalSupport;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Status extends LitePalSupport implements Parcelable{
+public class Status implements Parcelable{
 
     /**
      * -------------自己的Field---------------------------------------------------------------------
@@ -30,9 +24,7 @@ public class Status extends LitePalSupport implements Parcelable{
 
     private URLHolder statusUrl = null;
 
-    private SpannableStringBuilder spanText;
-
-    private boolean isLike = false;
+    private int isLike = 0;
 
     /**
      * -------根据接口给出的Field--------------------------------------------------------------------
@@ -52,7 +44,7 @@ public class Status extends LitePalSupport implements Parcelable{
     //微博是否已收藏
     private boolean favroited;
     //微博是否被截断
-    private boolean truncated;
+    private boolean truncated = false;
     //微博配图连接
     private List<String> pic_urls;
     //小图地址
@@ -84,9 +76,77 @@ public class Status extends LitePalSupport implements Parcelable{
     }
 
 
+
+    /**
+     * 从json中获取数据，一定有的数据放前面，防止有些字段没有导致没有读取数据---------------------------
+     * @param json
+     * @return
+     */
+
+    public static Status getStatusFromJson(String json){
+        if (null != json){
+            final Status status = new Status();
+            try {
+                JSONObject jsonObject = new JSONObject(json);
+                User user = User.makeJsonToUser(jsonObject.getString("user"));
+                status.setUser(user);
+                status.setCreated_at(jsonObject.getString("created_at"));
+                status.setId(jsonObject.getLong("id"));
+                status.setIdstr(jsonObject.getString("idstr"));
+                status.setText(jsonObject.getString("text"));
+                List<String> urls = new ArrayList<>();
+                JSONArray jsonArray =jsonObject.getJSONArray("pic_urls");
+                for (int i = 0;i<jsonArray.length();i++){
+                    String str = jsonArray.getJSONObject(i).getString("thumbnail_pic");
+                    str = str.substring(32);
+                    urls.add(str);
+                }
+                status.setPic_urls(urls);
+                status.setReposts_count(jsonObject.getString("reposts_count"));
+                status.setComments_count(jsonObject.getString("comments_count"));
+                status.setAttitudes_count(jsonObject.getString("attitudes_count"));
+                if (!LitePal.isExist(LP_STATUS.class,"idstr = "+status.idstr)){
+                    LP_STATUS LPSTATUS = new LP_STATUS();
+                    LPSTATUS.setIdstr(status.idstr);
+                    LPSTATUS.setJson(json);
+                    LPSTATUS.save();
+                }
+                status.setRetweeted_status(Status.getStatusFromJson(jsonObject.getString("retweeted_status")));
+                status.setGeo(jsonObject.getString("geo"));
+                status.setSource(jsonObject.getString("source"));
+                status.setLongText(jsonObject.getBoolean("isLongText"));
+                status.setFavroited(jsonObject.getBoolean("favorited"));
+                status.setTextLength(jsonObject.getInt("textLength"));
+                //判断是否是图片原创类型
+                if (urls.size() > 0){
+                    status.setType(Type.TYPE_IMAGE);
+                    if (urls.size() >=1){
+                        status.setType(Type.TYPE_IMAGES);
+                    }
+                }
+                //判断是否为转发
+                if (status.getRetweeted_status() != null){
+                    status.setType(Type.TYPE_REPOST);
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return status;
+        }else {
+            return null;
+        }
+    }
+
+
+
+    /**
+     * ---------------序列化------------------------------------------------------------------------
+     */
+
     protected Status(Parcel in) {
         type = in.readInt();
-        isLike = in.readByte() != 0;
+        isLike = in.readInt();
         create_at = in.readString();
         id = in.readLong();
         idstr = in.readString();
@@ -108,76 +168,6 @@ public class Status extends LitePalSupport implements Parcelable{
         isLongText = in.readByte() != 0;
     }
 
-
-    /**
-     * 从json中获取数据，一定有的数据放前面，防止有些字段没有导致没有读取数据---------------------------
-     * @param json
-     * @return
-     */
-
-    public static Status getStatusFromJson(Context context,String json){
-        if (null != json){
-            final Status status = new Status();
-            try {
-                JSONObject jsonObject = new JSONObject(json);
-                status.setUser(User.makeJsonObjectToUser(jsonObject.getJSONObject("user")));
-                status.setCreated_at(jsonObject.getString("created_at"));
-                status.setId(jsonObject.getLong("id"));
-                status.setIdstr(jsonObject.getString("idstr"));
-                status.setText(jsonObject.getString("text"));
-                status.setSpanText(TextFilter.statusTextFliter(context, status.getText(), new StatusTypeListener() {
-                    @Override
-                    public void videoUrL(String url) {
-                        Log.d(TAG, "LinkTest:"+url+"  "+status.getUser().getScreen_name());
-                    }
-                }));
-                List<String> urls = new ArrayList<>();
-                JSONArray jsonArray =jsonObject.getJSONArray("pic_urls");
-                for (int i = 0;i<jsonArray.length();i++){
-                    String str = jsonArray.getJSONObject(i).getString("thumbnail_pic");
-                    str = str.substring(32,str.length());
-                    urls.add(str);
-                }
-                status.setPic_urls(urls);
-                status.setReposts_count(jsonObject.getString("reposts_count"));
-                status.setComments_count(jsonObject.getString("comments_count"));
-                status.setAttitudes_count(jsonObject.getString("attitudes_count"));
-                status.setRetweeted_status(Status.getStatusFromJson(context,jsonObject.getString("retweeted_status")));
-//                status.setGeo(jsonObject.getString("geo"));
-//                status.setSource(jsonObject.getString("source"));
-//                status.setLongText(jsonObject.getBoolean("isLongText"));
-                status.setFavroited(jsonObject.getBoolean("favorited"));
-                status.setTruncated(jsonObject.getBoolean("truncated"));
-//                status.setTextLength(jsonObject.getInt("textLength"));
-                //判断是否是图片原创类型
-                if (urls.size() > 0){
-                    status.setType(Type.TYPE_IMAGE);
-                    if (urls.size() >=1){
-                        status.setType(Type.TYPE_IMAGES);
-                    }
-                }
-                //判断是否为转发
-                if (status.getRetweeted_status() != null){
-                    status.setType(Type.TYPE_REPOST);
-                }
-
-                if(!LitePal.isExist(Status.class,"idstr = "+status.getIdstr())){
-                    //去重保存
-                    status.save();
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return status;
-        }else {
-            return null;
-        }
-    }
-
-    /**
-     * ---------------序列化------------------------------------------------------------------------
-     */
-
     public static final Creator<Status> CREATOR = new Creator<Status>() {
         @Override
         public Status createFromParcel(Parcel in) {
@@ -198,7 +188,7 @@ public class Status extends LitePalSupport implements Parcelable{
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(type);
-        dest.writeByte((byte) (isLike ? 1 : 0));
+        dest.writeInt(isLike);
         dest.writeString(create_at);
         dest.writeLong(id);
         dest.writeString(idstr);
@@ -231,23 +221,15 @@ public class Status extends LitePalSupport implements Parcelable{
         public static final int TYPE_REPOST = 4;
     }
 
-
     /**
      * --------------------------getter 和 setter---------------------------------------------------
      */
-    public SpannableStringBuilder getSpanText() {
-        return spanText;
-    }
 
-    public void setSpanText(SpannableStringBuilder spanText) {
-        this.spanText = spanText;
-    }
-
-    public boolean isLike() {
+    public int getIsLike() {
         return isLike;
     }
 
-    public void setLike(boolean like) {
+    public void setIsLike(int like) {
         isLike = like;
     }
 

@@ -2,6 +2,7 @@ package com.zzy.minibo.Adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
@@ -16,16 +17,12 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.zzy.minibo.Activities.StatusActivity;
-import com.zzy.minibo.Activities.StatusDetialActivity;
 import com.zzy.minibo.Members.Status;
-import com.zzy.minibo.Members.User;
 import com.zzy.minibo.MyViews.NineGlideView;
 import com.zzy.minibo.R;
 import com.zzy.minibo.Utils.TextFilter;
 import com.zzy.minibo.Utils.WBClickSpan.UserIdClickSpan;
-import com.zzy.minibo.WBListener.StatusTypeListener;
-
-import org.litepal.LitePal;
+import com.zzy.minibo.WBListener.StatusTextFliterCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -99,29 +96,21 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
             viewHolder.userName.setText(status.getUser().getScreen_name());
         }
 
-//        List<User> users = LitePal.where("statusId = ?",status.getIdstr()).find(User.class);
-//        for (User u:users) {
-//            Glide.with(context).load(u.getAvatar_large()).into(viewHolder.userImage);
-//            viewHolder.userName.setText(u.getScreen_name());
-//        }
-
         viewHolder.createTime.setText(TextFilter.TimeFliter(status.getCreated_at()));
         //待修改
-        viewHolder.statusText.setText(status.getSpanText());
-
-//        viewHolder.statusText.setText(TextFilter.statusTextFliter(context, status.getText(), new StatusTypeListener() {
-//            @Override
-//            public void videoUrL(String url) {
-//
-//            }
-//        }));
-
+        viewHolder.statusText.setText(TextFilter.statusTextFliter(context, status.getText(), new StatusTextFliterCallback() {
+            @Override
+            public void callback(String url, boolean isAll) {
+                status.setTruncated(isAll);
+            }
+        }));
         viewHolder.statusText.setMovementMethod(LinkMovementMethod.getInstance());
 
-        viewHolder.statusRepostNum.setText(status.getReposts_count());
-        viewHolder.statusCommentNum.setText(status.getComments_count());
-        viewHolder.statusLikeNum.setText(status.getAttitudes_count());
-        viewHolder.statusLikeNum.setSelected(status.isLike());
+        viewHolder.statusRepostNum.setText(TextFilter.NumberFliter(status.getReposts_count()));
+        viewHolder.statusCommentNum.setText(TextFilter.NumberFliter(status.getComments_count()));
+        viewHolder.statusLikeNum.setSelected(status.getIsLike() == 1);
+        viewHolder.statusLikeNum.setText(TextFilter.NumberFliter(status.getAttitudes_count()));
+
         //用于存放完整中等品质图片地址
         List<String> list = new ArrayList<>();
         //加载微博图片
@@ -134,30 +123,33 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
         //是否是转发微博
         if (status.getRetweeted_status() != null) {
             viewHolder.repostStatusLayout.setVisibility(View.VISIBLE);
+
+            final Status repost_status = status.getRetweeted_status();
             viewHolder.repostStatusLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    context.startActivity(new Intent(context, StatusDetialActivity.class));
+                    Intent intent = new Intent(context, StatusActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putParcelable("status",repost_status);
+                    intent.putExtras(bundle);
+                    context.startActivity(intent);
                 }
             });
-            Status s = status.getRetweeted_status();
-//            List<User> repostUsers = LitePal.where("statusId = ?",status.getRetweeted_status().getIdstr()).find(User.class);
-//            for (User u:repostUsers) {
-//                UserIdClickSpan userIdClickSpan = new UserIdClickSpan(context,"@"+u.getScreen_name());
-//                SpannableString spannableString = new SpannableString("@"+u.getScreen_name());
-//                spannableString.setSpan(userIdClickSpan,0,spannableString.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
-//                viewHolder.repostUsername.setText(spannableString);
-//                viewHolder.repostUsername.setMovementMethod(LinkMovementMethod.getInstance());
-//            }
             UserIdClickSpan userIdClickSpan = new UserIdClickSpan(context,"@"+status.getRetweeted_status().getUser().getScreen_name());
             SpannableString spannableString = new SpannableString("@"+status.getRetweeted_status().getUser().getScreen_name());
             spannableString.setSpan(userIdClickSpan,0,spannableString.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
             viewHolder.repostUsername.setText(spannableString);
             viewHolder.repostUsername.setMovementMethod(LinkMovementMethod.getInstance());
-            viewHolder.repostStatusText.setText(status.getRetweeted_status().getSpanText());
+            viewHolder.repostStatusText.setText(TextFilter.statusTextFliter(context, repost_status.getText(), new StatusTextFliterCallback() {
+                @Override
+                public void callback(String url,boolean isAll) {
+                    status.setTruncated(isAll);
+                    repost_status.setTruncated(isAll);
+                }
+            }));
             viewHolder.repostStatusText.setMovementMethod(LinkMovementMethod.getInstance());
             //转发微博是否是图片微博
-            for (int n = 0 ; n < s.getPic_urls().size() ; n++){
+            for (int n = 0 ; n < repost_status.getPic_urls().size() ; n++){
                 list.add(status.getBmiddle_pic()+status.getRetweeted_status().getPic_urls().get(n));
             }
             viewHolder.repostStatusImages.setUrlList(list);
@@ -165,40 +157,54 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
             viewHolder.repostStatusLayout.setVisibility(View.GONE);
         }
 
+        //-------------------------------点击事件[start]--------------------------------------------
+        //微博外部
         viewHolder.statusBody.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                context.startActivity(new Intent(context, StatusActivity.class));
+                Intent intent = new Intent(context, StatusActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putParcelable("status",status);
+                intent.putExtras(bundle);
+                context.startActivity(intent);
             }
         });
+        //微博转发按钮
         viewHolder.statusRepostNum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
             }
         });
+        //微博评论按钮
         viewHolder.statusCommentNum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                context.startActivity(new Intent(context, StatusActivity.class));
+                Intent intent = new Intent(context, StatusActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putParcelable("status",status);
+                intent.putExtras(bundle);
+                context.startActivity(intent);
             }
         });
+        //微博点赞按钮
         viewHolder.statusLikeNum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int like = Integer.parseInt(status.getAttitudes_count());
-                if (status.isLike()){
+                int like = Integer.parseInt(viewHolder.statusLikeNum.getText().toString());
+                if (viewHolder.statusLikeNum.isSelected()){
                     viewHolder.statusLikeNum.setSelected(false);
-                    status.setLike(false);
-                    status.setAttitudes_count(String.valueOf(like - 1));
+                    viewHolder.statusLikeNum.setText(String.valueOf(like - 1));
+                    status.setIsLike(0);
                 }else {
                     viewHolder.statusLikeNum.setSelected(true);
-                    status.setLike(true);
-                    status.setAttitudes_count(String.valueOf(like + 1));
+                    viewHolder.statusLikeNum.setText(String.valueOf(like + 1));
+                    status.setIsLike(1);
                 }
-                notifyDataSetChanged();
+                status.setAttitudes_count(viewHolder.statusLikeNum.getText().toString());
             }
         });
+        //---------------------------------点击事件[end]--------------------------------------------
 
         if (i >= statuses.size()-1){
             isGetBottom = true;

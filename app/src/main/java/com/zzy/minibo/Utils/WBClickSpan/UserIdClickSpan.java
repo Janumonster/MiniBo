@@ -1,6 +1,7 @@
 package com.zzy.minibo.Utils.WBClickSpan;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v4.graphics.ColorUtils;
@@ -10,6 +11,8 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.zzy.minibo.Activities.UserCenterActivity;
+import com.zzy.minibo.Members.User;
 import com.zzy.minibo.R;
 
 public class UserIdClickSpan extends ClickableSpan {
@@ -28,7 +31,9 @@ public class UserIdClickSpan extends ClickableSpan {
         if(widget  instanceof TextView){
             ((TextView)widget).setHighlightColor(Color.TRANSPARENT);
         }
-
+        Intent intent = new Intent(mContext, UserCenterActivity.class);
+        intent.putExtra("user_name",str.substring(1));
+        mContext.startActivity(intent);
         Toast.makeText(mContext, str,Toast.LENGTH_SHORT).show();
     }
 

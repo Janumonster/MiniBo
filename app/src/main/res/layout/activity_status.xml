@@ -34,7 +34,7 @@
             </LinearLayout>
 
             <android.support.v7.widget.Toolbar
-                android:id="@+id/status_toolbar"
+                android:id ="@+id/status_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 app:layout_constraintTop_toTopOf="parent"
@@ -48,20 +48,31 @@
     </android.support.design.widget.AppBarLayout>
 
     <LinearLayout
-        android:id="@+id/status_card"
+        android:id="@+id/comment_card_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintTop_toBottomOf="@id/status_detail_toolbar"
+        app:layout_constraintTop_toBottomOf="@id/status_toolbar"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:background="@color/colorMainDark">
 
+        <TextView
+            android:id="@+id/comment_card_no_comment"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="20dp"
+            android:text="暂无评论！(T＿T)"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:background="#fff"/>
+
         <android.support.v7.widget.RecyclerView
+            android:id="@+id/comment_card_comment_rv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:scrollbars="none">
+            android:scrollbars="none"
+            android:overScrollMode="never">
         </android.support.v7.widget.RecyclerView>
 
     </LinearLayout>

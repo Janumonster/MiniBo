@@ -2,39 +2,17 @@ package com.zzy.minibo.Activities;
 
 import android.Manifest;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
-import com.sina.weibo.sdk.auth.AccessTokenKeeper;
-import com.sina.weibo.sdk.auth.Oauth2AccessToken;
 import com.zzy.minibo.R;
-import com.zzy.minibo.Utils.FilesManager;
-import com.zzy.minibo.Utils.HttpCallBack;
-import com.zzy.minibo.Utils.WBApiConnector;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.litepal.LitePal;
-
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 import pub.devrel.easypermissions.EasyPermissions;
 
-public class LanuchActivity extends BaseActivity implements EasyPermissions.PermissionCallbacks {
+public class LaunchActivity extends BaseActivity implements EasyPermissions.PermissionCallbacks {
 
     public static final String TAG = "Lanuch";
 
@@ -64,8 +42,8 @@ public class LanuchActivity extends BaseActivity implements EasyPermissions.Perm
             @Override
             public void run() {
                 try {
-                    Thread.sleep(3000);
-                    startActivity(new Intent(LanuchActivity.this,AuthActivity.class));
+                    Thread.sleep(1000);
+                    startActivity(new Intent(LaunchActivity.this,AuthActivity.class));
                     finish();
                 } catch (InterruptedException e) {
                     e.printStackTrace();

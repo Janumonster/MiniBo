@@ -1,14 +1,14 @@
 package com.zzy.minibo.MyViews;
 
 import android.content.Context;
-import android.graphics.Bitmap;
+import android.content.Intent;
 import android.util.AttributeSet;
-import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.zzy.minibo.Activities.PicturesActivity;
 import com.zzy.minibo.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class NineGlideView extends NineImageLayout {
@@ -47,7 +47,10 @@ public class NineGlideView extends NineImageLayout {
 
     @Override
     protected void onClickImage(int postion, String url, List<String> urlList) {
-        Toast.makeText(mContext,"点击了第"+postion+"张图片",Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(mContext, PicturesActivity.class);
+        intent.putExtra("currentPosition",postion);
+        intent.putStringArrayListExtra("urls", (ArrayList<String>) urlList);
+        mContext.startActivity(intent);
     }
 
 }

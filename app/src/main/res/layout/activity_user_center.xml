@@ -67,19 +67,19 @@
                     android:text="@string/location"
                     android:textColor="@color/usercenterLightTextColor"
                     android:textSize="15sp"
-                    app:layout_constraintLeft_toLeftOf="@id/uc_tv_user_name"
-                    app:layout_constraintTop_toBottomOf="@id/uc_tv_user_name"/>
+                    app:layout_constraintLeft_toLeftOf="@+id/uc_tv_user_name"
+                    app:layout_constraintTop_toBottomOf="@+id/uc_tv_user_name"/>
 
                 <TextView
-                    android:id="@+id/uc_tv_user_description"
+                    android:id ="@+id/uc_tv_user_description"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="@string/description"
                     android:textColor="#000"
                     android:textSize="15sp"
-                    app:layout_constraintLeft_toLeftOf="@id/uc_tv_user_location_gender"
-                    app:layout_constraintTop_toBottomOf="@id/uc_tv_user_location_gender"/>
+                    app:layout_constraintLeft_toLeftOf="@+id/uc_tv_user_location_gender"
+                    app:layout_constraintTop_toBottomOf="@+id/uc_tv_user_location_gender"/>
 
                 <TextView
                     android:id="@+id/uc_tv_fans"
@@ -89,11 +89,11 @@
                     android:text="@string/fans_cn"
                     android:textColor="@color/usercenterLightTextColor"
                     android:textSize="15sp"
-                    app:layout_constraintLeft_toLeftOf="@id/uc_tv_user_description"
-                    app:layout_constraintTop_toBottomOf="@id/uc_tv_user_description"/>
+                    app:layout_constraintLeft_toLeftOf="@+id/uc_tv_user_description"
+                    app:layout_constraintTop_toBottomOf="@+id/uc_tv_user_description"/>
 
                 <TextView
-                    android:id="@+id/uc_tv_user_followers"
+                    android:id ="@+id/uc_tv_user_followers"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8sp"
@@ -101,11 +101,11 @@
                     android:textSize="15sp"
                     android:textColor="#000"
                     android:textStyle="bold"
-                    app:layout_constraintLeft_toRightOf="@id/uc_tv_fans"
-                    app:layout_constraintBottom_toBottomOf="@id/uc_tv_fans"/>
+                    app:layout_constraintLeft_toRightOf="@+id/uc_tv_fans"
+                    app:layout_constraintBottom_toBottomOf="@+id/uc_tv_fans"/>
 
                 <TextView
-                    android:id="@+id/uc_tv_friends"
+                    android:id ="@+id/uc_tv_friends"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
@@ -113,11 +113,11 @@
                     android:text="@string/friends_cn"
                     android:textColor="@color/usercenterLightTextColor"
                     android:textSize="15sp"
-                    app:layout_constraintLeft_toRightOf="@id/uc_tv_user_followers"
-                    app:layout_constraintBottom_toBottomOf="@id/uc_tv_user_followers"/>
+                    app:layout_constraintLeft_toRightOf="@+id/uc_tv_user_followers"
+                    app:layout_constraintBottom_toBottomOf="@+id/uc_tv_user_followers"/>
 
                 <TextView
-                    android:id="@+id/uc_tv_user_friends"
+                    android:id ="@+id/uc_tv_user_friends"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8sp"
@@ -131,7 +131,7 @@
             </android.support.constraint.ConstraintLayout>
 
             <android.support.v7.widget.Toolbar
-                android:id="@+id/uc_toolbar"
+                android:id ="@+id/uc_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:layout_marginTop="20dp"
@@ -154,7 +154,7 @@
             android:layout_height="match_parent">
 
             <TextView
-                android:id="@+id/uc_tv_status"
+                android:id ="@+id/uc_tv_status"
                 android:layout_width="match_parent"
                 android:layout_height="30dp"
                 android:paddingStart="16dp"
@@ -171,7 +171,7 @@
                 android:id="@+id/uc_rv_status_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/uc_tv_status">
+                app:layout_constraintTop_toBottomOf="@+id/uc_tv_status">
 
             </android.support.v7.widget.RecyclerView>
 

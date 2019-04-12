@@ -384,6 +384,13 @@ public class User extends LitePalSupport implements Parcelable{
             try {
                 JSONObject jsonObject = new JSONObject(json);
                 mUser = makeJsonObjectToUser(jsonObject);
+                if (!LitePal.isExist(LP_USER.class,"uidstr = "+mUser.UID)){
+                    LP_USER lp_user = new LP_USER();
+                    lp_user.setUidstr(mUser.UID);
+                    lp_user.setScreen_name(mUser.screen_name);
+                    lp_user.setJson(json);
+                    lp_user.save();
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -399,6 +406,7 @@ public class User extends LitePalSupport implements Parcelable{
             User mUser = new User();
             try {
                 mUser.setUID(jsonObject.getString("idstr"));
+
                 mUser.setId(jsonObject.getLong("id"));
                 mUser.setDescription(jsonObject.getString("description"));
                 mUser.setScreen_name(jsonObject.getString("screen_name"));
@@ -419,14 +427,12 @@ public class User extends LitePalSupport implements Parcelable{
                 mUser.setStatuses_count(jsonObject.getInt("statuses_count"));
                 mUser.setCreated_at(jsonObject.getString("created_at"));
                 mUser.setFollow_me(jsonObject.getBoolean("follow_me"));
-//                mUser.setLastStatus(jsonObject.getString("status"));
+                mUser.setLastStatus(jsonObject.getString("status"));
                 mUser.setAllow_all_act_msg(jsonObject.getBoolean("allow_all_act_msg"));
                 mUser.setAllow_all_comment(jsonObject.getBoolean("allow_all_comment"));
                 mUser.setGeo_enabled(jsonObject.getBoolean("geo_enabled"));
 //                Log.d(TAG, "getUserInfoFromJSON: " + mUser.toString());
-                if (!LitePal.isExist(User.class,"UID = "+mUser.UID)){
-                    mUser.save();
-                }
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }

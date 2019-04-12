@@ -6,6 +6,7 @@ import android.util.ArrayMap;
 import android.util.Log;
 
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
+import com.zzy.minibo.Utils.AllParams.ParamsOfComments;
 import com.zzy.minibo.Utils.AllParams.ParamsOfStatusTL;
 import com.zzy.minibo.Utils.AllParams.ParamsOfUserInfo;
 import com.zzy.minibo.Utils.AllParams.ParamsOfUserTimeLine;
@@ -32,6 +33,9 @@ public final class WBApiConnector {
     private static final String STATUS_USER_TIMELINE = "https://api.weibo.com/2/statuses/user_timeline.json";
 
     private static final String SHORT_URL_EXPEND = "https://api.weibo.com/2/short_url/expand.json";
+
+    private static final String STATUS_COMMENTS = "https://api.weibo.com/2/comments/show.json";
+
 
     /**
      * 构建get的含参地址
@@ -171,6 +175,42 @@ public final class WBApiConnector {
         }).start();
     }
 
+
+
+    public static void getStatusComments(ParamsOfComments params,final HttpCallBack callBack){
+        final Map<String,String> map = new ArrayMap<>();
+        map.put("source",params.getSource());
+        map.put("access_token",params.getAccess_token());
+        map.put("id",params.getStatusId());
+        map.put("since_id",String.valueOf(params.getSince_id()));
+        map.put("max_id",String.valueOf(params.getMax_id()));
+        map.put("count",String.valueOf(params.getCount()));
+        map.put("page",String.valueOf(params.getPage()));
+        map.put("fliter_by_author",String.valueOf(params.getFliter_by_author()));
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder()
+                        .get()
+                        .url(buildURLWithParams(STATUS_COMMENTS,map))
+                        .build();
+                try {
+                    Response response = client.newCall(request).execute();
+                    if (response != null){
+                        assert response.body() != null;
+                        String str = response.body().string();
+                        callBack.onSuccess(str);
+                    }
+
+                }catch (IOException e) {
+                    callBack.onError(e);
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+    }
 
     public static void getShortUrlType(Oauth2AccessToken accessToken, String url, final HttpCallBack callBack){
         final Map<String,String> map = new ArrayMap<>();

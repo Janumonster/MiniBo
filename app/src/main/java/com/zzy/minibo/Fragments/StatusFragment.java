@@ -1,6 +1,7 @@
 package com.zzy.minibo.Fragments;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +23,7 @@ import com.sina.weibo.sdk.auth.AccessTokenKeeper;
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
 import com.zzy.minibo.Activities.StatusActivity;
 import com.zzy.minibo.Adapter.StatusAdapter;
+import com.zzy.minibo.Members.LP_STATUS;
 import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.Members.StatusTimeLine;
 import com.zzy.minibo.R;
@@ -29,7 +32,6 @@ import com.zzy.minibo.Utils.HttpCallBack;
 import com.zzy.minibo.Utils.WBApiConnector;
 
 import org.litepal.LitePal;
-import org.litepal.exceptions.DataSupportException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +48,6 @@ public class StatusFragment extends Fragment {
 
     private List<Status> statusList = new ArrayList<>();
     private List<Status> statusListCache = new ArrayList<>();
-    private List<Status> statusListFromDB = new ArrayList<>();
     private StatusAdapter statusAdapter;
     private StatusTimeLine statusTimeLine = new StatusTimeLine();
     private Oauth2AccessToken accessToken;
@@ -54,11 +55,11 @@ public class StatusFragment extends Fragment {
     private RecyclerView mStatus_rv;
     private SwipeRefreshLayout swipeRefreshLayout;
     private LinearLayout progress_layout;
+    private Toolbar mToolbar;
 
     private FloatingActionButton floatingMenu;
 
     private boolean isBottom = false;
-    private int page = 1;
 
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler(){
@@ -70,7 +71,6 @@ public class StatusFragment extends Fragment {
                     LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
                     linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
                     mStatus_rv.setLayoutManager(linearLayoutManager);
-                    mStatus_rv.setItemViewCacheSize(RECYCLERVIEW_CACHE_SIZE);
                     mStatus_rv.setAdapter(statusAdapter);
                     break;
                 case MESSAGE_FROM_REFRESH:
@@ -114,8 +114,15 @@ public class StatusFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_status, container, false);
+        mToolbar = view.findViewById(R.id.fg_status_toolbar);
+        mToolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mStatus_rv.smoothScrollToPosition(0);
+            }
+        });
         mStatus_rv = view.findViewById(R.id.fg_status_recyclerview);
         swipeRefreshLayout = view.findViewById(R.id.fg_status_refreshlayout);
         progress_layout = view.findViewById(R.id.fg_status_progressbar);
@@ -123,7 +130,10 @@ public class StatusFragment extends Fragment {
         floatingMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getContext().startActivity(new Intent(getContext(), StatusActivity.class));
+                Context context = getContext();
+                if (context != null){
+                    context.startActivity(new Intent(getContext(), StatusActivity.class));
+                }
             }
         });
         accessToken = AccessTokenKeeper.readAccessToken(getContext());
@@ -166,7 +176,14 @@ public class StatusFragment extends Fragment {
                 public void onSuccess(String response) {
                     statusTimeLine = StatusTimeLine.getStatusesLine(getContext(),response);
                     statusListCache.clear();
-                    statusListCache.addAll(statusTimeLine.getStatuses());
+                    if (statusTimeLine.getStatuses() == null ||statusTimeLine.getStatuses().size() == 0){
+                        List<LP_STATUS> LPSTATUSES = LitePal.offset(statusList.size()).limit(20).find(LP_STATUS.class);
+                        for (LP_STATUS l : LPSTATUSES){
+                            statusListCache.add(Status.getStatusFromJson(l.getJson()));
+                        }
+                    }else {
+                        statusListCache.addAll(statusTimeLine.getStatuses());
+                    }
                     Message message = new Message();
                     message.what = MESSAGE_FROM_GET_MORE;
                     handler.sendMessage(message);
@@ -195,9 +212,13 @@ public class StatusFragment extends Fragment {
                 public void onSuccess(String response) {
                     statusTimeLine = StatusTimeLine.getStatusesLine(getContext(),response);
                     statusList = statusTimeLine.getStatuses();
+                    statusListCache.clear();
                     if (statusList.size() == 0){
-                        statusListFromDB = LitePal.limit(20).find(Status.class);
-                        statusList.addAll(statusListFromDB);
+                        List<LP_STATUS> LPSTATUSES = LitePal.limit(20).find(LP_STATUS.class);
+                        for (LP_STATUS l : LPSTATUSES){
+                            statusListCache.add(Status.getStatusFromJson(l.getJson()));
+                        }
+                        statusList.addAll(statusListCache);
                     }
                     Message message = new Message();
                     message.what = MESSAGE_FROM_INITIAL;
@@ -236,7 +257,6 @@ public class StatusFragment extends Fragment {
                         statusTimeLine = StatusTimeLine.getStatusesLine(getContext(),response);
                         statusListCache.clear();
                         statusListCache.addAll(statusTimeLine.getStatuses());
-                        page = 1;
                         Message message = new Message();
                         message.what = MESSAGE_FROM_REFRESH;
                         handler.sendMessage(message);
@@ -253,4 +273,8 @@ public class StatusFragment extends Fragment {
         });
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
 }

@@ -28,6 +28,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -101,6 +102,7 @@ public class AuthActivity extends BaseActivity {
                         Toast.makeText(AuthActivity.this,"已成功授权",Toast.LENGTH_SHORT).show();
                         getEmotions();
                         startActivity(new Intent(AuthActivity.this,MainActivity.class));
+                        finish();
                     }
                 }
             });

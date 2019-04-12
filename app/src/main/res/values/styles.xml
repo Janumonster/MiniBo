@@ -16,5 +16,9 @@
         <item name="android:maxHeight">60dp</item>
     </style>
 
+    <!--<style name="fade" parent="@android:style/Animation.Activity">-->
+        <!--<item name="android:activityOpenEnterAnimation">@anim/new_act_in</item>-->
+        <!--<item name="android:activityCloseExitAnimation">@anim/new_act_out</item>-->
+    <!--</style>-->
 
 </resources>
