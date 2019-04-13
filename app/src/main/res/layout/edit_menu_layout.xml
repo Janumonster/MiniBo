@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="30dp"
+    android:padding="2dp"
+    android:orientation="horizontal"
+    android:background="#fff">
+
+    <CheckBox
+        android:id="@+id/edit_menu_checkbox"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:text="同时转发"
+        android:textSize="13sp"
+        android:textColor="#8A8A8A"/>
+
+    <ImageView
+        android:id="@+id/edit_menu_photo"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:src="@drawable/ic_insert_photo_grey_500_24dp"/>
+
+    <ImageView
+        android:id="@+id/edit_menu_at"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:src="@drawable/at"/>
+
+</LinearLayout>

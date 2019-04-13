@@ -177,7 +177,7 @@ public class StatusFragment extends Fragment {
                     statusTimeLine = StatusTimeLine.getStatusesLine(getContext(),response);
                     statusListCache.clear();
                     if (statusTimeLine.getStatuses() == null ||statusTimeLine.getStatuses().size() == 0){
-                        List<LP_STATUS> LPSTATUSES = LitePal.offset(statusList.size()).limit(20).find(LP_STATUS.class);
+                        List<LP_STATUS> LPSTATUSES = LitePal.offset(statusList.size()).limit(20).order("idstr desc").find(LP_STATUS.class);
                         for (LP_STATUS l : LPSTATUSES){
                             statusListCache.add(Status.getStatusFromJson(l.getJson()));
                         }
@@ -214,7 +214,7 @@ public class StatusFragment extends Fragment {
                     statusList = statusTimeLine.getStatuses();
                     statusListCache.clear();
                     if (statusList.size() == 0){
-                        List<LP_STATUS> LPSTATUSES = LitePal.limit(20).find(LP_STATUS.class);
+                        List<LP_STATUS> LPSTATUSES = LitePal.limit(20).order("idstr desc").find(LP_STATUS.class);
                         for (LP_STATUS l : LPSTATUSES){
                             statusListCache.add(Status.getStatusFromJson(l.getJson()));
                         }

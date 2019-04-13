@@ -37,6 +37,7 @@ public class CommentAdapter extends RecyclerView.Adapter <CommentAdapter.ViewHol
         TextView commentText;
         TextView createAt;
         TextView likeNum;
+        TextView commentOthers;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -45,6 +46,7 @@ public class CommentAdapter extends RecyclerView.Adapter <CommentAdapter.ViewHol
             commentText = itemView.findViewById(R.id.comment_card_text);
             createAt = itemView.findViewById(R.id.comment_card_create_at);
             likeNum = itemView.findViewById(R.id.comment_card_like);
+            commentOthers = itemView.findViewById(R.id.comment_card_comment);
         }
     }
     @NonNull
@@ -65,12 +67,7 @@ public class CommentAdapter extends RecyclerView.Adapter <CommentAdapter.ViewHol
                     .into(viewHolder.circleImageView);
             viewHolder.userName.setText(user.getScreen_name());
         }
-        viewHolder.commentText.setText(TextFilter.statusTextFliter(mContext, comment.getText(), new StatusTextFliterCallback() {
-            @Override
-            public void callback(String url, boolean isAll) {
-
-            }
-        }));
+        viewHolder.commentText.setText(TextFilter.statusTextFliter(mContext, comment.getText(), null));
         viewHolder.commentText.setMovementMethod(new LinkMovementMethod());
         viewHolder.createAt.setText(TextFilter.TimeFliter(comment.getCreate_at()));
         viewHolder.likeNum.setOnClickListener(new View.OnClickListener() {

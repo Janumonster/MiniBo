@@ -4,14 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activities.PicturesActivity"
+    tools:mContext=".Activities.PicturesActivity"
     android:background="#000000">
-
 
     <com.zzy.minibo.MyViews.PhotoViewPager
         android:id="@+id/pic_viewpager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent">
     </com.zzy.minibo.MyViews.PhotoViewPager>
@@ -25,6 +24,14 @@
         android:textSize="20sp"
         app:layout_constraintTop_toTopOf="@id/pic_viewpager"
         app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+    <Button
+        android:id="@+id/pic_save"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="save"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
 
 </android.support.constraint.ConstraintLayout>

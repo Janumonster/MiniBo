@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activities.StatusActivity"
+    tools:mContext=".Activities.StatusActivity"
     android:background="#fff"
     android:fitsSystemWindows="true">
 
@@ -26,8 +26,9 @@
                 android:layout_marginTop="30dp"
                 android:layout_marginLeft="4dp"
                 android:layout_marginRight="4dp"
+                android:layout_marginBottom="4dp"
                 app:layout_collapseMode="parallax"
-                android:background="#fff">
+                android:background="@color/colorMainDark">
 
                 <include layout="@layout/status_card_layout" />
 
@@ -39,6 +40,7 @@
                 android:layout_height="40dp"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
+                android:background="#fff"
                 app:layout_collapseMode="pin"
                 app:navigationIcon="@drawable/ic_arrow_back_blue_24dp">
             </android.support.v7.widget.Toolbar>
@@ -52,20 +54,34 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:layout_marginBottom="40dp"
         app:layout_constraintTop_toBottomOf="@id/status_toolbar"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:background="@color/colorMainDark">
 
         <TextView
+            android:id="@+id/status_comment_num"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="8dp"
+            android:text="评论(0)"
+            android:textSize="15sp"
+            android:textColor="#000"
+            android:gravity="start|center"
+            android:background="#fff"/>
+
+        <TextView
             android:id="@+id/comment_card_no_comment"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginBottom="8dp"
             android:text="暂无评论！(T＿T)"
             android:textSize="20sp"
             android:gravity="center"
-            android:background="#fff"/>
+            android:background="#fff"
+            android:visibility="gone"/>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/comment_card_comment_rv"
@@ -74,6 +90,49 @@
             android:scrollbars="none"
             android:overScrollMode="never">
         </android.support.v7.widget.RecyclerView>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/status_bottom_menu"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:orientation="horizontal"
+        android:background="@color/colorMainDark"
+        android:layout_gravity="bottom">
+
+        <ImageView
+            android:id="@+id/status_repost"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_launch_grey_500_18dp" />
+
+        <ImageView
+            android:id="@+id/status_comment"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_insert_comment_grey_500_18dp" />
+
+        <ImageView
+            android:id="@+id/status_like"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_favorite" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/status_comment_edit_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="bottom"
+        android:visibility="gone">
+
+        <include layout="@layout/comment_edit_layout"/>
 
     </LinearLayout>
 

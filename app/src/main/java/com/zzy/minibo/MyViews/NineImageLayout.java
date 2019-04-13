@@ -94,7 +94,7 @@ public abstract class NineImageLayout extends ViewGroup {
             LayoutParams params = getLayoutParams();
             params.height = mSingleWidth;
             setLayoutParams(params);
-            clickImageView.layout(0,0,mSingleWidth,mSingleWidth);
+            clickImageView.layout(0, 0, mSingleWidth, mSingleWidth);
 
             boolean isShowDefult = displayOneImage(clickImageView,url,mTotalWidh);
             if (isShowDefult){

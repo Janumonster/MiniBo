@@ -89,7 +89,7 @@ public class ParamsOfComments {
         this.fliter_by_author = fliter_by_author;
     }
 
-    public  static class Builder{
+    public static class Builder{
 
         String access_token = null;
         String statusId = null;

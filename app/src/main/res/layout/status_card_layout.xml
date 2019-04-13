@@ -81,7 +81,7 @@
                     android:lineSpacingExtra="4dp"
                     android:text="@string/status_text"
                     android:textColor="#000"
-                    android:textSize="13sp"/>
+                    android:textSize="14sp"/>
 
                 <com.zzy.minibo.MyViews.NineGlideView
                     android:id="@+id/status_card_images"
@@ -113,7 +113,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="4dp"
-                        android:textSize="15sp"
+                        android:textSize="14sp"
                         android:textStyle="bold"
                         android:gravity="start|center"/>
 

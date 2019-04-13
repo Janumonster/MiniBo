@@ -34,12 +34,12 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
     public static final String TAG = "StatusAdapter";
 
     private List<Status> statuses;
-    private Context context;
+    private Context mContext;
     private boolean isGetBottom = false;
 
-    public StatusAdapter(List<Status> statuses,Context context){
+    public StatusAdapter(List<Status> statuses,Context mContext){
         this.statuses = statuses;
-        this.context = context;
+        this.mContext = mContext;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder{
@@ -83,7 +83,7 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
     @Override
     public StatusAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         ViewHolder viewHolder = null;
-        View view = LayoutInflater.from(context).inflate(R.layout.status_card_layout,viewGroup,false);
+        View view = LayoutInflater.from(mContext).inflate(R.layout.status_card_layout,viewGroup,false);
         viewHolder = new ViewHolder(view);
         return viewHolder;
     }
@@ -92,13 +92,13 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
     public void onBindViewHolder(@NonNull final StatusAdapter.ViewHolder viewHolder, int i) {
         final Status status = statuses.get(i);
         if (status.getUser() != null){
-            Glide.with(context).load(status.getUser().getAvatar_large()).into(viewHolder.userImage);
+            Glide.with(mContext).load(status.getUser().getAvatar_large()).into(viewHolder.userImage);
             viewHolder.userName.setText(status.getUser().getScreen_name());
         }
 
         viewHolder.createTime.setText(TextFilter.TimeFliter(status.getCreated_at()));
         //待修改
-        viewHolder.statusText.setText(TextFilter.statusTextFliter(context, status.getText(), new StatusTextFliterCallback() {
+        viewHolder.statusText.setText(TextFilter.statusTextFliter(mContext, status.getText(), new StatusTextFliterCallback() {
             @Override
             public void callback(String url, boolean isAll) {
                 status.setTruncated(isAll);
@@ -128,19 +128,19 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
             viewHolder.repostStatusLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(context, StatusActivity.class);
+                    Intent intent = new Intent(mContext, StatusActivity.class);
                     Bundle bundle = new Bundle();
                     bundle.putParcelable("status",repost_status);
                     intent.putExtras(bundle);
-                    context.startActivity(intent);
+                    mContext.startActivity(intent);
                 }
             });
-            UserIdClickSpan userIdClickSpan = new UserIdClickSpan(context,"@"+status.getRetweeted_status().getUser().getScreen_name());
+            UserIdClickSpan userIdClickSpan = new UserIdClickSpan(mContext,status.getRetweeted_status().getUser().getScreen_name());
             SpannableString spannableString = new SpannableString("@"+status.getRetweeted_status().getUser().getScreen_name());
             spannableString.setSpan(userIdClickSpan,0,spannableString.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
             viewHolder.repostUsername.setText(spannableString);
             viewHolder.repostUsername.setMovementMethod(LinkMovementMethod.getInstance());
-            viewHolder.repostStatusText.setText(TextFilter.statusTextFliter(context, repost_status.getText(), new StatusTextFliterCallback() {
+            viewHolder.repostStatusText.setText(TextFilter.statusTextFliter(mContext, repost_status.getText(), new StatusTextFliterCallback() {
                 @Override
                 public void callback(String url,boolean isAll) {
                     status.setTruncated(isAll);
@@ -162,11 +162,11 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
         viewHolder.statusBody.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context, StatusActivity.class);
+                Intent intent = new Intent(mContext, StatusActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putParcelable("status",status);
                 intent.putExtras(bundle);
-                context.startActivity(intent);
+                mContext.startActivity(intent);
             }
         });
         //微博转发按钮
@@ -180,11 +180,11 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
         viewHolder.statusCommentNum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context, StatusActivity.class);
+                Intent intent = new Intent(mContext, StatusActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putParcelable("status",status);
                 intent.putExtras(bundle);
-                context.startActivity(intent);
+                mContext.startActivity(intent);
             }
         });
         //微博点赞按钮

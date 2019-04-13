@@ -383,7 +383,7 @@ public class User extends LitePalSupport implements Parcelable{
             User mUser = new User();
             try {
                 JSONObject jsonObject = new JSONObject(json);
-                mUser = makeJsonObjectToUser(jsonObject);
+                mUser.setUID(jsonObject.getString("idstr"));
                 if (!LitePal.isExist(LP_USER.class,"uidstr = "+mUser.UID)){
                     LP_USER lp_user = new LP_USER();
                     lp_user.setUidstr(mUser.UID);
@@ -391,22 +391,6 @@ public class User extends LitePalSupport implements Parcelable{
                     lp_user.setJson(json);
                     lp_user.save();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return mUser;
-        }else {
-            return null;
-        }
-    }
-
-
-    public static User makeJsonObjectToUser(JSONObject jsonObject){
-        if (null != jsonObject) {
-            User mUser = new User();
-            try {
-                mUser.setUID(jsonObject.getString("idstr"));
-
                 mUser.setId(jsonObject.getLong("id"));
                 mUser.setDescription(jsonObject.getString("description"));
                 mUser.setScreen_name(jsonObject.getString("screen_name"));
@@ -432,7 +416,6 @@ public class User extends LitePalSupport implements Parcelable{
                 mUser.setAllow_all_comment(jsonObject.getBoolean("allow_all_comment"));
                 mUser.setGeo_enabled(jsonObject.getBoolean("geo_enabled"));
 //                Log.d(TAG, "getUserInfoFromJSON: " + mUser.toString());
-
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -441,4 +424,5 @@ public class User extends LitePalSupport implements Parcelable{
             return null;
         }
     }
+
 }

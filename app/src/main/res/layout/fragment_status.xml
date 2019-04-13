@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Fragments.StatusFragment">
+    tools:mContext=".Fragments.StatusFragment">
 
     <!--<LinearLayout-->
         <!--android:statusId="@+statusId/fg_status_toolbar"-->

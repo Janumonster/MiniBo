@@ -7,9 +7,11 @@ import android.util.Log;
 
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
 import com.zzy.minibo.Utils.AllParams.ParamsOfComments;
+import com.zzy.minibo.Utils.AllParams.ParamsOfCreateComment;
 import com.zzy.minibo.Utils.AllParams.ParamsOfStatusTL;
 import com.zzy.minibo.Utils.AllParams.ParamsOfUserInfo;
 import com.zzy.minibo.Utils.AllParams.ParamsOfUserTimeLine;
+import com.zzy.minibo.WBListener.PicDownloadCallback;
 
 import java.io.IOException;
 import java.util.Map;
@@ -35,6 +37,8 @@ public final class WBApiConnector {
     private static final String SHORT_URL_EXPEND = "https://api.weibo.com/2/short_url/expand.json";
 
     private static final String STATUS_COMMENTS = "https://api.weibo.com/2/comments/show.json";
+
+    private static final String COMMENT_CREATE = "https://api.weibo.com/2/comments/create.json";
 
 
     /**
@@ -87,11 +91,10 @@ public final class WBApiConnector {
                     Response response = client.newCall(request).execute();
                     if (response.isSuccessful()){
                         String str = response.body().string();
-                        Log.d(TAG, "run: "+str);
                         callBack.onSuccess(str);
                     }
                 } catch (IOException e) {
-                    callBack.onError(e);
+
                     e.printStackTrace();
                 }
             }
@@ -175,8 +178,11 @@ public final class WBApiConnector {
         }).start();
     }
 
-
-
+    /**
+     * 获取某条微博的评论列表
+     * @param params
+     * @param callBack
+     */
     public static void getStatusComments(ParamsOfComments params,final HttpCallBack callBack){
         final Map<String,String> map = new ArrayMap<>();
         map.put("source",params.getSource());
@@ -210,6 +216,40 @@ public final class WBApiConnector {
             }
         }).start();
 
+    }
+
+    /**g
+     * 发布一条评论
+     * @param params
+     * @param callBack
+     */
+
+    public static void createComment(ParamsOfCreateComment params,final HttpCallBack callBack){
+        final Map<String,String> map = new ArrayMap<>();
+        map.put("source",params.getSource());
+        map.put("access_token",params.getAccess_token());
+        map.put("comment",params.getComment());
+        map.put("id",params.getIdstr());
+        map.put("comment_ori",String.valueOf(params.getComment_ori()));
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder()
+                        .get()
+                        .url(buildURLWithParams(COMMENT_CREATE,map))
+                        .build();
+
+                try {
+                    Response response = client.newCall(request).execute();
+                    if (request != null){
+                        callBack.onSuccess(response.body().string());
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     public static void getShortUrlType(Oauth2AccessToken accessToken, String url, final HttpCallBack callBack){
@@ -258,6 +298,32 @@ public final class WBApiConnector {
                     }
                 } catch (IOException e) {
                     callBack.onError(e);
+                    e.printStackTrace();
+                }
+
+
+            }
+        }).start();
+    }
+
+    /**
+     * 图片下载
+     */
+    public static void downloadImage(final String url, final PicDownloadCallback callBack){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OkHttpClient okHttpClient = new OkHttpClient();
+                Request request = new Request.Builder()
+                        .url(url)
+                        .build();
+                Response response = null;
+                try {
+                    response = okHttpClient.newCall(request).execute();
+                    if (response != null){
+                        callBack.callback(response.body().byteStream());
+                    }
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
 

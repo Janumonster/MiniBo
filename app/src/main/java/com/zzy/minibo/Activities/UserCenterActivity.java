@@ -120,12 +120,16 @@ public class UserCenterActivity extends BaseActivity {
     }
 
     private void initData(){
-//        if (mUser == null){
-//            List<LP_USER> lp_users = LitePal.where("screen_name = ?",mIntent.getStringExtra("user_name")).find(LP_USER.class);
-//            for (LP_USER lp_user : lp_users){
-//                mUser = User.makeJsonToUser(lp_user.getJson());
-//            }
-//        }
+
+        if (mUser == null){
+            String user_name = mIntent.getStringExtra("user_name");
+            if (user_name != null){
+                List<LP_USER> lp_users = LitePal.where("screen_name = ?",user_name).find(LP_USER.class);
+                for (LP_USER lp_user : lp_users){
+                    mUser = User.makeJsonToUser(lp_user.getJson());
+                }
+            }
+        }
         if (mUser != null){
             Glide.with(this)
                     .load(mUser.getAvatar_large())

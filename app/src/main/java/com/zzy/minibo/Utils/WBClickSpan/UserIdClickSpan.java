@@ -32,7 +32,7 @@ public class UserIdClickSpan extends ClickableSpan {
             ((TextView)widget).setHighlightColor(Color.TRANSPARENT);
         }
         Intent intent = new Intent(mContext, UserCenterActivity.class);
-        intent.putExtra("user_name",str.substring(1));
+        intent.putExtra("user_name",str);
         mContext.startActivity(intent);
         Toast.makeText(mContext, str,Toast.LENGTH_SHORT).show();
     }

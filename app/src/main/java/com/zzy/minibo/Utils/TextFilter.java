@@ -1,12 +1,12 @@
 package com.zzy.minibo.Utils;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.format.Time;
 import android.util.Log;
 
 import com.zzy.minibo.WBListener.StatusTextFliterCallback;
@@ -63,7 +63,6 @@ public final class TextFilter {
                         id_start++;
                     }
                     StringBuilder username = new StringBuilder();
-                    username.append("@");
                     while ( !isSpecialChar(String.valueOf(text.charAt(id_start)))){
                         username.append(text.charAt(id_start));
                         if (id_start < text.length() - 1){
@@ -76,8 +75,8 @@ public final class TextFilter {
                     }
                     if (username.length() > 1 && !isSpecialChar(username.toString())){
                         UserIdClickSpan userIdClickSpan_name = new UserIdClickSpan(context,username.toString());
-                        SpannableString spannableUsername = new SpannableString(username.toString());
-                        spannableUsername.setSpan(userIdClickSpan_name,0,username.toString().length(),Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                        SpannableString spannableUsername = new SpannableString("@"+username.toString());
+                        spannableUsername.setSpan(userIdClickSpan_name,0,username.toString().length()+1,Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                         spannableStringBuilder.append(spannableUsername);
                         if (id_start != text.length()-1){
                             spannableStringBuilder.append(text.charAt(id_start));
@@ -157,7 +156,9 @@ public final class TextFilter {
                             SpannableString spannableStringDetial = new SpannableString("全文");
                             spannableStringDetial.setSpan(statusDetialClickSpan,0,2,Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                             spannableStringBuilder.append(spannableStringDetial);
-                            callback.callback(matcher_long.group(0),true);
+                            if (callback != null){
+                                callback.callback(matcher_long.group(0),true);
+                            }
                             i = text.length();
                         }else {
                             spannableStringBuilder.append(text.charAt(i));
@@ -177,40 +178,47 @@ public final class TextFilter {
 
     /**
      * 时间过滤器
+     * Sun_Apr_07_19:46:42_+0800_2019
      */
-    public static String TimeFliter(String time){
+    public static String TimeFliter(String statusTime){
+        Log.d("TimeFliter",statusTime);
         StringBuilder stringBuilder = new StringBuilder();
+        long t = System.currentTimeMillis();
+        Time time = new Time();
+        time.setToNow();
         Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(t);
         int year = calendar.get(Calendar.YEAR);
-        int mYear = Integer.valueOf(time.substring(26));
+        int mYear = Integer.valueOf(statusTime.substring(26));
         if (year >= mYear + 1){
             stringBuilder.append(mYear).append("-");
-            stringBuilder.append(getMonth(time.substring(4,7))).append("-").append(Integer.valueOf(time.substring(8,10)));
+            stringBuilder.append(getMonth(statusTime.substring(4,7))).append("-").append(statusTime.substring(8,10));
             Log.d("TimeFliter ", "一年前："+stringBuilder.toString());
             return stringBuilder.toString();
         }else {
-            int month = calendar.get(Calendar.MONTH);
-            int mMonth = getMonth(time.substring(4,7));
+            int month = calendar.get(Calendar.MONTH)+1;
+            int mMonth = getMonth(statusTime.substring(4,7));
+            Log.d("TimeFliter ", "month = "+mMonth+statusTime.substring(4,7)+month);
             if (month >= mMonth + 1){
-                stringBuilder.append(mMonth).append("-").append(Integer.valueOf(time.substring(8,10)));
+                stringBuilder.append(mMonth).append("-").append(statusTime.substring(8,10)).append(" ").append(statusTime.substring(11,16));
                 Log.d("TimeFliter ", "一个月前："+stringBuilder.toString());
                 return stringBuilder.toString();
             }else {
                 int day = calendar.get(Calendar.DAY_OF_MONTH);
-                int mDay = Integer.valueOf(time.substring(8,10));
+                int mDay = Integer.valueOf(statusTime.substring(8,10));
                 if (day > mDay + 1){
-                    stringBuilder.append(getMonth(time.substring(4,7))).append("-").append(mDay);
+                    stringBuilder.append(mMonth).append("-").append(statusTime.substring(8,10)).append(" ").append(statusTime.substring(11,16));
                     Log.d("TimeFliter ", "2天前："+stringBuilder.toString());
                     return stringBuilder.toString();
                 } else if(day == mDay + 1){
-                    stringBuilder.append("昨天 ").append(time.substring(11,16));
+                    stringBuilder.append("昨天 ").append(statusTime.substring(11,16));
                     Log.d("TimeFliter ", "1天前，不超过2天："+stringBuilder.toString());
                     return stringBuilder.toString();
                 } else {
                     int hour = calendar.get(Calendar.HOUR_OF_DAY);
-                    int mHour = Integer.valueOf(time.substring(11,13));
+                    int mHour = Integer.valueOf(statusTime.substring(11,13));
                     int minute = calendar.get(Calendar.MINUTE);
-                    int mMinute = Integer.valueOf(time.substring(14,16));
+                    int mMinute = Integer.valueOf(statusTime.substring(14,16));
 
                     int totalTime = hour * 60 + minute;
                     int mTotalTime = mHour * 60 + mMinute;

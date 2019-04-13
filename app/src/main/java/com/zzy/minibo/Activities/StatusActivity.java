@@ -3,6 +3,7 @@ package com.zzy.minibo.Activities;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -14,6 +15,10 @@ import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -27,7 +32,9 @@ import com.zzy.minibo.Members.User;
 import com.zzy.minibo.MyViews.NineGlideView;
 import com.zzy.minibo.R;
 import com.zzy.minibo.Utils.AllParams.ParamsOfComments;
+import com.zzy.minibo.Utils.AllParams.ParamsOfCreateComment;
 import com.zzy.minibo.Utils.HttpCallBack;
+import com.zzy.minibo.Utils.KeyBoardManager;
 import com.zzy.minibo.Utils.TextFilter;
 import com.zzy.minibo.Utils.WBApiConnector;
 import com.zzy.minibo.Utils.WBClickSpan.UserIdClickSpan;
@@ -38,6 +45,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.litepal.LitePal;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +57,16 @@ public class StatusActivity extends BaseActivity {
     private static final String TAG = StatusActivity.class.getSimpleName();
 
     private static final int GET_COMMENTS_FIRST = 0;
+    private static final int CREATE_COMMENT_SUCCESS = 1;
 
+
+    private Oauth2AccessToken accessToken;
+
+    private Toolbar toolbar;
+
+    //微博内容相关
+    private Status mStatus;
+    private User mUser;
     private CircleImageView mUserIcon;
     private TextView mUserName;
     private TextView mCreateTime;
@@ -59,17 +77,30 @@ public class StatusActivity extends BaseActivity {
     private TextView mRepostStatusText;
     private NineGlideView mRepostStatusPictures;
     private LinearLayout mStatusBottomLayout;
-//    private TextView mRepost;
-//    private TextView mComments;
-//    private TextView mLikes;
-    private Toolbar toolbar;
+
+    //底部菜单
+    private ImageView mRepost;
+    private ImageView mComments;
+    private ImageView mLikes;
+
+    //评论列表
+    private TextView mCommentsNum;
     private TextView noCommentText;
-
-    private Status mStatus;
-
     private List<Comment> commentList = new ArrayList<>();
     private RecyclerView commentCardRV;
     private CommentAdapter commentAdapter;
+
+    //编辑
+    private LinearLayout commentEditLayout;
+    private ImageButton commentSendBtn;
+    private EditText commentEditView;
+    private TextView commentEditOthers;
+    //编辑菜单
+    private CheckBox isRepostCheckBox;
+    private ImageView editMenu_photo;
+    private ImageView editMenu_at;
+
+
 
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler(){
@@ -77,7 +108,14 @@ public class StatusActivity extends BaseActivity {
         public void handleMessage(Message msg) {
             switch (msg.what){
                 case GET_COMMENTS_FIRST:
-                    if (commentList.size() != 0)noCommentText.setVisibility(View.GONE);
+                    if (commentList.size() == 0){
+                        noCommentText.setVisibility(View.VISIBLE);
+                    }else {
+                        noCommentText.setVisibility(View.GONE);
+                    }
+                    commentAdapter.notifyDataSetChanged();
+                    break;
+                case CREATE_COMMENT_SUCCESS:
                     commentAdapter.notifyDataSetChanged();
                     break;
             }
@@ -87,8 +125,10 @@ public class StatusActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setStatusBarColor(Color.WHITE);
         setContentView(R.layout.activity_status);
         LitePal.getDatabase();
+        accessToken = AccessTokenKeeper.readAccessToken(this);
         initView();
         initData();
     }
@@ -115,7 +155,7 @@ public class StatusActivity extends BaseActivity {
      * @param mStatus
      */
     private void initStatus(final Context context, final Status mStatus) {
-        final User mUser = mStatus.getUser();
+        mUser = mStatus.getUser();
         if (mUser != null){
             Glide.with(this)
                     .load(mUser.getAvatar_large())
@@ -180,31 +220,24 @@ public class StatusActivity extends BaseActivity {
                 mRepostStatusPictures.setVisibility(View.VISIBLE);
                 List<String> urls_repost = new ArrayList<>();
                 for (int m = 0;m < repostStatus.getPic_urls().size();m++){
-                    urls_repost.add(repostStatus.getThumbnail_pic()+repostStatus.getPic_urls().get(m));
+                    urls_repost.add(repostStatus.getBmiddle_pic()+repostStatus.getPic_urls().get(m));
                 }
                 mRepostStatusPictures.setUrlList(urls_repost);
             }
         }
 
-//        mRepost.setText(TextFilter.NumberFliter(mStatus.getReposts_count()));
-//        mComments.setText(TextFilter.NumberFliter(mStatus.getComments_count()));
-//        if (mStatus.getIsLike() == 1){
-//            mLikes.setSelected(true);
-//        }
-//        mLikes.setText(TextFilter.NumberFliter(mStatus.getAttitudes_count()));
-//        mLikes.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                int num = Integer.parseInt(mStatus.getAttitudes_count());
-//                if (mLikes.isSelected()){
-//                    mLikes.setSelected(false);
-//                    mLikes.setText(num);
-//                }else {
-//                    mLikes.setSelected(true);
-//                    mLikes.setText(String.valueOf(num + 1));
-//                }
-//            }
-//        });
+
+        mCommentsNum.setText("全部评论("+TextFilter.NumberFliter(mStatus.getComments_count())+")");
+        mLikes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mLikes.isSelected()){
+                    mLikes.setSelected(false);
+                }else {
+                    mLikes.setSelected(true);
+                }
+            }
+        });
         getCommentData();
     }
 
@@ -212,7 +245,6 @@ public class StatusActivity extends BaseActivity {
      * 初始化评论数据
      */
     private void getCommentData() {
-        Oauth2AccessToken accessToken = AccessTokenKeeper.readAccessToken(this);
         ParamsOfComments paramsOfComments = new ParamsOfComments.Builder()
                 .access_token(accessToken.getToken())
                 .statusId(mStatus.getIdstr())
@@ -246,6 +278,7 @@ public class StatusActivity extends BaseActivity {
      * 初始化控件
      */
     private void initView() {
+
         mUserIcon = findViewById(R.id.status_card_user_icon);
         mUserName = findViewById(R.id.status_card_user_name);
         mCreateTime = findViewById(R.id.status_card_create_at);
@@ -259,9 +292,20 @@ public class StatusActivity extends BaseActivity {
 
         mStatusBottomLayout = findViewById(R.id.status_card_ll);
         mStatusBottomLayout.setVisibility(View.GONE);
-//        mRepost = findViewById(R.id.status_card_repost);
-//        mComments = findViewById(R.id.status_card_comment);
-//        mLikes = findViewById(R.id.status_card_like);
+
+        //底部菜单
+        mRepost = findViewById(R.id.status_repost);
+        mComments = findViewById(R.id.status_comment);
+        mComments.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                commentEditView.setHint("回复@"+mUser.getScreen_name()+":");
+                commentEditLayout.setVisibility(View.VISIBLE);
+                KeyBoardManager.showKeyBoard(getBaseContext(),commentEditView);
+            }
+        });
+        mLikes = findViewById(R.id.status_like);
+
         toolbar = findViewById(R.id.status_toolbar);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -269,6 +313,8 @@ public class StatusActivity extends BaseActivity {
                 finish();
             }
         });
+
+        //评论
         commentCardRV = findViewById(R.id.comment_card_comment_rv);
         commentAdapter = new CommentAdapter(this,commentList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -276,5 +322,55 @@ public class StatusActivity extends BaseActivity {
         commentCardRV.setLayoutManager(linearLayoutManager);
         commentCardRV.setAdapter(commentAdapter);
         noCommentText = findViewById(R.id.comment_card_no_comment);
+        if (commentList.size() == 0){
+            noCommentText.setVisibility(View.VISIBLE);
+        }
+        mCommentsNum = findViewById(R.id.status_comment_num);
+
+        //编辑
+        commentEditLayout = findViewById(R.id.status_comment_edit_layout);
+        commentSendBtn = findViewById(R.id.comment_edit_send);
+        commentSendBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    ParamsOfCreateComment paramsOfCreateComment = new ParamsOfCreateComment.Builder()
+                            .access_token(accessToken.getToken())
+                            .comment(URLEncoder.encode(commentEditView.getText().toString(), "UTF-8"))
+                            .idstr(mStatus.getIdstr())
+                            .build();
+                    WBApiConnector.createComment(paramsOfCreateComment, new HttpCallBack() {
+                        @Override
+                        public void onSuccess(String response) {
+                            Comment comment = Comment.getCommentsFromJson(response);
+                            commentList.add(0,comment);
+                            Message message = new Message();
+                            message.what = CREATE_COMMENT_SUCCESS;
+                            handler.sendMessage(message);
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+
+                        }
+                    });
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        commentEditView = findViewById(R.id.comment_edit);
+        commentEditOthers = findViewById(R.id.comment_edit_others);
+        commentEditOthers.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                commentEditLayout.setVisibility(View.GONE);
+                KeyBoardManager.hideKeyBoard(getBaseContext(),commentEditView);
+            }
+        });
+        isRepostCheckBox = findViewById(R.id.edit_menu_checkbox);
+        editMenu_photo = findViewById(R.id.edit_menu_photo);
+        editMenu_at = findViewById(R.id.edit_menu_at);
+
     }
 }
