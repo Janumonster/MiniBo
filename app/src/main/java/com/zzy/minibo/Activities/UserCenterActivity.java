@@ -5,9 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -22,7 +19,6 @@ import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.Members.StatusTimeLine;
 import com.zzy.minibo.Members.User;
 import com.zzy.minibo.R;
-import com.zzy.minibo.Utils.AllParams.ParamsOfUserInfo;
 import com.zzy.minibo.Utils.AllParams.ParamsOfUserTimeLine;
 import com.zzy.minibo.Utils.HttpCallBack;
 import com.zzy.minibo.Utils.TextFilter;
@@ -33,6 +29,9 @@ import org.litepal.LitePal;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class UserCenterActivity extends BaseActivity {
@@ -114,7 +113,7 @@ public class UserCenterActivity extends BaseActivity {
         });
         statusAdapter = new StatusAdapter(statusList,this);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
         mUserStatus_rv.setLayoutManager(linearLayoutManager);
         mUserStatus_rv.setAdapter(statusAdapter);
     }

@@ -8,17 +8,15 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zzy.minibo.Adapter.PhotoViewAdapter;
 import com.zzy.minibo.MyViews.PhotoViewPager;
 import com.zzy.minibo.R;
-import com.zzy.minibo.Utils.FilesManager;
 import com.zzy.minibo.Utils.WBApiConnector;
 import com.zzy.minibo.WBListener.PicDownloadCallback;
 
@@ -29,6 +27,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import androidx.viewpager.widget.ViewPager;
 
 public class PicturesActivity extends BaseActivity {
 
@@ -43,7 +43,7 @@ public class PicturesActivity extends BaseActivity {
 
     private TextView picCountText_tv;
     private int postion = 0;
-    private Button button;
+    private ImageButton downloadButton;
 
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler(){
@@ -51,7 +51,10 @@ public class PicturesActivity extends BaseActivity {
         public void handleMessage(Message msg) {
             switch (msg.what){
                 case 0:
-                    Toast.makeText(getApplicationContext(),"已保存",Toast.LENGTH_SHORT).show();
+                    String path = (String) msg.obj;
+                    Toast toast = Toast.makeText(getApplicationContext(),null,Toast.LENGTH_SHORT);
+                    toast.setText("已保存到："+path);
+                    toast.show();
                     break;
             }
         }
@@ -65,8 +68,8 @@ public class PicturesActivity extends BaseActivity {
         setContentView(R.layout.activity_pictures);
         viewPager = findViewById(R.id.pic_viewpager);
         picCountText_tv = findViewById(R.id.pic_count_text);
-        button = findViewById(R.id.pic_save);
-        button.setOnClickListener(new View.OnClickListener() {
+        downloadButton = findViewById(R.id.pic_save);
+        downloadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 downloafpic(mPicturesUrls.get(postion));
@@ -120,17 +123,20 @@ public class PicturesActivity extends BaseActivity {
                 try {
                     Bitmap bitmap = BitmapFactory.decodeStream(in);
                     in.close();
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+                    @SuppressLint("SimpleDateFormat")
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy_MMdd_HHmmss");
                     Date date = new Date(System.currentTimeMillis());
-                    FileOutputStream fileOutputStream = new FileOutputStream(path+simpleDateFormat.format(date)+".jpg");
+                    FileOutputStream fileOutputStream = new FileOutputStream(path+"MB_"+simpleDateFormat.format(date)+".jpg");
                     bitmap.compress(Bitmap.CompressFormat.JPEG,100,fileOutputStream);
                     fileOutputStream.close();
+                    Message message = new Message();
+                    message.what = 0;
+                    message.obj = path+"MB_"+simpleDateFormat.format(date)+".jpg";
+                    handler.sendMessage(message);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                Message message = new Message();
-                message.what = 0;
-                handler.sendMessage(message);
+
             }
         });
     }

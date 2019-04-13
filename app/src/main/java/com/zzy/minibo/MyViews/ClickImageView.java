@@ -1,5 +1,6 @@
 package com.zzy.minibo.MyViews;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
@@ -11,9 +12,9 @@ import android.widget.ImageView;
 
 import com.zzy.minibo.R;
 
-public class ClickImageView extends android.support.v7.widget.AppCompatImageView {
 
-
+@SuppressLint("AppCompatCustomView")
+public class ClickImageView extends ImageView {
 
     //宽高比例
     private float mRatio = 0f;

@@ -2,7 +2,6 @@ package com.zzy.minibo.Activities;
 
 import android.Manifest;
 import android.content.Intent;
-import android.support.annotation.NonNull;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -10,11 +9,10 @@ import com.zzy.minibo.R;
 
 import java.util.List;
 
+import androidx.annotation.NonNull;
 import pub.devrel.easypermissions.EasyPermissions;
 
 public class LaunchActivity extends BaseActivity implements EasyPermissions.PermissionCallbacks {
-
-    public static final String TAG = "Lanuch";
 
     //所需权限
     private String[] permissions = {

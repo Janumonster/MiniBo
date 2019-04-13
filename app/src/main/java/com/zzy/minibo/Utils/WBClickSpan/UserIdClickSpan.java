@@ -3,8 +3,6 @@ package com.zzy.minibo.Utils.WBClickSpan;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.support.annotation.NonNull;
-import android.support.v4.graphics.ColorUtils;
 import android.text.TextPaint;
 import android.text.style.ClickableSpan;
 import android.view.View;
@@ -14,6 +12,8 @@ import android.widget.Toast;
 import com.zzy.minibo.Activities.UserCenterActivity;
 import com.zzy.minibo.Members.User;
 import com.zzy.minibo.R;
+
+import androidx.annotation.NonNull;
 
 public class UserIdClickSpan extends ClickableSpan {
 

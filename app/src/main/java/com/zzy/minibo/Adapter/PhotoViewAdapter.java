@@ -1,26 +1,15 @@
 package com.zzy.minibo.Adapter;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Environment;
-import android.support.annotation.NonNull;
-import android.support.v4.view.PagerAdapter;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.github.chrisbanes.photoview.PhotoView;
 import com.zzy.minibo.R;
-import com.zzy.minibo.Utils.FilesManager;
-import com.zzy.minibo.Utils.WBApiConnector;
-import com.zzy.minibo.WBListener.PicDownloadCallback;
-import com.zzy.minibo.WBListener.SimpleCallback;
-
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.viewpager.widget.PagerAdapter;
 
 public class PhotoViewAdapter extends PagerAdapter {
 
@@ -39,11 +28,12 @@ public class PhotoViewAdapter extends PagerAdapter {
     @NonNull
     @Override
     public Object instantiateItem(@NonNull final ViewGroup container, int position) {
-        final String url = pics.get(position);
+        final String uri = pics.get(position);
         final PhotoView photoView = new PhotoView(mActivity);
+
         Glide.with(mActivity)
-                .asBitmap()
-                .load(url)
+                .load(uri)
+                .placeholder(R.drawable.loading_drawable)
                 .into(photoView);
         container.addView(photoView);
 

@@ -1,21 +1,20 @@
 package com.zzy.minibo.Activities;
 
+import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-/**
- * ID命名格式：活动名（碎片名）大字母缩写_控件类型（大字母缩写）_控件名
- * 成员变量：m+变量名_变量类型
- */
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
+@SuppressLint("Registered")
 public class BaseActivity extends AppCompatActivity {
 
+    @SuppressLint("ObsoleteSdkInt")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){

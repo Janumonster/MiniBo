@@ -1,14 +1,15 @@
 package com.zzy.minibo.Adapter;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.zzy.minibo.Members.Status;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class StatusPicturesAdapter extends RecyclerView.Adapter<StatusPicturesAdapter.ViewHolder> {
 

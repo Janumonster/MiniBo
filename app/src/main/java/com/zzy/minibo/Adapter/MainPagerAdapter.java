@@ -1,11 +1,11 @@
 package com.zzy.minibo.Adapter;
 
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-
 import java.util.List;
+
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
 
 /**
  * 主界面Viewpager的适配器
@@ -15,7 +15,7 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
     private List<Fragment> fragments;
     private List<String> titles;
 
-    public MainPagerAdapter(FragmentManager fm,List<Fragment> fragments){
+    public MainPagerAdapter(FragmentManager fm, List<Fragment> fragments){
         super(fm);
         this.fragments = fragments;
     }

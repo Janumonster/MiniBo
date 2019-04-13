@@ -1,8 +1,6 @@
 package com.zzy.minibo.Adapter;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,10 +12,11 @@ import com.zzy.minibo.Members.Comment;
 import com.zzy.minibo.Members.User;
 import com.zzy.minibo.R;
 import com.zzy.minibo.Utils.TextFilter;
-import com.zzy.minibo.WBListener.StatusTextFliterCallback;
 
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class CommentAdapter extends RecyclerView.Adapter <CommentAdapter.ViewHolder> {

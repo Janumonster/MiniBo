@@ -7,9 +7,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
@@ -50,6 +47,9 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class StatusActivity extends BaseActivity {
@@ -151,8 +151,6 @@ public class StatusActivity extends BaseActivity {
 
     /**
      * 初始化微博数据
-     * @param context
-     * @param mStatus
      */
     private void initStatus(final Context context, final Status mStatus) {
         mUser = mStatus.getUser();
@@ -318,7 +316,7 @@ public class StatusActivity extends BaseActivity {
         commentCardRV = findViewById(R.id.comment_card_comment_rv);
         commentAdapter = new CommentAdapter(this,commentList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
         commentCardRV.setLayoutManager(linearLayoutManager);
         commentCardRV.setAdapter(commentAdapter);
         noCommentText = findViewById(R.id.comment_card_no_comment);

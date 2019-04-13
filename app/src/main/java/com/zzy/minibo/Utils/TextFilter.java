@@ -123,22 +123,7 @@ public final class TextFilter {
                     Pattern patternShort = Pattern.compile(base_short);
                     Matcher matcher_short = patternShort.matcher(address_short_text);
                     if (matcher_short.find()){
-                        WebUrlClickSpan webUrlClickSpan = new WebUrlClickSpan(context,"链接："+matcher_short.group(0));
-                        //这里还要判断是否视频链接
-//                        WBApiConnector.getShortUrlType(accessToken, matcher_short.group(0), new HttpCallBack() {
-//                            @Override
-//                            public void onSuccess(String response) {
-//                                URLHolder urlHolder = URLHolder.getInstanceFromJSON(response);
-//                                if (urlHolder != null){
-//                                    listener.callback("onSuccess: "+urlHolder.getUrl_short()+" type:"+urlHolder.getType());
-//                                }
-//                            }
-//
-//                            @Override
-//                            public void onError(Exception e) {
-//
-//                            }
-//                        });
+                        WebUrlClickSpan webUrlClickSpan = new WebUrlClickSpan(context,matcher_short.group(0));
                         SpannableString spannableStringUrl = new SpannableString("☍网页链接 ");
                         spannableStringUrl.setSpan(webUrlClickSpan,0,5,Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                         spannableStringBuilder.append(spannableStringUrl);
@@ -289,8 +274,6 @@ public final class TextFilter {
 
     /**
      * 是否存在特殊字符
-     * @param str
-     * @return
      */
     private static boolean isSpecialChar(String str) {
         String regEx = "[ `~!#$%^&*()+=|{}':;',\\[\\].<>/?~！#￥%……&*（）——+|{}【】‘；：”“’。，、？]|\n|\r|\t";

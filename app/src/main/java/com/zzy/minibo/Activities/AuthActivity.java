@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
-import android.support.annotation.Nullable;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -28,11 +27,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import androidx.annotation.Nullable;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.ResponseBody;
@@ -110,18 +109,14 @@ public class AuthActivity extends BaseActivity {
 
         @Override
         public void cancel() {
-            /**
-             * 授权被取消
-             */
+            //授权被取消
             Toast.makeText(AuthActivity.this,
                     "取消授权", Toast.LENGTH_LONG).show();
         }
 
         @Override
         public void onFailure(WbConnectErrorMessage wbConnectErrorMessage) {
-            /**
-             * 授权失败
-             */
+            //授权失败
             Toast.makeText(AuthActivity.this, wbConnectErrorMessage.getErrorMessage(), Toast.LENGTH_LONG).show();
         }
     }

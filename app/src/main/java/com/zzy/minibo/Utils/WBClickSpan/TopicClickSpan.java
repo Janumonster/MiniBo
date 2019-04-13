@@ -2,7 +2,6 @@ package com.zzy.minibo.Utils.WBClickSpan;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.support.annotation.NonNull;
 import android.text.TextPaint;
 import android.text.style.ClickableSpan;
 import android.view.View;
@@ -10,6 +9,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zzy.minibo.R;
+
+import androidx.annotation.NonNull;
 
 public class TopicClickSpan extends ClickableSpan {
 

@@ -4,9 +4,10 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.style.ImageSpan;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class CenterAlignImageSpan extends ImageSpan {
 
@@ -14,7 +15,7 @@ public class CenterAlignImageSpan extends ImageSpan {
         super(drawable);
     }
 
-    public CenterAlignImageSpan(@Nullable Context context,int resourceId){
+    public CenterAlignImageSpan(@Nullable Context context, int resourceId){
         super(context,resourceId);
     }
 
