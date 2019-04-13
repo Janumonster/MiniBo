@@ -33,7 +33,7 @@ public class PhotoViewAdapter extends PagerAdapter {
 
         Glide.with(mActivity)
                 .load(uri)
-                .placeholder(R.drawable.loading_drawable)
+                .placeholder(R.drawable.ic_placeholder)
                 .into(photoView);
         container.addView(photoView);
 
