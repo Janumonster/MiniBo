@@ -24,6 +24,8 @@ public class CommentAdapter extends RecyclerView.Adapter <CommentAdapter.ViewHol
     private List<Comment> commentList;
     private Context mContext;
 
+    private boolean isBottom = false;
+
     public CommentAdapter(Context context,List<Comment> list){
         this.mContext = context;
         this.commentList = list;
@@ -36,7 +38,6 @@ public class CommentAdapter extends RecyclerView.Adapter <CommentAdapter.ViewHol
         TextView commentText;
         TextView createAt;
         TextView likeNum;
-        TextView commentOthers;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -45,7 +46,6 @@ public class CommentAdapter extends RecyclerView.Adapter <CommentAdapter.ViewHol
             commentText = itemView.findViewById(R.id.comment_card_text);
             createAt = itemView.findViewById(R.id.comment_card_create_at);
             likeNum = itemView.findViewById(R.id.comment_card_like);
-            commentOthers = itemView.findViewById(R.id.comment_card_comment);
         }
     }
     @NonNull
@@ -79,6 +79,12 @@ public class CommentAdapter extends RecyclerView.Adapter <CommentAdapter.ViewHol
                 }
             }
         });
+
+        if (i >= commentList.size()-1){
+            isBottom = true;
+        }else {
+            isBottom = false;
+        }
     }
 
     @Override
@@ -86,5 +92,7 @@ public class CommentAdapter extends RecyclerView.Adapter <CommentAdapter.ViewHol
         return commentList.size();
     }
 
-
+    public boolean isBottom() {
+        return isBottom;
+    }
 }

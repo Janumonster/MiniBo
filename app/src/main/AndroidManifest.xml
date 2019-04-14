@@ -18,25 +18,39 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
-        <activity android:name=".Activities.WebActivity"></activity>
-        <activity android:name=".Activities.StatusEditActivity" />
-        <activity android:name=".Activities.FriendshipActivity" />
-        <activity android:name=".Activities.MessageActivity" /> <!-- 启动界面 -->
+        android:usesCleartextTraffic="true"
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning,InnerclassSeparator,UnusedAttribute">
+        <!-- 启动界面 -->
         <activity android:name=".Activities.LaunchActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- 授权页面 -->
-        <activity android:name=".Activities.AuthActivity" /> <!-- 主界面 -->
-        <activity android:name=".Activities.MainActivity" /> <!-- 图片界面 -->
+        </activity>
+        <!-- 授权页面 -->
+        <activity android:name=".Activities.AuthActivity" />
+        <!-- 主界面 -->
+        <activity android:name=".Activities.MainActivity" />
+        <!--网页-->
+        <activity android:name=".Activities.WebActivity"
+            android:windowSoftInputMode="stateVisible|adjustPan" />
+        <!-- 微博界面 -->
+        <activity android:name=".Activities.StatusActivity"
+            android:windowSoftInputMode="stateVisible|adjustResize"/>
+        <!-- 用户中心 -->
+        <activity android:name=".Activities.UserCenterActivity" />
+        <!--发微博界面-->
+        <activity android:name=".Activities.StatusEditActivity" />
+        <!--好友界面-->
+        <activity android:name=".Activities.FriendshipActivity" />
+        <!--消息界面-->
+        <activity android:name=".Activities.MessageActivity" />
+        <!-- 图片界面 -->
         <activity
             android:name=".Activities.PicturesActivity"
-            android:launchMode="singleTop" /> <!-- 微博界面 -->
-        <activity android:name=".Activities.StatusActivity" /> <!-- 用户中心 -->
-        <activity android:name=".Activities.UserCenterActivity" />
+            android:launchMode="singleTop" />
+
     </application>
 
 </manifest>

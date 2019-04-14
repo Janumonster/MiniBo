@@ -226,7 +226,7 @@ public final class WBApiConnector {
 
     public static void createComment(ParamsOfCreateComment params,final HttpCallBack callBack){
         final Map<String,String> map = new ArrayMap<>();
-        map.put("source",params.getSource());
+//        map.put("source",params.getSource());
         map.put("access_token",params.getAccess_token());
         map.put("comment",params.getComment());
         map.put("id",params.getIdstr());

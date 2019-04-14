@@ -126,6 +126,8 @@ public class WebActivity extends BaseActivity {
     public void onBackPressed() {
         if (mWebView.canGoBack()){
             mWebView.goBack();
+        }else {
+            finish();
         }
     }
 

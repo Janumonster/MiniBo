@@ -63,34 +63,18 @@
             app:layout_constraintLeft_toLeftOf="@id/comment_card_text"
             app:layout_constraintTop_toBottomOf="@id/comment_card_text"/>
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/comment_card_like"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="18sp"
+            android:drawableStart="@drawable/ic_favorite"
+            android:gravity="start|center"
+            android:textColor="#b9b9b9"
+            android:textSize="12sp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
-            android:orientation="horizontal"
             app:layout_constraintTop_toBottomOf="@id/comment_card_text"
-            app:layout_constraintRight_toRightOf="parent">
-
-            <TextView
-                android:id="@+id/comment_card_comment"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:drawableStart="@drawable/ic_insert_comment_grey_500_18dp"
-                android:drawablePadding="16dp"
-                android:gravity="start|center"
-                android:textColor="#b9b9b9"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/comment_card_like"
-                android:layout_width="wrap_content"
-                android:layout_height="18sp"
-                android:drawableStart="@drawable/ic_favorite"
-                android:gravity="start|center"
-                android:textColor="#b9b9b9"
-                android:textSize="12sp" />
-        </LinearLayout>
+            app:layout_constraintRight_toRightOf="parent"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -99,6 +83,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="4dp"
             app:layout_constraintTop_toBottomOf="@id/comment_card_create_at"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>

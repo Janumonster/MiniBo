@@ -82,7 +82,7 @@ public class StatusFragment extends Fragment {
                         relresh_none_toast.setText("已经最新了！！(•ᴗ•)");
                         relresh_none_toast.show();
                     }else {
-                        statusList.addAll(0,statusListCache);
+                        statusList = statusListCache;
                         statusAdapter.notifyDataSetChanged();
                         Toast refresh_toast = Toast.makeText(getContext(),null,Toast.LENGTH_SHORT);
                         refresh_toast.setText("更新了"+statusListCache.size()+"条微博");
@@ -251,7 +251,7 @@ public class StatusFragment extends Fragment {
                 //刷新过程
                 final ParamsOfStatusTL paramsOfStatusTL = new ParamsOfStatusTL.Builder()
                         .access_token(accessToken.getToken())
-                        .since_id(statusTimeLine.getSince_id())
+//                        .since_id(statusTimeLine.getSince_id())
                         .build();
                 WBApiConnector.getStatusesHomeTimeline(paramsOfStatusTL, new HttpCallBack() {
                     @Override

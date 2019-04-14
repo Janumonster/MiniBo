@@ -9,17 +9,22 @@ import android.text.Spanned;
 import android.text.format.Time;
 import android.util.Log;
 
+import com.google.android.material.tabs.TabLayout;
 import com.zzy.minibo.WBListener.StatusTextFliterCallback;
 import com.zzy.minibo.Utils.WBClickSpan.StatusDetialClickSpan;
 import com.zzy.minibo.Utils.WBClickSpan.TopicClickSpan;
 import com.zzy.minibo.Utils.WBClickSpan.UserIdClickSpan;
 import com.zzy.minibo.Utils.WBClickSpan.WebUrlClickSpan;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class TextFilter {
+
+    private static final String TAG = TextFilter.class.getSimpleName();
 
     public static String IsVideoStatus(String text){
         String base = "http://t.cn/(.{7})";
@@ -63,7 +68,7 @@ public final class TextFilter {
                         id_start++;
                     }
                     StringBuilder username = new StringBuilder();
-                    while ( !isSpecialChar(String.valueOf(text.charAt(id_start)))){
+                    while ( id_start<text.length() && !isSpecialChar(String.valueOf(text.charAt(id_start)))){
                         username.append(text.charAt(id_start));
                         if (id_start < text.length() - 1){
                             id_start++;
@@ -169,8 +174,6 @@ public final class TextFilter {
         Log.d("TimeFliter",statusTime);
         StringBuilder stringBuilder = new StringBuilder();
         long t = System.currentTimeMillis();
-        Time time = new Time();
-        time.setToNow();
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(t);
         int year = calendar.get(Calendar.YEAR);
@@ -251,6 +254,41 @@ public final class TextFilter {
             return sb.toString();
         }
         return num;
+    }
+
+    /**
+     *
+     * @return Sun_Apr_07_19:46:42_+0800_2019
+     */
+    public static String createTimeString(){
+        StringBuilder sb = new StringBuilder();
+        long t = System.currentTimeMillis();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(t);
+        int daily = calendar.get(Calendar.DAY_OF_WEEK);
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+
+        sb.append("Sun ");
+        switch (month){
+            case 0: sb.append("Jan ");break;
+            case 1: sb.append("Feb ");break;
+            case 2: sb.append("Mar ");break;
+            case 3: sb.append("Apr ");break;
+            case 4: sb.append("May ");break;
+            case 5: sb.append("Jun ");break;
+            case 6: sb.append("Jul ");break;
+            case 7: sb.append("Aug ");break;
+            case 8: sb.append("Sep ");break;
+            case 9: sb.append("Oct ");break;
+            case 10: sb.append("Nov ");break;
+            case 11: sb.append("Dec ");break;
+        }
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd HH:mm:ss ");
+        Date date = new Date(System.currentTimeMillis());
+        sb.append(simpleDateFormat.format(date)).append("+0800 ").append(year);
+        Log.d(TAG, "createTimeString: "+sb.toString());
+        return sb.toString();
     }
 
 
