@@ -1,4 +1,4 @@
-package com.zzy.minibo.Utils;
+package com.zzy.minibo.WBListener;
 
 public interface HttpCallBack {
 

@@ -34,11 +34,12 @@ import com.zzy.minibo.Members.User;
 import com.zzy.minibo.MyViews.NineGlideView;
 import com.zzy.minibo.R;
 import com.zzy.minibo.Utils.AllParams.ParamsOfComments;
-import com.zzy.minibo.Utils.HttpCallBack;
+import com.zzy.minibo.WBListener.HttpCallBack;
 import com.zzy.minibo.Utils.KeyBoardManager;
 import com.zzy.minibo.Utils.TextFilter;
 import com.zzy.minibo.Utils.WBApiConnector;
 import com.zzy.minibo.Utils.WBClickSpan.UserIdClickSpan;
+import com.zzy.minibo.WBListener.SimpleIntCallback;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -104,6 +105,7 @@ public class StatusActivity extends BaseActivity {
     private LinearLayout progressBar;
 
     //编辑
+    private String mTextCache = null;
     private LinearLayout commentEditLayout;
     private ImageButton commentSendBtn;
     private EditText commentEditView;
@@ -112,7 +114,6 @@ public class StatusActivity extends BaseActivity {
     private CheckBox isRepostCheckBox;
     private ImageView editMenu_photo;
     private ImageView editMenu_at;
-
 
 
     @SuppressLint("HandlerLeak")
@@ -128,7 +129,7 @@ public class StatusActivity extends BaseActivity {
                     }else {
                         noCommentText.setVisibility(View.GONE);
                     }
-                    mCommentsNum.setText("全部评论("+TextFilter.NumberFliter(String.valueOf(commentList.size()))+")");
+//                    mCommentsNum.setText("全部评论("+TextFilter.NumberFliter(String.valueOf(commentList.size()))+")");
                     commentAdapter.notifyDataSetChanged();
                     break;
                 case CREATE_COMMENT_SUCCESS:
@@ -179,11 +180,37 @@ public class StatusActivity extends BaseActivity {
         mCreateTime = findViewById(R.id.status_card_create_at);
         mStatueText = findViewById(R.id.status_card_text);
         mStatusPictures = findViewById(R.id.status_card_images);
+        mStatusPictures.setSimpleIntCallback(new SimpleIntCallback() {
+            @Override
+            public void callback(int i) {
+                Intent intent = new Intent(getBaseContext(), PicturesActivity.class);
+                intent.putExtra("currentPosition",i);
+                if (mStatus.getRetweeted_status() == null){
+                    intent.putStringArrayListExtra("urls", (ArrayList<String>) mStatus.getPic_urls());
+                }else {
+                    intent.putStringArrayListExtra("urls", (ArrayList<String>) mStatus.getRetweeted_status().getPic_urls());
+                }
+                startActivity(intent);
+            }
+        });
 
         mRepostStatusLayout = findViewById(R.id.status_card_repost_layout);
         mRepostStatusUserName = findViewById(R.id.status_card_repost_name);
         mRepostStatusText = findViewById(R.id.status_card_repost_text);
         mRepostStatusPictures = findViewById(R.id.status_card_repost_images);
+        mRepostStatusPictures.setSimpleIntCallback(new SimpleIntCallback() {
+            @Override
+            public void callback(int i) {
+                Intent intent = new Intent(getBaseContext(), PicturesActivity.class);
+                intent.putExtra("currentPosition",i);
+                if (mStatus.getRetweeted_status() == null){
+                    intent.putStringArrayListExtra("urls", (ArrayList<String>) mStatus.getPic_urls());
+                }else {
+                    intent.putStringArrayListExtra("urls", (ArrayList<String>) mStatus.getRetweeted_status().getPic_urls());
+                }
+                startActivity(intent);
+            }
+        });
 
         mStatusBottomLayout = findViewById(R.id.status_card_ll);
         mStatusBottomLayout.setVisibility(View.GONE);
@@ -211,17 +238,38 @@ public class StatusActivity extends BaseActivity {
 
         //评论
         searchEdittext = findViewById(R.id.status_comment_search_edit);
+        searchEdittext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (searchEdittext.isFocused()){
+                    searchEdittext.clearFocus();
+                    KeyBoardManager.hideKeyBoard(getBaseContext(),searchEdittext);
+                }else {
+                    searchEdittext.requestFocus();
+                    KeyBoardManager.showKeyBoard(getBaseContext(),searchEdittext);
+                }
+            }
+        });
         searchBtn = findViewById(R.id.status_comment_search_btn);
         searchBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                hideSoftKeyboard(activity);
+                KeyBoardManager.hideKeyBoard(getBaseContext(),searchEdittext);
                 searchEdittext.clearFocus();
                 findString(searchEdittext.getText().toString());
             }
         });
         commentCardRV = findViewById(R.id.comment_card_comment_rv);
         commentAdapter = new CommentAdapter(this,commentList);
+        commentAdapter.setSimpleCallback(new SimpleIntCallback() {
+            @Override
+            public void callback(int i) {
+                mTextCache = commentList.get(i).getUser().getScreen_name();
+                commentEditView.setHint("回复 @"+mTextCache+" :");
+                commentEditLayout.setVisibility(View.VISIBLE);
+                KeyBoardManager.showKeyBoard(getBaseContext(),commentEditView);
+            }
+        });
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
         commentCardRV.setLayoutManager(linearLayoutManager);
@@ -259,7 +307,7 @@ public class StatusActivity extends BaseActivity {
         commentSendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                hideSoftKeyboard(activity);
+                KeyBoardManager.hideKeyBoard(getBaseContext(),commentEditView);
                 Comment comment = new Comment();
                 User user;
                 List<LP_USER> lp_users = LitePal.where("uidstr = ?",accessToken.getUid()).find(LP_USER.class);
@@ -267,9 +315,14 @@ public class StatusActivity extends BaseActivity {
                     user = User.makeJsonToUser(lp_users.get(0).getJson());
                     comment.setUser(user);
                 }
-                comment.setText(TextFilter.statusTextFliter(getBaseContext(), commentEditView.getText().toString(), null).toString());
+                if (mTextCache != null && !mTextCache.equals(mUser.getScreen_name())){
+                    comment.setText("回复@"+mTextCache+":"+TextFilter.statusTextFliter(getBaseContext(), commentEditView.getText().toString(), null).toString());
+                }else {
+                    comment.setText(TextFilter.statusTextFliter(getBaseContext(), commentEditView.getText().toString(), null).toString());
+                }
                 comment.setCreate_at(TextFilter.createTimeString());
                 commentList.add(0,comment);
+                commentEditView.setText("");
                 Message message = new Message();
                 message.what = CREATE_COMMENT_SUCCESS;
                 handler.sendMessage(message);
@@ -284,9 +337,7 @@ public class StatusActivity extends BaseActivity {
                 KeyBoardManager.hideKeyBoard(getBaseContext(),commentEditView);
             }
         });
-        isRepostCheckBox = findViewById(R.id.edit_menu_checkbox);
-        editMenu_photo = findViewById(R.id.edit_menu_photo);
-        editMenu_at = findViewById(R.id.edit_menu_at);
+        editMenu_at = findViewById(R.id.comment_edit_menu_at);
     }
 
 
@@ -350,12 +401,18 @@ public class StatusActivity extends BaseActivity {
 
         if (mStatus.getRetweeted_status() != null){
             mRepostStatusLayout.setVisibility(View.VISIBLE);
-            Status repostStatus = mStatus.getRetweeted_status();
-            UserIdClickSpan userIdClickSpan_repost = new UserIdClickSpan(this,repostStatus.getUser().getScreen_name());
-            SpannableString spannableString_repost = new SpannableString(repostStatus.getUser().getScreen_name());
-            spannableString_repost.setSpan(userIdClickSpan_repost,0,spannableString_repost.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
-            mRepostStatusUserName.setText(spannableString_repost);
-            mRepostStatusUserName.setMovementMethod(new LinkMovementMethod());
+            final Status repostStatus = mStatus.getRetweeted_status();
+            mRepostStatusUserName.setText("@"+repostStatus.getUser().getScreen_name());
+            mRepostStatusUserName.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(getBaseContext(),UserCenterActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putParcelable("User",repostStatus.getUser());
+                    intent.putExtras(bundle);
+                    startActivity(intent);
+                }
+            });
             if (repostStatus.getText().length() == 0){
                 mRepostStatusText.setVisibility(View.GONE);
             }else {
@@ -434,12 +491,12 @@ public class StatusActivity extends BaseActivity {
      * 获取更多评论
      */
     private void getMoreStatus() {
-        if (commentList.size() >= Integer.valueOf(mStatus.getComments_count())){
-            Toast toast_all = Toast.makeText(this,null,Toast.LENGTH_SHORT);
-            toast_all.setText("已加载全部评论");
-            toast_all.show();
-            return;
-        }
+//        if (commentList.size() >= Integer.valueOf(mStatus.getComments_count())){
+//            Toast toast_all = Toast.makeText(this,null,Toast.LENGTH_SHORT);
+//            toast_all.setText("已加载全部评论");
+//            toast_all.show();
+//            return;
+//        }
         if (isSearching){
             Toast toast_search = Toast.makeText(this,null,Toast.LENGTH_SHORT);
             toast_search.setText("搜索界面暂不支持加载更多");
@@ -478,14 +535,6 @@ public class StatusActivity extends BaseActivity {
         });
 
 
-    }
-
-    public void hideSoftKeyboard(Activity activity) {
-        View view = activity.getCurrentFocus();
-        if (view != null) {
-            InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
-            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-        }
     }
 
 

@@ -3,6 +3,8 @@ package com.zzy.minibo.Adapter;
 import android.app.Activity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+
 import com.bumptech.glide.Glide;
 import com.github.chrisbanes.photoview.PhotoView;
 import com.zzy.minibo.R;
@@ -30,10 +32,10 @@ public class PhotoViewAdapter extends PagerAdapter {
     public Object instantiateItem(@NonNull final ViewGroup container, int position) {
         final String uri = pics.get(position);
         final PhotoView photoView = new PhotoView(mActivity);
-
+        photoView.setScaleType(ImageView.ScaleType.FIT_CENTER);
         Glide.with(mActivity)
                 .load(uri)
-                .placeholder(R.drawable.ic_placeholder)
+//                .placeholder(R.drawable.ic_placeholder)
                 .into(photoView);
         container.addView(photoView);
 

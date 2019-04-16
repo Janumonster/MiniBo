@@ -44,8 +44,8 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.5'
 
     //glide图片加载
-    implementation 'com.github.bumptech.glide:glide:4.9.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
+    implementation 'com.github.bumptech.glide:glide:4.5.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.5.0'
 
 //    implementation 'com.facebook.fresco:fresco:1.13.0'
 //    implementation 'com.facebook.fresco:animated-gif:1.5.0'
@@ -53,6 +53,9 @@ dependencies {
 //    implementation 'com.facebook.fresco:webpsupport:0.12.0'//加载gif动图需添加此库
 //    implementation 'me.relex:photodraweeview:1.1.3'
     implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
+
+    //图片选择
+    implementation 'com.github.LuckSiege.PictureSelector:picture_library:v2.2.3'
 
     //litepal
     implementation 'org.litepal.android:java:3.0.0'

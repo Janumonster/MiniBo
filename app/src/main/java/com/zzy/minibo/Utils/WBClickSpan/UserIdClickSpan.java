@@ -31,10 +31,10 @@ public class UserIdClickSpan extends ClickableSpan {
         if(widget  instanceof TextView){
             ((TextView)widget).setHighlightColor(Color.TRANSPARENT);
         }
-        Intent intent = new Intent(mContext, UserCenterActivity.class);
-        intent.putExtra("user_name",str);
-        mContext.startActivity(intent);
-        Toast.makeText(mContext, str,Toast.LENGTH_SHORT).show();
+//        Intent intent = new Intent(mContext, UserCenterActivity.class);
+//        intent.putExtra("user_name",str);
+//        mContext.startActivity(intent);
+        Toast.makeText(mContext, "微博暂未开放该接口",Toast.LENGTH_SHORT).show();
     }
 
     @Override

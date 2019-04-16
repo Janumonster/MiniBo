@@ -1,7 +1,5 @@
 package com.zzy.minibo.Utils;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.util.ArrayMap;
 import android.util.Log;
 
@@ -11,6 +9,7 @@ import com.zzy.minibo.Utils.AllParams.ParamsOfCreateComment;
 import com.zzy.minibo.Utils.AllParams.ParamsOfStatusTL;
 import com.zzy.minibo.Utils.AllParams.ParamsOfUserInfo;
 import com.zzy.minibo.Utils.AllParams.ParamsOfUserTimeLine;
+import com.zzy.minibo.WBListener.HttpCallBack;
 import com.zzy.minibo.WBListener.PicDownloadCallback;
 
 import java.io.IOException;

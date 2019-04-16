@@ -1,9 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    android:background="@drawable/bg_edit_activity"
     tools:mContext=".Activities.StatusEditActivity">
+
+    <Toolbar
+        android:id="@+id/edit_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:navigationIcon="@drawable/ic_arrow_back_blue_24dp"
+        app:layout_constraintTop_toTopOf="parent">
+    </Toolbar>
+
+
+    <EditText
+        android:id="@+id/edit_edit_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:padding="8dp"
+        android:gravity="start"
+        android:hint="@string/say_something"
+        android:textSize="15sp"
+        android:lineSpacingExtra="4dp"
+        android:minLines="8"
+        android:textCursorDrawable="@drawable/edit_cursor_color"
+        android:background="@drawable/bg_comment_search_edit_view"
+        android:imeOptions="actionDone"
+        app:layout_constraintTop_toBottomOf="@id/edit_toolbar"/>
+
+    <com.zzy.minibo.MyViews.NineGlideView
+        android:id="@+id/edit_nine_pic_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="32dp"
+        android:gravity="center"
+        android:horizontalSpacing="2dp"
+        android:numColumns="3"
+        android:scrollbars="none"
+        android:verticalSpacing="2dp"
+        app:mSpacing="4dp"
+        app:layout_constraintTop_toBottomOf="@id/edit_edit_text">
+    </com.zzy.minibo.MyViews.NineGlideView>
+
+    <CheckBox
+        android:id="@+id/edit_cut_pic_check"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="裁剪图片"
+        android:layout_marginStart="16dp"
+        app:layout_constraintBottom_toTopOf="@id/edit_bottom_layout"
+        app:layout_constraintLeft_toLeftOf="parent"/>
+
+    <LinearLayout
+        android:id="@+id/edit_bottom_layout"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/bg_edit_bottom_menu"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent">
+
+        <ImageButton
+            android:id="@+id/edit_add_pics"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:layout_margin="8dp"
+            android:src="@drawable/ic_photo_color_main_36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"/>
+
+        <ImageButton
+            android:id="@+id/edit_add_emotions"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:layout_margin="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_tag_faces_black_36dp"
+            android:scaleType="centerInside"/>
+
+        <ImageButton
+            android:id="@+id/edit_add_at"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:layout_margin="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_at_color_main_36"
+            android:scaleType="centerInside"/>
+
+        <ImageButton
+            android:id="@+id/edit_send_btn"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_bubble_chart_black_36dp"
+            android:scaleType="centerInside"/>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

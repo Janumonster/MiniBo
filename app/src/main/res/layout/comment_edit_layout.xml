@@ -31,7 +31,7 @@
             android:textSize="14sp"
             android:hint="回复："
             android:gravity="start"
-            android:background="@drawable/bg_edit_view"/>
+            android:background="@drawable/bg_comment_search_edit_view"/>
 
         <ImageButton
             android:id="@+id/comment_edit_send"

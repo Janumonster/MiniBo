@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
@@ -83,11 +84,12 @@ public class PicturesActivity extends BaseActivity {
         Intent intent = getIntent();
         currentPosition = intent.getIntExtra("currentPosition",0);
         mOriginList = intent.getStringArrayListExtra("urls");
-        for (String str : mOriginList){
-            mPicturesUrls.add("http://wx4.sinaimg.cn/large/" + str.substring(30));
-        }
         listLength = mOriginList.size();
         picCountText_tv.setText(String.valueOf(currentPosition+1)+" | "+listLength);
+        for (String str : mOriginList){
+            mPicturesUrls.add("http://wx4.sinaimg.cn/large/" + str);
+            Log.d("PICTURE", "initData: "+"http://wx4.sinaimg.cn/large/" + str);
+        }
         mOriginPhotoViewAdapter = new PhotoViewAdapter(this, mOriginList,mPicturesUrls);
         viewPager.setAdapter(mOriginPhotoViewAdapter);
         viewPager.setCurrentItem(currentPosition);

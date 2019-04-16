@@ -11,6 +11,7 @@ import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.zzy.minibo.Activities.PicturesActivity;
 import com.zzy.minibo.R;
+import com.zzy.minibo.WBListener.SimpleIntCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,17 @@ public class NineGlideView extends NineImageLayout {
 
     public NineGlideView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+    }
+
+    public SimpleIntCallback simpleIntCallback = new SimpleIntCallback() {
+        @Override
+        public void callback(int i) {
+
+        }
+    };
+
+    public void setSimpleIntCallback(SimpleIntCallback simpleIntCallback) {
+        this.simpleIntCallback = simpleIntCallback;
     }
 
     @Override
@@ -61,7 +73,7 @@ public class NineGlideView extends NineImageLayout {
                         setOneImageLayout(imageView,newW,newH);
                         Glide.with(mContext)
                                 .load(url)
-                                .placeholder(R.drawable.loading_drawable)
+//                                .placeholder(R.drawable.loading_drawable)
                                 .into(imageView);
                     }
                 });
@@ -74,16 +86,13 @@ public class NineGlideView extends NineImageLayout {
     protected void displayImage(ClickImageView imageView, String url) {
         Glide.with(mContext)
                 .load(url)
-                .placeholder(R.drawable.loading_drawable)
+//                .placeholder(R.drawable.loading_drawable)
                 .into(imageView);
     }
 
     @Override
     protected void onClickImage(int postion, String url, List<String> urlList) {
-        Intent intent = new Intent(mContext, PicturesActivity.class);
-        intent.putExtra("currentPosition",postion);
-        intent.putStringArrayListExtra("urls", (ArrayList<String>) urlList);
-        mContext.startActivity(intent);
+        simpleIntCallback.callback(postion);
     }
 
 }

@@ -20,7 +20,7 @@ import com.sina.weibo.sdk.auth.sso.SsoHandler;
 import com.zzy.minibo.R;
 import com.zzy.minibo.Utils.Constants;
 import com.zzy.minibo.Utils.FilesManager;
-import com.zzy.minibo.Utils.HttpCallBack;
+import com.zzy.minibo.WBListener.HttpCallBack;
 import com.zzy.minibo.Utils.WBApiConnector;
 
 import org.json.JSONArray;

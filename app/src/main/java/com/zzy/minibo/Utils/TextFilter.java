@@ -314,7 +314,7 @@ public final class TextFilter {
      * 是否存在特殊字符
      */
     private static boolean isSpecialChar(String str) {
-        String regEx = "[ `~!#$%^&*()+=|{}':;',\\[\\].<>/?~！#￥%……&*（）——+|{}【】‘；：”“’。，、？]|\n|\r|\t";
+        String regEx = "[`~!#$%^&*()+=|{}':;',\\[\\].<>/?~！#￥%……&*（）——+|{}【】‘；：”“’。，、？]|\n|\r|\t";
         Pattern p = Pattern.compile(regEx);
         Matcher m = p.matcher(str);
         return m.find();

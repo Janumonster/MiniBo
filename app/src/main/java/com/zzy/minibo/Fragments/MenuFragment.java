@@ -19,7 +19,7 @@ import com.zzy.minibo.Members.LP_USER;
 import com.zzy.minibo.Members.User;
 import com.zzy.minibo.R;
 import com.zzy.minibo.Utils.AllParams.ParamsOfUserInfo;
-import com.zzy.minibo.Utils.HttpCallBack;
+import com.zzy.minibo.WBListener.HttpCallBack;
 import com.zzy.minibo.Utils.TextFilter;
 import com.zzy.minibo.Utils.WBApiConnector;
 

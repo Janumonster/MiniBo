@@ -115,6 +115,7 @@
                         android:layout_marginBottom="4dp"
                         android:textSize="14sp"
                         android:textStyle="bold"
+                        android:textColor="@color/colorMain"
                         android:gravity="start|center"/>
 
                     <TextView

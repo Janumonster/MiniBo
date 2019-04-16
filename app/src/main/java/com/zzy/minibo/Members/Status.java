@@ -26,6 +26,8 @@ public class Status implements Parcelable{
 
     private int isLike = 0;
 
+    private boolean isLocal = false;
+
     /**
      * -------根据接口给出的Field--------------------------------------------------------------------
      */
@@ -224,6 +226,15 @@ public class Status implements Parcelable{
     /**
      * --------------------------getter 和 setter---------------------------------------------------
      */
+
+    public boolean isLocal() {
+        return isLocal;
+    }
+
+    public void setLocal(boolean local) {
+        isLocal = local;
+    }
+
 
     public int getIsLike() {
         return isLike;

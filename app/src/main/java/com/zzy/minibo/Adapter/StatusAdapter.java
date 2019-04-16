@@ -14,11 +14,14 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.zzy.minibo.Activities.StatusActivity;
+import com.zzy.minibo.Activities.UserCenterActivity;
 import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.MyViews.NineGlideView;
 import com.zzy.minibo.R;
 import com.zzy.minibo.Utils.TextFilter;
 import com.zzy.minibo.Utils.WBClickSpan.UserIdClickSpan;
+import com.zzy.minibo.WBListener.PictureTapCallback;
+import com.zzy.minibo.WBListener.SimpleIntCallback;
 import com.zzy.minibo.WBListener.StatusTextFliterCallback;
 
 import java.util.ArrayList;
@@ -36,8 +39,18 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
     private List<Status> statuses;
     private Context mContext;
     private boolean isGetBottom = false;
+    private PictureTapCallback pictureTapCallback = new PictureTapCallback() {
+        @Override
+        public void callback(int statusPosition, int postion, int from) {
 
-    public StatusAdapter(List<Status> statuses,Context mContext){
+        }
+    };
+
+    public void setPictureTapCallback(PictureTapCallback pictureTapCallback) {
+        this.pictureTapCallback = pictureTapCallback;
+    }
+
+    public StatusAdapter(List<Status> statuses, Context mContext){
         this.statuses = statuses;
         this.mContext = mContext;
     }
@@ -89,13 +102,12 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final StatusAdapter.ViewHolder viewHolder, int i) {
+    public void onBindViewHolder(@NonNull final StatusAdapter.ViewHolder viewHolder, final int i) {
         final Status status = statuses.get(i);
         if (status.getUser() != null){
             Glide.with(mContext).load(status.getUser().getAvatar_large()).into(viewHolder.userImage);
             viewHolder.userName.setText(status.getUser().getScreen_name());
         }
-
         viewHolder.createTime.setText(TextFilter.TimeFliter(status.getCreated_at()));
         //待修改
         viewHolder.statusText.setText(TextFilter.statusTextFliter(mContext, status.getText(), new StatusTextFliterCallback() {
@@ -115,11 +127,21 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
         List<String> list = new ArrayList<>();
         //加载微博图片
         if (status.getPic_urls() != null){
-            for (int m = 0;m < status.getPic_urls().size();m++){
-                list.add(status.getBmiddle_pic()+status.getPic_urls().get(m));
+            if (!status.isLocal()){
+                for (int m = 0;m < status.getPic_urls().size();m++){
+                    list.add(status.getBmiddle_pic()+status.getPic_urls().get(m));
+                }
+            }else {
+                list.addAll(status.getPic_urls());
             }
             viewHolder.statusPictures.setUrlList(list);
         }
+        viewHolder.statusPictures.setSimpleIntCallback(new SimpleIntCallback() {
+            @Override
+            public void callback(int position) {
+                pictureTapCallback.callback(i,position,0);
+            }
+        });
         //是否是转发微博
         if (status.getRetweeted_status() != null) {
             viewHolder.repostStatusLayout.setVisibility(View.VISIBLE);
@@ -135,10 +157,17 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
                     mContext.startActivity(intent);
                 }
             });
-            UserIdClickSpan userIdClickSpan = new UserIdClickSpan(mContext,status.getRetweeted_status().getUser().getScreen_name());
-            SpannableString spannableString = new SpannableString("@"+status.getRetweeted_status().getUser().getScreen_name());
-            spannableString.setSpan(userIdClickSpan,0,spannableString.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
-            viewHolder.repostUsername.setText(spannableString);
+            viewHolder.repostUsername.setText("@"+repost_status.getUser().getScreen_name());
+            viewHolder.repostUsername.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(mContext, UserCenterActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putParcelable("User",repost_status.getUser());
+                    intent.putExtras(bundle);
+                    mContext.startActivity(intent);
+                }
+            });
             viewHolder.repostUsername.setMovementMethod(LinkMovementMethod.getInstance());
             viewHolder.repostStatusText.setText(TextFilter.statusTextFliter(mContext, repost_status.getText(), new StatusTextFliterCallback() {
                 @Override
@@ -153,6 +182,12 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
                 list.add(status.getBmiddle_pic()+status.getRetweeted_status().getPic_urls().get(n));
             }
             viewHolder.repostStatusImages.setUrlList(list);
+            viewHolder.repostStatusImages.setSimpleIntCallback(new SimpleIntCallback() {
+                @Override
+                public void callback(int postion) {
+                    pictureTapCallback.callback(i,postion,1);
+                }
+            });
         }else {
             viewHolder.repostStatusLayout.setVisibility(View.GONE);
         }
@@ -165,6 +200,26 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
                 Intent intent = new Intent(mContext, StatusActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putParcelable("status",status);
+                intent.putExtras(bundle);
+                mContext.startActivity(intent);
+            }
+        });
+        viewHolder.userImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, UserCenterActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putParcelable("User",status.getUser());
+                intent.putExtras(bundle);
+                mContext.startActivity(intent);
+            }
+        });
+        viewHolder.userName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, UserCenterActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putParcelable("User",status.getUser());
                 intent.putExtras(bundle);
                 mContext.startActivity(intent);
             }

@@ -41,7 +41,8 @@
         <!-- 用户中心 -->
         <activity android:name=".Activities.UserCenterActivity" />
         <!--发微博界面-->
-        <activity android:name=".Activities.StatusEditActivity" />
+        <activity android:name=".Activities.StatusEditActivity"
+            android:windowSoftInputMode="stateVisible|adjustResize" />
         <!--好友界面-->
         <activity android:name=".Activities.FriendshipActivity" />
         <!--消息界面-->

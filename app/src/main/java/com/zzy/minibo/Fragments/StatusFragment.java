@@ -15,15 +15,17 @@ import android.widget.Toast;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.sina.weibo.sdk.auth.AccessTokenKeeper;
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
-import com.zzy.minibo.Activities.StatusActivity;
+import com.zzy.minibo.Activities.PicturesActivity;
+import com.zzy.minibo.Activities.StatusEditActivity;
 import com.zzy.minibo.Adapter.StatusAdapter;
 import com.zzy.minibo.Members.LP_STATUS;
 import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.Members.StatusTimeLine;
 import com.zzy.minibo.R;
 import com.zzy.minibo.Utils.AllParams.ParamsOfStatusTL;
-import com.zzy.minibo.Utils.HttpCallBack;
+import com.zzy.minibo.WBListener.HttpCallBack;
 import com.zzy.minibo.Utils.WBApiConnector;
+import com.zzy.minibo.WBListener.PictureTapCallback;
 
 import org.litepal.LitePal;
 
@@ -70,8 +72,21 @@ public class StatusFragment extends Fragment {
             switch (msg.what){
                 case MESSAGE_FROM_INITIAL:
                     statusAdapter = new StatusAdapter(statusList,getContext());
+                    statusAdapter.setPictureTapCallback(new PictureTapCallback() {
+                        @Override
+                        public void callback(int statusPosition,int postion, int from) {
+                            Intent intent = new Intent(getContext(), PicturesActivity.class);
+                            intent.putExtra("currentPosition",postion);
+                            if (from == 0){
+                                intent.putStringArrayListExtra("urls", (ArrayList<String>) statusList.get(statusPosition).getPic_urls());
+                            } else {
+                                intent.putStringArrayListExtra("urls", (ArrayList<String>) statusList.get(statusPosition).getRetweeted_status().getPic_urls());
+                            }
+                            startActivity(intent);
+                        }
+                    });
                     LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
-                    linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+                    linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
                     mStatus_rv.setLayoutManager(linearLayoutManager);
                     mStatus_rv.setAdapter(statusAdapter);
                     break;
@@ -82,7 +97,8 @@ public class StatusFragment extends Fragment {
                         relresh_none_toast.setText("已经最新了！！(•ᴗ•)");
                         relresh_none_toast.show();
                     }else {
-                        statusList = statusListCache;
+                        statusList.clear();
+                        statusList.addAll(statusListCache);
                         statusAdapter.notifyDataSetChanged();
                         Toast refresh_toast = Toast.makeText(getContext(),null,Toast.LENGTH_SHORT);
                         refresh_toast.setText("更新了"+statusListCache.size()+"条微博");
@@ -90,11 +106,11 @@ public class StatusFragment extends Fragment {
                     }
                     break;
                 case MESSAGE_FROM_GET_MORE:
-                    statusList.addAll(statusListCache);
                     progress_layout.setVisibility(View.GONE);
+                    statusList.addAll(statusListCache);
                     statusAdapter.notifyDataSetChanged();
                     Toast get_more_toast = Toast.makeText(getContext(),null,Toast.LENGTH_SHORT);
-                    get_more_toast.setText("微博 +"+statusListCache.size()+"_(:з」∠)_");
+                    get_more_toast.setText("微博 +"+statusListCache.size());
                     get_more_toast.show();
                     break;
                 case MESSAGE_FROM_ERROR:
@@ -118,28 +134,8 @@ public class StatusFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_status, container, false);
-        mToolbar = view.findViewById(R.id.fg_status_toolbar);
-        mToolbar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mStatus_rv.smoothScrollToPosition(0);
-            }
-        });
-        mStatus_rv = view.findViewById(R.id.fg_status_recyclerview);
-        swipeRefreshLayout = view.findViewById(R.id.fg_status_refreshlayout);
-        progress_layout = view.findViewById(R.id.fg_status_progressbar);
-        floatingMenu = view.findViewById(R.id.fg_status_fab);
-        floatingMenu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Context context = getContext();
-                if (context != null){
-                    context.startActivity(new Intent(getContext(), StatusActivity.class));
-                }
-            }
-        });
+        initView(view);
         accessToken = AccessTokenKeeper.readAccessToken(getContext());
-
         getInitialStatus();
         mStatus_rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -161,6 +157,29 @@ public class StatusFragment extends Fragment {
         });
         initRefreshLayout();
         return view;
+    }
+
+    private void initView(View view) {
+        mToolbar = view.findViewById(R.id.fg_status_toolbar);
+        mToolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mStatus_rv.smoothScrollToPosition(0);
+            }
+        });
+        mStatus_rv = view.findViewById(R.id.fg_status_recyclerview);
+        swipeRefreshLayout = view.findViewById(R.id.fg_status_refreshlayout);
+        progress_layout = view.findViewById(R.id.fg_status_progressbar);
+        floatingMenu = view.findViewById(R.id.fg_status_fab);
+        floatingMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Context context = getContext();
+                if (context != null){
+                    context.startActivity(new Intent(getContext(), StatusEditActivity.class));
+                }
+            }
+        });
     }
 
     /**

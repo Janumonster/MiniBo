@@ -24,4 +24,5 @@
     <string name="create_at">create_at</string>
     <string name="status_text">status_text</string>
     <string name="status_repost_text">status_repost_text</string>
+    <string name="say_something">说点什么？</string>
 </resources>

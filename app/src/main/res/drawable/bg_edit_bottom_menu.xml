@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:drawable="@drawable/bg_edit_bottom_menu_one"/>
+    <item android:drawable="@drawable/bg_edit_bottom_menu_two"
+        android:top="25dp"/>
+
+</layer-list>

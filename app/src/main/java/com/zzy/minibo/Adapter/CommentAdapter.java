@@ -5,6 +5,7 @@ import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -12,10 +13,12 @@ import com.zzy.minibo.Members.Comment;
 import com.zzy.minibo.Members.User;
 import com.zzy.minibo.R;
 import com.zzy.minibo.Utils.TextFilter;
+import com.zzy.minibo.WBListener.SimpleIntCallback;
 
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -23,6 +26,17 @@ public class CommentAdapter extends RecyclerView.Adapter <CommentAdapter.ViewHol
 
     private List<Comment> commentList;
     private Context mContext;
+
+    private SimpleIntCallback simpleCallback = new SimpleIntCallback() {
+        @Override
+        public void callback(int i) {
+
+        }
+    };
+
+    public void setSimpleCallback(SimpleIntCallback simpleCallback) {
+        this.simpleCallback = simpleCallback;
+    }
 
     private boolean isBottom = false;
 
@@ -37,7 +51,8 @@ public class CommentAdapter extends RecyclerView.Adapter <CommentAdapter.ViewHol
         TextView userName;
         TextView commentText;
         TextView createAt;
-        TextView likeNum;
+        ImageView likeNum;
+        ConstraintLayout constraintLayout;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -46,6 +61,7 @@ public class CommentAdapter extends RecyclerView.Adapter <CommentAdapter.ViewHol
             commentText = itemView.findViewById(R.id.comment_card_text);
             createAt = itemView.findViewById(R.id.comment_card_create_at);
             likeNum = itemView.findViewById(R.id.comment_card_like);
+            constraintLayout = itemView.findViewById(R.id.comment_card_context);
         }
     }
     @NonNull
@@ -56,13 +72,13 @@ public class CommentAdapter extends RecyclerView.Adapter <CommentAdapter.ViewHol
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final ViewHolder viewHolder, int i) {
+    public void onBindViewHolder(@NonNull final ViewHolder viewHolder, final int i) {
         Comment comment = commentList.get(i);
         User user = comment.getUser();
         if (user != null){
             Glide.with(mContext)
                     .load(user.getAvatar_large())
-                    .placeholder(R.drawable.icon_user)
+//                    .placeholder(R.drawable.icon_user)
                     .into(viewHolder.circleImageView);
             viewHolder.userName.setText(user.getScreen_name());
         }
@@ -77,6 +93,12 @@ public class CommentAdapter extends RecyclerView.Adapter <CommentAdapter.ViewHol
                 }else {
                     viewHolder.likeNum.setSelected(true);
                 }
+            }
+        });
+        viewHolder.constraintLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                simpleCallback.callback(i);
             }
         });
 

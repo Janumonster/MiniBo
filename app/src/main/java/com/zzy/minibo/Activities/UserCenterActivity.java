@@ -20,7 +20,7 @@ import com.zzy.minibo.Members.StatusTimeLine;
 import com.zzy.minibo.Members.User;
 import com.zzy.minibo.R;
 import com.zzy.minibo.Utils.AllParams.ParamsOfUserTimeLine;
-import com.zzy.minibo.Utils.HttpCallBack;
+import com.zzy.minibo.WBListener.HttpCallBack;
 import com.zzy.minibo.Utils.TextFilter;
 import com.zzy.minibo.Utils.WBApiConnector;
 
@@ -132,7 +132,7 @@ public class UserCenterActivity extends BaseActivity {
         if (mUser != null){
             Glide.with(this)
                     .load(mUser.getAvatar_large())
-                    .placeholder(R.drawable.icon_user)
+//                    .placeholder(R.drawable.icon_user)
                     .into(mUserIcon_civ);
             mUserName_tv.setText(mUser.getScreen_name());
             mUserLocationAndGender_tv.setText(getUserLocationAndGenderString());
