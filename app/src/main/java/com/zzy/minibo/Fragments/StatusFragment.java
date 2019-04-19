@@ -26,6 +26,7 @@ import com.zzy.minibo.Utils.AllParams.ParamsOfStatusTL;
 import com.zzy.minibo.WBListener.HttpCallBack;
 import com.zzy.minibo.Utils.WBApiConnector;
 import com.zzy.minibo.WBListener.PictureTapCallback;
+import com.zzy.minibo.WBListener.RepostStatusCallback;
 
 import org.litepal.LitePal;
 
@@ -33,11 +34,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import static android.app.Activity.RESULT_OK;
 
 public class StatusFragment extends Fragment {
 
@@ -48,6 +52,8 @@ public class StatusFragment extends Fragment {
     private static final int MESSAGE_FROM_GET_MORE = 2;
     private static final int MESSAGE_FROM_ERROR = 3;
     public static final int RECYCLERVIEW_CACHE_SIZE = 100;
+    public static final int REPOST_STATUS_CODE = 1001;
+    public static final int CREATE_STATUS_CODE = 1002;
 
     private List<Status> statusList = new ArrayList<>();
     private List<Status> statusListCache = new ArrayList<>();
@@ -74,15 +80,26 @@ public class StatusFragment extends Fragment {
                     statusAdapter = new StatusAdapter(statusList,getContext());
                     statusAdapter.setPictureTapCallback(new PictureTapCallback() {
                         @Override
-                        public void callback(int statusPosition,int postion, int from) {
+                        public void callback(int statusPosition,int postion, int from,boolean isLocal) {
                             Intent intent = new Intent(getContext(), PicturesActivity.class);
                             intent.putExtra("currentPosition",postion);
-                            if (from == 0){
+                            intent.putExtra("isLoacl",isLocal);
+                            if (from == 0){ // 0，外部微博，1为转发微博，这里进行判断
                                 intent.putStringArrayListExtra("urls", (ArrayList<String>) statusList.get(statusPosition).getPic_urls());
                             } else {
                                 intent.putStringArrayListExtra("urls", (ArrayList<String>) statusList.get(statusPosition).getRetweeted_status().getPic_urls());
                             }
                             startActivity(intent);
+                        }
+                    });
+                    statusAdapter.setRepostStatusCallback(new RepostStatusCallback() {
+                        @Override
+                        public void callback(int position) {
+                            Intent intent = new Intent(getContext(),StatusEditActivity.class);
+                            Bundle bundle = new Bundle();
+                            bundle.putParcelable("repostStatus",statusList.get(position));
+                            intent.putExtras(bundle);
+                            startActivityForResult(intent,REPOST_STATUS_CODE);
                         }
                     });
                     LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
@@ -94,11 +111,10 @@ public class StatusFragment extends Fragment {
                     swipeRefreshLayout.setRefreshing(false);
                     if (statusListCache.size() == 0){
                         Toast relresh_none_toast = Toast.makeText(getContext(),null,Toast.LENGTH_SHORT);
-                        relresh_none_toast.setText("已经最新了！！(•ᴗ•)");
+                        relresh_none_toast.setText("已经最新了！");
                         relresh_none_toast.show();
                     }else {
-                        statusList.clear();
-                        statusList.addAll(statusListCache);
+                        statusList.addAll(0,statusListCache);
                         statusAdapter.notifyDataSetChanged();
                         Toast refresh_toast = Toast.makeText(getContext(),null,Toast.LENGTH_SHORT);
                         refresh_toast.setText("更新了"+statusListCache.size()+"条微博");
@@ -174,10 +190,8 @@ public class StatusFragment extends Fragment {
         floatingMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Context context = getContext();
-                if (context != null){
-                    context.startActivity(new Intent(getContext(), StatusEditActivity.class));
-                }
+                Intent intent = new Intent(getContext(),StatusEditActivity.class);
+                startActivityForResult(intent,CREATE_STATUS_CODE);
             }
         });
     }
@@ -270,7 +284,7 @@ public class StatusFragment extends Fragment {
                 //刷新过程
                 final ParamsOfStatusTL paramsOfStatusTL = new ParamsOfStatusTL.Builder()
                         .access_token(accessToken.getToken())
-//                        .since_id(statusTimeLine.getSince_id())
+                        .since_id(statusTimeLine.getSince_id())
                         .build();
                 WBApiConnector.getStatusesHomeTimeline(paramsOfStatusTL, new HttpCallBack() {
                     @Override
@@ -297,5 +311,35 @@ public class StatusFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (data != null){
+            switch (requestCode){
+                case REPOST_STATUS_CODE:
+                    if (resultCode == RESULT_OK){
+                        Bundle bundle = data.getExtras();
+                        if (bundle != null) {
+                            Status status = bundle.getParcelable("Status");
+                            statusList.add(0,status);
+                            statusAdapter.notifyDataSetChanged();
+                        }
+                    }
+                    break;
+                case CREATE_STATUS_CODE:
+                    if (resultCode == RESULT_OK){
+                        Bundle bundle = data.getExtras();
+                        if (bundle != null) {
+                            Status status = bundle.getParcelable("Status");
+                            statusList.add(0,status);
+                            statusAdapter.notifyDataSetChanged();
+                        }
+                    }
+                    break;
+            }
+        }else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 }

@@ -58,7 +58,7 @@ public final class TextFilter {
                         CenterAlignImageSpan centerAlignImageSpan = new CenterAlignImageSpan(drawable);
                         spannableStringBuilder.append("["+stringBuilder.toString()+"]",centerAlignImageSpan, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                     }else {
-                            spannableStringBuilder.append("[").append(stringBuilder.toString()).append("]");
+                        spannableStringBuilder.append("[").append(stringBuilder.toString()).append("]");
                     }
                     spannableStringBuilder.append("\u00A0");
                     break;
@@ -124,7 +124,7 @@ public final class TextFilter {
                     }else {
                         break;
                     }
-                    String base_short = "http://t.cn/(.{7})";
+                    String base_short = "http://t.cn/(.{7})( ?)";
                     Pattern patternShort = Pattern.compile(base_short);
                     Matcher matcher_short = patternShort.matcher(address_short_text);
                     if (matcher_short.find()){
@@ -314,7 +314,7 @@ public final class TextFilter {
      * 是否存在特殊字符
      */
     private static boolean isSpecialChar(String str) {
-        String regEx = "[`~!#$%^&*()+=|{}':;',\\[\\].<>/?~！#￥%……&*（）——+|{}【】‘；：”“’。，、？]|\n|\r|\t";
+        String regEx = "[ `~!#$%^&*()+=|{}':;',\\[\\].<>/?~！#￥%……&*（）——+|{}【】‘；：”“’。，、？]|\n|\r|\t";
         Pattern p = Pattern.compile(regEx);
         Matcher m = p.matcher(str);
         return m.find();

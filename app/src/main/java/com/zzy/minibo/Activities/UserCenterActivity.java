@@ -119,7 +119,6 @@ public class UserCenterActivity extends BaseActivity {
     }
 
     private void initData(){
-
         if (mUser == null){
             String user_name = mIntent.getStringExtra("user_name");
             if (user_name != null){

@@ -185,6 +185,7 @@ public class StatusActivity extends BaseActivity {
             public void callback(int i) {
                 Intent intent = new Intent(getBaseContext(), PicturesActivity.class);
                 intent.putExtra("currentPosition",i);
+                intent.putExtra("isLoacl",mStatus.isLocal());
                 if (mStatus.getRetweeted_status() == null){
                     intent.putStringArrayListExtra("urls", (ArrayList<String>) mStatus.getPic_urls());
                 }else {
@@ -392,11 +393,16 @@ public class StatusActivity extends BaseActivity {
 
         if (mStatus.getPic_urls() != null ){
             mStatusPictures.setVisibility(View.VISIBLE);
-            List<String> urls = new ArrayList<>();
-            for (int m = 0;m < mStatus.getPic_urls().size();m++){
-                urls.add(mStatus.getBmiddle_pic()+mStatus.getPic_urls().get(m));
+            if (!mStatus.isLocal()){
+                List<String> urls = new ArrayList<>();
+                for (int m = 0;m < mStatus.getPic_urls().size();m++){
+                    urls.add(mStatus.getBmiddle_pic()+mStatus.getPic_urls().get(m));
+                }
+                mStatusPictures.setUrlList(urls);
+            }else {
+                mStatusPictures.setUrlList(mStatus.getPic_urls());
             }
-            mStatusPictures.setUrlList(urls);
+
         }
 
         if (mStatus.getRetweeted_status() != null){
@@ -504,37 +510,40 @@ public class StatusActivity extends BaseActivity {
             return;
         }
         progressBar.setVisibility(View.VISIBLE);
-        ParamsOfComments paramsOfComments = new ParamsOfComments.Builder()
-                .access_token(accessToken.getToken())
-                .statusId(mStatus.getIdstr())
-                .max_id(commentList.get(commentList.size()-1).getIdstr())
-                .build();
-        WBApiConnector.getStatusComments(paramsOfComments, new HttpCallBack() {
-            @Override
-            public void onSuccess(String response) {
-                commentListCache.clear();
-                try {
-                    JSONObject jsonObject = new JSONObject(response);
-                    JSONArray jsonArray = jsonObject.getJSONArray("comments");
-                    for (int i =1 ;i<jsonArray.length();i++){
-                        Comment comment = Comment.getCommentsFromJson(jsonArray.getString(i));
-                        commentListCache.add(comment);
+        ParamsOfComments paramsOfComments = null;
+        if (commentList.size() != 0){
+            paramsOfComments = new ParamsOfComments.Builder()
+                    .access_token(accessToken.getToken())
+                    .statusId(mStatus.getIdstr())
+                    .max_id(commentList.get(commentList.size()-1).getIdstr())
+                    .build();
+        }
+        if (paramsOfComments != null){
+            WBApiConnector.getStatusComments(paramsOfComments, new HttpCallBack() {
+                @Override
+                public void onSuccess(String response) {
+                    commentListCache.clear();
+                    try {
+                        JSONObject jsonObject = new JSONObject(response);
+                        JSONArray jsonArray = jsonObject.getJSONArray("comments");
+                        for (int i =1 ;i<jsonArray.length();i++){
+                            Comment comment = Comment.getCommentsFromJson(jsonArray.getString(i));
+                            commentListCache.add(comment);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    Message message = new Message();
+                    message.what = GET_MORE_COMMENT_SUCCESS;
+                    handler.sendMessage(message);
                 }
-                Message message = new Message();
-                message.what = GET_MORE_COMMENT_SUCCESS;
-                handler.sendMessage(message);
-            }
 
-            @Override
-            public void onError(Exception e) {
+                @Override
+                public void onError(Exception e) {
 
-            }
-        });
-
-
+                }
+            });
+        }
     }
 
 

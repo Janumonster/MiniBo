@@ -32,13 +32,13 @@ public class Status implements Parcelable{
      * -------根据接口给出的Field--------------------------------------------------------------------
      */
     //创建时间 "Thu Sep 20 11:15:36 +0800 2018"
-    private String create_at;
+    private String create_at = null;
     //微博ID，long（int64）
     private long id;
     //微博ID，String型
-    private String idstr;
+    private String idstr = null;
     //微博文字内容
-    private String text;
+    private String text = null;
     //微博文字的长度
     private int textLength;
     //微博来源
@@ -48,7 +48,7 @@ public class Status implements Parcelable{
     //微博是否被截断
     private boolean truncated = false;
     //微博配图连接
-    private List<String> pic_urls;
+    private List<String> pic_urls = null;
     //小图地址
     private String thumbnail_pic = "http://wx4.sinaimg.cn/thumbnail/";
     //中图地址
@@ -62,11 +62,11 @@ public class Status implements Parcelable{
     //转发微博内容
     private Status retweeted_status = null;
     //转发数
-    private String reposts_count;
+    private String reposts_count = "0";
     //评论数
-    private String comments_count;
+    private String comments_count = "0";
     //表态数
-    private String attitudes_count;
+    private String attitudes_count = "0";
     //是否是长微博
     private boolean isLongText;
 
@@ -77,7 +77,42 @@ public class Status implements Parcelable{
 
     }
 
+    protected Status(Parcel in) {
+        type = in.readInt();
+        isLike = in.readInt();
+        isLocal = in.readByte() != 0;
+        create_at = in.readString();
+        id = in.readLong();
+        idstr = in.readString();
+        text = in.readString();
+        textLength = in.readInt();
+        source = in.readString();
+        favroited = in.readByte() != 0;
+        truncated = in.readByte() != 0;
+        pic_urls = in.createStringArrayList();
+        thumbnail_pic = in.readString();
+        bmiddle_pic = in.readString();
+        original_pic = in.readString();
+        geo = in.readString();
+        user = in.readParcelable(User.class.getClassLoader());
+        retweeted_status = in.readParcelable(Status.class.getClassLoader());
+        reposts_count = in.readString();
+        comments_count = in.readString();
+        attitudes_count = in.readString();
+        isLongText = in.readByte() != 0;
+    }
 
+    public static final Creator<Status> CREATOR = new Creator<Status>() {
+        @Override
+        public Status createFromParcel(Parcel in) {
+            return new Status(in);
+        }
+
+        @Override
+        public Status[] newArray(int size) {
+            return new Status[size];
+        }
+    };
 
     /**
      * 从json中获取数据，一定有的数据放前面，防止有些字段没有导致没有读取数据---------------------------
@@ -142,46 +177,10 @@ public class Status implements Parcelable{
 
 
 
+
     /**
      * ---------------序列化------------------------------------------------------------------------
      */
-
-    protected Status(Parcel in) {
-        type = in.readInt();
-        isLike = in.readInt();
-        create_at = in.readString();
-        id = in.readLong();
-        idstr = in.readString();
-        text = in.readString();
-        textLength = in.readInt();
-        source = in.readString();
-        favroited = in.readByte() != 0;
-        truncated = in.readByte() != 0;
-        pic_urls = in.createStringArrayList();
-        thumbnail_pic = in.readString();
-        bmiddle_pic = in.readString();
-        original_pic = in.readString();
-        geo = in.readString();
-        user = in.readParcelable(User.class.getClassLoader());
-        retweeted_status = in.readParcelable(Status.class.getClassLoader());
-        reposts_count = in.readString();
-        comments_count = in.readString();
-        attitudes_count = in.readString();
-        isLongText = in.readByte() != 0;
-    }
-
-    public static final Creator<Status> CREATOR = new Creator<Status>() {
-        @Override
-        public Status createFromParcel(Parcel in) {
-            return new Status(in);
-        }
-
-        @Override
-        public Status[] newArray(int size) {
-            return new Status[size];
-        }
-    };
-
     @Override
     public int describeContents() {
         return 0;
@@ -191,6 +190,7 @@ public class Status implements Parcelable{
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(type);
         dest.writeInt(isLike);
+        dest.writeByte((byte) (isLocal ? 1 : 0));
         dest.writeString(create_at);
         dest.writeLong(id);
         dest.writeString(idstr);
@@ -211,7 +211,6 @@ public class Status implements Parcelable{
         dest.writeString(attitudes_count);
         dest.writeByte((byte) (isLongText ? 1 : 0));
     }
-
     /**
      * -------------------------用于描述微博的类型---------------------------------------------------
      */

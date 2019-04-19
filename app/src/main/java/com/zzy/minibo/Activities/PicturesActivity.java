@@ -4,10 +4,12 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -18,9 +20,14 @@ import android.widget.Toast;
 import com.zzy.minibo.Adapter.PhotoViewAdapter;
 import com.zzy.minibo.MyViews.PhotoViewPager;
 import com.zzy.minibo.R;
+import com.zzy.minibo.Utils.FilesManager;
 import com.zzy.minibo.Utils.WBApiConnector;
 import com.zzy.minibo.WBListener.PicDownloadCallback;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,6 +52,7 @@ public class PicturesActivity extends BaseActivity {
     private TextView picCountText_tv;
     private int postion = 0;
     private ImageButton downloadButton;
+    private boolean isLoacl = false;
 
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler(){
@@ -52,9 +60,11 @@ public class PicturesActivity extends BaseActivity {
         public void handleMessage(Message msg) {
             switch (msg.what){
                 case 0:
-                    String path = (String) msg.obj;
+                    String filename = (String) msg.obj;
+                    String path = Environment.getExternalStorageDirectory()+"/MiniBo/downloadPics/"+filename;
+                    getBaseContext().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + path)));
                     Toast toast = Toast.makeText(getApplicationContext(),null,Toast.LENGTH_SHORT);
-                    toast.setText("已保存到："+path);
+                    toast.setText("已保存到："+Environment.getExternalStorageDirectory()+"/DCIM/Camera/"+path);
                     toast.show();
                     break;
             }
@@ -83,14 +93,18 @@ public class PicturesActivity extends BaseActivity {
     private void initData() {
         Intent intent = getIntent();
         currentPosition = intent.getIntExtra("currentPosition",0);
+        isLoacl = intent.getBooleanExtra("isLoacl",false);
         mOriginList = intent.getStringArrayListExtra("urls");
         listLength = mOriginList.size();
         picCountText_tv.setText(String.valueOf(currentPosition+1)+" | "+listLength);
-        for (String str : mOriginList){
-            mPicturesUrls.add("http://wx4.sinaimg.cn/large/" + str);
-            Log.d("PICTURE", "initData: "+"http://wx4.sinaimg.cn/large/" + str);
+        if (!isLoacl){
+            for (String str : mOriginList){
+                mPicturesUrls.add("http://wx4.sinaimg.cn/large/" + str);
+            }
+        }else {
+            mPicturesUrls.addAll(mOriginList);
         }
-        mOriginPhotoViewAdapter = new PhotoViewAdapter(this, mOriginList,mPicturesUrls);
+        mOriginPhotoViewAdapter = new PhotoViewAdapter(this, mPicturesUrls);
         viewPager.setAdapter(mOriginPhotoViewAdapter);
         viewPager.setCurrentItem(currentPosition);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -118,29 +132,55 @@ public class PicturesActivity extends BaseActivity {
     }
 
     public void downloafpic(String url){
-        final String path = Environment.getExternalStorageDirectory()+"/DCIM/Camera/";
-        WBApiConnector.downloadImage(url, new PicDownloadCallback() {
-            @Override
-            public void callback(InputStream in) {
+        FilesManager.createFileDir(Environment.getExternalStorageDirectory()+"/MiniBo/downloadPics");
+        final String path = Environment.getExternalStorageDirectory()+"/MiniBo/downloadPics/";
+        String fileName = null;
+        if (isLoacl){
+            @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy_MMdd_HHmmss");
+            Date date = new Date(System.currentTimeMillis());
+            Bitmap bitmap = BitmapFactory.decodeFile(url);
+            try {
+                FileOutputStream fileOutputStream = new FileOutputStream(path+"MB_"+simpleDateFormat.format(date)+".jpg");
+                bitmap.compress(Bitmap.CompressFormat.JPEG,100,fileOutputStream);
                 try {
-                    Bitmap bitmap = BitmapFactory.decodeStream(in);
-                    in.close();
-                    @SuppressLint("SimpleDateFormat")
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy_MMdd_HHmmss");
-                    Date date = new Date(System.currentTimeMillis());
-                    FileOutputStream fileOutputStream = new FileOutputStream(path+"MB_"+simpleDateFormat.format(date)+".jpg");
-                    bitmap.compress(Bitmap.CompressFormat.JPEG,100,fileOutputStream);
+                    fileOutputStream.flush();
                     fileOutputStream.close();
-                    Message message = new Message();
-                    message.what = 0;
-                    message.obj = path+"MB_"+simpleDateFormat.format(date)+".jpg";
-                    handler.sendMessage(message);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
+                Message message = new Message();
+                message.what = 0;
+                message.obj = "MB_"+simpleDateFormat.format(date)+".jpg";
+                handler.sendMessage(message);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
             }
-        });
+
+        }else {
+            WBApiConnector.downloadImage(url, new PicDownloadCallback() {
+                @Override
+                public void callback(InputStream in) {
+                    try {
+                        Bitmap bitmap = BitmapFactory.decodeStream(in);
+                        in.close();
+                        @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy_MMdd_HHmmss");
+                        Date date = new Date(System.currentTimeMillis());
+                        FileOutputStream fileOutputStream = new FileOutputStream(path+"MB_"+simpleDateFormat.format(date)+".jpg");
+                        bitmap.compress(Bitmap.CompressFormat.JPEG,100,fileOutputStream);
+                        fileOutputStream.flush();
+                        fileOutputStream.close();
+                        Message message = new Message();
+                        message.what = 0;
+                        message.obj = "MB_"+simpleDateFormat.format(date)+".jpg";
+                        handler.sendMessage(message);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
+        }
+
     }
 
 }

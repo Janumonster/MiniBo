@@ -3,18 +3,21 @@ package com.zzy.minibo.Activities;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.Toolbar;
 
+import com.bumptech.glide.Glide;
 import com.luck.picture.lib.PictureSelector;
 import com.luck.picture.lib.config.PictureConfig;
 import com.luck.picture.lib.config.PictureMimeType;
 import com.luck.picture.lib.entity.LocalMedia;
-import com.luck.picture.lib.tools.PictureFileUtils;
 import com.sina.weibo.sdk.auth.AccessTokenKeeper;
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
 import com.zzy.minibo.Members.LP_USER;
@@ -30,10 +33,8 @@ import org.litepal.LitePal;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class StatusEditActivity extends BaseActivity {
 
@@ -45,26 +46,76 @@ public class StatusEditActivity extends BaseActivity {
     private Toolbar toolbar;
     private EditText mEdittextView;
     private NineGlideView mNineGlideView;
+    private ConstraintLayout mRepostLayout;
+    private ImageView repostImage;
+    private TextView repostName;
+    private TextView repostText;
     private ImageButton addPics;
     private ImageButton addEmotions;
     private ImageButton atFriends;
     private ImageButton statusSend;
     private CheckBox isCutPic;
 
-    private List<LocalMedia> selectedList = new ArrayList<>();
-    private List<String> selectedPath = new ArrayList<>();
     private Activity mActivity;
 
     private Oauth2AccessToken accessToken;
     private boolean isRepost = false;
     private Status repostStatus = null;
 
+    private List<LocalMedia> selectedList = new ArrayList<>();
+    private List<String> selectedPath = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_status_edit);
         accessToken = AccessTokenKeeper.readAccessToken(this);
+        mActivity = this;
         initView();
+        initData();
+    }
+
+    private void initData() {
+        Intent intent = getIntent();
+        Bundle bundle = intent.getExtras();
+        if (bundle != null){
+            repostStatus = bundle.getParcelable("repostStatus");
+            if (repostStatus != null){
+                mRepostLayout.setVisibility(View.VISIBLE);
+                Log.d(TAG, "initData: "+repostStatus.getIdstr());
+                isRepost = true;
+                if (repostStatus.getRetweeted_status() != null){
+                    String str1 = "//" + "@" + repostStatus.getUser().getScreen_name() + ":" +
+                            repostStatus.getText();
+                    mEdittextView.setText(TextFilter.statusTextFliter(this, str1,null));
+                    Status status = repostStatus.getRetweeted_status();
+                    if (status.getPic_urls() != null && status.getPic_urls().size() > 0){
+                        Glide.with(this)
+                                .load(status.getThumbnail_pic()+status.getPic_urls().get(0))
+                                .into(repostImage);
+                    }else {
+                        Glide.with(this)
+                                .load(status.getUser().getAvatar_hd())
+                                .into(repostImage);
+                    }
+                    repostName.setText("@"+status.getUser().getScreen_name());
+                    repostText.setText(status.getText());
+                }else {
+                    if (repostStatus.getPic_urls() != null && repostStatus.getPic_urls().size() > 0){
+                        Glide.with(this)
+                                .load(repostStatus.getThumbnail_pic()+repostStatus.getPic_urls().get(0))
+                                .into(repostImage);
+                    }else {
+                        Glide.with(this)
+                                .load(repostStatus.getUser().getAvatar_hd())
+                                .into(repostImage);
+                    }
+                    repostName.setText("@"+repostStatus.getUser().getScreen_name());
+                    repostText.setText(repostStatus.getText());
+                }
+            }
+        }
+
     }
 
     private void initView() {
@@ -86,49 +137,49 @@ public class StatusEditActivity extends BaseActivity {
                 mNineGlideView.setUrlList(selectedPath);
             }
         });
+        mRepostLayout = findViewById(R.id.edit_repost_layout);
+        repostImage = findViewById(R.id.edit_repost_image);
+        repostName = findViewById(R.id.edit_repost_user_name);
+        repostText = findViewById(R.id.edit_repost_text);
         isCutPic = findViewById(R.id.edit_cut_pic_check);
         addPics = findViewById(R.id.edit_add_pics);
         addPics.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isCutPic.isChecked()){
-                    PictureSelector.create(StatusEditActivity.this)
-                            .openGallery(PictureMimeType.ofImage())//全部图片
-                            .theme(R.style.picture_minibo_style)//默认主题
-                            .maxSelectNum(9)//最多选9张
-                            .imageSpanCount(4)//每行几张
-                            .selectionMode(PictureConfig.MULTIPLE)//多选
-                            .previewImage(true)//预览图片
-                            .isCamera(true)//调用相机
-                            .enableCrop(true)//允许裁剪
-                            .hideBottomControls(false)// 是否显示uCrop工具栏，默认不显示 true or false
-                            .freeStyleCropEnabled(false)// 裁剪框是否可拖拽 true or false
-                            .withAspectRatio(1,1)// int 裁剪比例 如16:9 3:2 3:4 1:1 可自定义
-                            .scaleEnabled(true)// 裁剪是否可放大缩小图片 true or false
-                            .rotateEnabled(true) // 裁剪是否可旋转图片 true or false
-                            .isGif(true)//显示GIF
-//                            .compress(true)// 是否压缩 true or false
-                            .previewEggs(true)//滑动预览
-                            .selectionMedia(selectedList)// 是否传入已选图片 List<LocalMedia> list;
-                            .isDragFrame(true)// 是否可拖动裁剪框(固定)
-                            .showCropGrid(false)// 是否显示裁剪矩形网格 圆形裁剪时建议设为false    true or false
-                            .forResult(PictureConfig.CHOOSE_REQUEST);//结果回调onActivityResult code
+                if (isRepost){
+                    Toast.makeText(getBaseContext(),"该文本不支持添加图片",Toast.LENGTH_SHORT).show();
                 }else {
-                    PictureSelector.create(StatusEditActivity.this)
-                            .openGallery(PictureMimeType.ofImage())//全部图片
-                            .theme(R.style.picture_minibo_style)//默认主题
-                            .maxSelectNum(9)//最多选9张
-                            .imageSpanCount(4)//每行几张
-                            .selectionMode(PictureConfig.MULTIPLE)//多选
-                            .previewImage(true)//预览图片
-                            .isCamera(true)//调用相机
-                            .isGif(true)//显示GIF
-//                            .compress(true)// 是否压缩 true or false
-                            .previewEggs(true)//滑动预览
-                            .selectionMedia(selectedList)// 是否传入已选图片 List<LocalMedia> list;
-                            .forResult(PictureConfig.CHOOSE_REQUEST);//结果回调onActivityResult code
+                    if (isCutPic.isChecked()){
+                        PictureSelector.create(mActivity)
+                                .openGallery(PictureMimeType.ofAll())
+                                .maxSelectNum(9)
+                                .imageSpanCount(4)
+                                .selectionMode(PictureConfig.MULTIPLE)
+                                .previewImage(true)
+                                .isCamera(true)
+                                .isGif(true)
+                                .isZoomAnim(true)
+                                .enableCrop(true)
+                                .withAspectRatio(1,1)
+                                .hideBottomControls(false)
+                                .selectionMedia(selectedList)
+                                .rotateEnabled(true)
+                                .scaleEnabled(true)
+                                .forResult(PictureConfig.CHOOSE_REQUEST);
+                    }else {
+                        PictureSelector.create(mActivity)
+                                .openGallery(PictureMimeType.ofAll())
+                                .maxSelectNum(9)
+                                .imageSpanCount(4)
+                                .selectionMode(PictureConfig.MULTIPLE)
+                                .previewImage(true)
+                                .isCamera(true)
+                                .isGif(true)
+                                .isZoomAnim(true)
+                                .selectionMedia(selectedList)
+                                .forResult(PictureConfig.CHOOSE_REQUEST);
+                    }
                 }
-
             }
         });
         addEmotions = findViewById(R.id.edit_add_emotions);
@@ -143,46 +194,63 @@ public class StatusEditActivity extends BaseActivity {
         statusSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Status status = new Status();
-                User mUser = null;
-                List<LP_USER> lp_users = LitePal.where("uidstr = ?",accessToken.getUid()).find(LP_USER.class);
-                for (LP_USER l : lp_users){
-                    mUser = User.makeJsonToUser(l.getJson());
-                }
-                status.setUser(mUser);
-                status.setCreated_at(TextFilter.createTimeString());
-                status.setText(mEdittextView.getText().toString());
-                if (isRepost){
-                    status.setRetweeted_status(repostStatus);
-                }
-                status.setReposts_count("0");
-                status.setComments_count("0");
-                status.setAttitudes_count("0");
+                Status status = StatusPacker();
+                Intent intent = new Intent();
+                Bundle bundle = new Bundle();
+                bundle.putParcelable("Status",status);
+                intent.putExtras(bundle);
+                setResult(RESULT_OK,intent);
+                finish();
             }
         });
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode,resultCode,data);
-        if (resultCode == RESULT_OK){
+        if (data != null){
             switch (requestCode){
                 case PictureConfig.CHOOSE_REQUEST:
-                    selectedList = PictureSelector.obtainMultipleResult(data);
-                    selectedPath.clear();
-                    for (LocalMedia localMedia : selectedList){
-                        if (isCutPic.isChecked()){
-                            selectedPath.add(localMedia.getCutPath());
-                        }else {
-                            selectedPath.add(localMedia.getPath());
+                    if (resultCode == RESULT_OK){
+                        selectedList =  PictureSelector.obtainMultipleResult(data);
+                        selectedPath.clear();
+                        for (LocalMedia l :selectedList){
+                            if (isCutPic.isChecked()){
+                                selectedPath.add(l.getCutPath());
+                            }else {
+                                selectedPath.add(l.getPath());
+                            }
                         }
+                        mNineGlideView.setUrlList(selectedPath);
                     }
-                    mNineGlideView.setUrlList(selectedPath);
                     break;
             }
+        }else {
+            super.onActivityResult(requestCode,resultCode,data);
         }
+
+
     }
 
+    private Status StatusPacker(){
+        Status status = new Status();
+        User mUser = null;
+        List<LP_USER> lp_users = LitePal.where("uidstr = ?",accessToken.getUid()).find(LP_USER.class);
+        for (LP_USER l : lp_users){
+            mUser = User.makeJsonToUser(l.getJson());
+        }
+        status.setLocal(true);
+        status.setUser(mUser);
+        status.setPic_urls(selectedPath);
+        status.setCreated_at(TextFilter.createTimeString());
+        status.setText(mEdittextView.getText().toString());
+        if (isRepost){
+            status.setRetweeted_status(repostStatus);
+        }
+        status.setReposts_count("0");
+        status.setComments_count("0");
+        status.setAttitudes_count("0");
 
+        return status;
+    }
 
 }

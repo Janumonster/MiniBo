@@ -1,16 +1,35 @@
 package com.zzy.minibo.Adapter;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.PointF;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
+import com.davemorrissey.labs.subscaleview.ImageSource;
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.github.chrisbanes.photoview.PhotoView;
 import com.zzy.minibo.R;
+import com.zzy.minibo.Utils.WBApiConnector;
+import com.zzy.minibo.WBListener.PicDownloadCallback;
+
+import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.viewpager.widget.PagerAdapter;
 
 public class PhotoViewAdapter extends PagerAdapter {
@@ -19,26 +38,35 @@ public class PhotoViewAdapter extends PagerAdapter {
 
     private Activity mActivity;
     private List<String> pics;
-    private List<String> placeHolder;
 
-    public PhotoViewAdapter(Activity activity,List<String> placeHolder,List<String> list){
+    public PhotoViewAdapter(Activity activity,List<String> list){
         this.mActivity = activity;
-        this.placeHolder = placeHolder;
         this.pics = list;
     }
 
+    @SuppressLint("CheckResult")
     @NonNull
     @Override
     public Object instantiateItem(@NonNull final ViewGroup container, int position) {
         final String uri = pics.get(position);
-        final PhotoView photoView = new PhotoView(mActivity);
-        photoView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        final SubsamplingScaleImageView photoView = new SubsamplingScaleImageView(mActivity);
+        photoView.setScaleAndCenter(1.0f,new PointF(0,0));
+        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+        photoView.setLayoutParams(params);
+        RequestOptions options = new RequestOptions();
+        options.placeholder(R.drawable.image_placeholder);
         Glide.with(mActivity)
+                .asFile()
                 .load(uri)
-//                .placeholder(R.drawable.ic_placeholder)
-                .into(photoView);
-        container.addView(photoView);
+                .apply(options)
+                .into(new SimpleTarget<File>(){
+                    @Override
+                    public void onResourceReady(@NonNull File resource, @Nullable Transition<? super File> transition) {
+                        photoView.setImage(ImageSource.uri(resource.getPath()));
+                    }
+                });
 
+        container.addView(photoView);
         photoView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

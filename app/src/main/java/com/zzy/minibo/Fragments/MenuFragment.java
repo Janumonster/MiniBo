@@ -91,7 +91,9 @@ public class MenuFragment extends Fragment {
             for (LP_USER lp_user : lp_users){
                 mUser = User.makeJsonToUser(lp_user.getJson());
             }
-            setUserText();
+            if(mUser != null){
+                setUserText();
+            }
             ParamsOfUserInfo paramsOfUserInfo = new ParamsOfUserInfo.Builder()
                     .access_token(accessToken.getToken())
                     .uid(accessToken.getUid())

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.zzy.minibo.Activities.StatusActivity;
+import com.zzy.minibo.Activities.StatusEditActivity;
 import com.zzy.minibo.Activities.UserCenterActivity;
 import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.MyViews.NineGlideView;
@@ -21,6 +23,7 @@ import com.zzy.minibo.R;
 import com.zzy.minibo.Utils.TextFilter;
 import com.zzy.minibo.Utils.WBClickSpan.UserIdClickSpan;
 import com.zzy.minibo.WBListener.PictureTapCallback;
+import com.zzy.minibo.WBListener.RepostStatusCallback;
 import com.zzy.minibo.WBListener.SimpleIntCallback;
 import com.zzy.minibo.WBListener.StatusTextFliterCallback;
 
@@ -39,15 +42,14 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
     private List<Status> statuses;
     private Context mContext;
     private boolean isGetBottom = false;
-    private PictureTapCallback pictureTapCallback = new PictureTapCallback() {
-        @Override
-        public void callback(int statusPosition, int postion, int from) {
-
-        }
-    };
+    private PictureTapCallback pictureTapCallback;
+    private RepostStatusCallback repostStatusCallback;
 
     public void setPictureTapCallback(PictureTapCallback pictureTapCallback) {
         this.pictureTapCallback = pictureTapCallback;
+    }
+    public void setRepostStatusCallback(RepostStatusCallback repostStatusCallback) {
+        this.repostStatusCallback = repostStatusCallback;
     }
 
     public StatusAdapter(List<Status> statuses, Context mContext){
@@ -105,7 +107,10 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
     public void onBindViewHolder(@NonNull final StatusAdapter.ViewHolder viewHolder, final int i) {
         final Status status = statuses.get(i);
         if (status.getUser() != null){
-            Glide.with(mContext).load(status.getUser().getAvatar_large()).into(viewHolder.userImage);
+            Glide.with(mContext)
+                    .load(status.getUser().getAvatar_large())
+//                    .placeholder(R.drawable.icon_user)
+                    .into(viewHolder.userImage);
             viewHolder.userName.setText(status.getUser().getScreen_name());
         }
         viewHolder.createTime.setText(TextFilter.TimeFliter(status.getCreated_at()));
@@ -139,7 +144,10 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
         viewHolder.statusPictures.setSimpleIntCallback(new SimpleIntCallback() {
             @Override
             public void callback(int position) {
-                pictureTapCallback.callback(i,position,0);
+                if (pictureTapCallback != null){
+                    pictureTapCallback.callback(i,position,0,status.isLocal());
+                }
+
             }
         });
         //是否是转发微博
@@ -185,7 +193,7 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
             viewHolder.repostStatusImages.setSimpleIntCallback(new SimpleIntCallback() {
                 @Override
                 public void callback(int postion) {
-                    pictureTapCallback.callback(i,postion,1);
+                    pictureTapCallback.callback(i,postion,1,repost_status.isLocal());
                 }
             });
         }else {
@@ -228,7 +236,9 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
         viewHolder.statusRepostNum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (repostStatusCallback != null){
+                    repostStatusCallback.callback(i);
+                }
             }
         });
         //微博评论按钮

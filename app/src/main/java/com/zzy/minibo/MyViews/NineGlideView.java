@@ -1,5 +1,6 @@
 package com.zzy.minibo.MyViews;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -7,6 +8,7 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.zzy.minibo.Activities.PicturesActivity;
@@ -52,6 +54,7 @@ public class NineGlideView extends NineImageLayout {
                 .asBitmap()
                 .load(url)
                 .into(new SimpleTarget<Bitmap>() {
+                    @SuppressLint("CheckResult")
                     @Override
                     public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
                         int w = resource.getWidth();
@@ -71,9 +74,11 @@ public class NineGlideView extends NineImageLayout {
                         }
                         imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                         setOneImageLayout(imageView,newW,newH);
+                        RequestOptions options = new RequestOptions();
+                        options.placeholder(R.drawable.loading_drawable);
                         Glide.with(mContext)
                                 .load(url)
-//                                .placeholder(R.drawable.loading_drawable)
+                                .apply(options)
                                 .into(imageView);
                     }
                 });
@@ -82,11 +87,14 @@ public class NineGlideView extends NineImageLayout {
         return false;
     }
 
+    @SuppressLint("CheckResult")
     @Override
     protected void displayImage(ClickImageView imageView, String url) {
+        RequestOptions options = new RequestOptions();
+        options.placeholder(R.drawable.loading_drawable);
         Glide.with(mContext)
                 .load(url)
-//                .placeholder(R.drawable.loading_drawable)
+                .apply(options)
                 .into(imageView);
     }
 
