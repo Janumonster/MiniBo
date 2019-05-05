@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#fff">
+
+    <LinearLayout
+        android:id="@+id/gallery_toolbar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:orientation="horizontal"
+        android:background="#3E3E3E"
+        android:fitsSystemWindows="true">
+
+        <ImageView
+            android:id="@+id/gallery_toolbar_back_iv_btn"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:src="@drawable/ic_arrow_back_light_blue_500_24dp"
+            android:layout_gravity="center"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/gallery_recycler_body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        </androidx.recyclerview.widget.RecyclerView>
+
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        android:id="@+id/gallery_bottom_bar"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="#3E3E3E"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/gallery_preview_tv_btn"
+            android:layout_width="0dp"
+            android:layout_weight="4"
+            android:layout_height="match_parent"
+            android:textColor="#fff"
+            android:gravity="center"/>
+
+        <TextView
+            android:id="@+id/gallery_selected_num"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:text="0"
+            android:textSize="15sp"
+            android:textColor="#3e3e3e"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp"
+            android:gravity="center"
+            android:background="@drawable/bg_circle"/>
+
+        <TextView
+            android:id="@+id/gallery_done"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:text="完成"
+            android:textColor="#fff"
+            android:gravity="center"/>
+    </LinearLayout>
+
+</LinearLayout>

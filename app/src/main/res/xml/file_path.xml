@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!--
+     external-path：Environment.getExternalStorageDirectory()
+     name：可以随意定义,项目中使用的时候保持一致就可以了
+     path：表示共享的具体路径, .表示当前路径,即表示整个sd卡路径-->
+    <external-path name="external_files" path="."/>
+</paths>

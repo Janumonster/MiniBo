@@ -16,6 +16,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.sina.weibo.sdk.auth.AccessTokenKeeper;
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
 import com.zzy.minibo.Activities.PicturesActivity;
+import com.zzy.minibo.Activities.StatusActivity;
 import com.zzy.minibo.Activities.StatusEditActivity;
 import com.zzy.minibo.Adapter.StatusAdapter;
 import com.zzy.minibo.Members.LP_STATUS;
@@ -27,6 +28,7 @@ import com.zzy.minibo.WBListener.HttpCallBack;
 import com.zzy.minibo.Utils.WBApiConnector;
 import com.zzy.minibo.WBListener.PictureTapCallback;
 import com.zzy.minibo.WBListener.RepostStatusCallback;
+import com.zzy.minibo.WBListener.StatusTapCallback;
 
 import org.litepal.LitePal;
 
@@ -69,6 +71,7 @@ public class StatusFragment extends Fragment {
     private FloatingActionButton floatingMenu;
 
     private boolean isBottom = false;
+    private boolean isGettingMore = false;
 
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler(){
@@ -83,7 +86,7 @@ public class StatusFragment extends Fragment {
                         public void callback(int statusPosition,int postion, int from,boolean isLocal) {
                             Intent intent = new Intent(getContext(), PicturesActivity.class);
                             intent.putExtra("currentPosition",postion);
-                            intent.putExtra("isLoacl",isLocal);
+                            intent.putExtra("isLocal",isLocal);
                             if (from == 0){ // 0，外部微博，1为转发微博，这里进行判断
                                 intent.putStringArrayListExtra("urls", (ArrayList<String>) statusList.get(statusPosition).getPic_urls());
                             } else {
@@ -97,7 +100,21 @@ public class StatusFragment extends Fragment {
                         public void callback(int position) {
                             Intent intent = new Intent(getContext(),StatusEditActivity.class);
                             Bundle bundle = new Bundle();
-                            bundle.putParcelable("repostStatus",statusList.get(position));
+                            bundle.putParcelable("Status",statusList.get(position));
+                            intent.putExtras(bundle);
+                            startActivityForResult(intent,REPOST_STATUS_CODE);
+                        }
+                    });
+                    statusAdapter.setStatusTapCallback(new StatusTapCallback() {
+                        @Override
+                        public void callback(int position, boolean isRepost) {
+                            Intent intent = new Intent(getContext(), StatusActivity.class);
+                            Bundle bundle = new Bundle();
+                            if (isRepost){
+                                bundle.putParcelable("status",statusList.get(position).getRetweeted_status());
+                            }else {
+                                bundle.putParcelable("status",statusList.get(position));
+                            }
                             intent.putExtras(bundle);
                             startActivityForResult(intent,REPOST_STATUS_CODE);
                         }
@@ -122,6 +139,7 @@ public class StatusFragment extends Fragment {
                     }
                     break;
                 case MESSAGE_FROM_GET_MORE:
+                    isGettingMore = false;
                     progress_layout.setVisibility(View.GONE);
                     statusList.addAll(statusListCache);
                     statusAdapter.notifyDataSetChanged();
@@ -200,38 +218,43 @@ public class StatusFragment extends Fragment {
      * 加载更多微博
      */
     private void getMoreStatus() {
-        progress_layout.setVisibility(View.VISIBLE);
-        if (accessToken != null){
-            ParamsOfStatusTL params = new ParamsOfStatusTL.Builder()
-                    .access_token(accessToken.getToken())
-                    .max_id(statusTimeLine.getMax_id())
-                    .build();
-            WBApiConnector.getStatusesHomeTimeline(params, new HttpCallBack() {
-                @Override
-                public void onSuccess(String response) {
-                    statusTimeLine = StatusTimeLine.getStatusesLine(getContext(),response);
-                    statusListCache.clear();
-                    if (statusTimeLine.getStatuses() == null ||statusTimeLine.getStatuses().size() == 0){
-                        List<LP_STATUS> LPSTATUSES = LitePal.offset(statusList.size()).limit(20).order("idstr desc").find(LP_STATUS.class);
-                        for (LP_STATUS l : LPSTATUSES){
-                            statusListCache.add(Status.getStatusFromJson(l.getJson()));
+        if (!isGettingMore){
+            isGettingMore = true;
+            progress_layout.setVisibility(View.VISIBLE);
+            if (accessToken != null){
+                ParamsOfStatusTL params = new ParamsOfStatusTL.Builder()
+                        .access_token(accessToken.getToken())
+                        .max_id(statusTimeLine.getMax_id())
+                        .build();
+                WBApiConnector.getStatusesHomeTimeline(params, new HttpCallBack() {
+                    @Override
+                    public void onSuccess(String response) {
+                        StatusTimeLine sl = StatusTimeLine.getStatusesLine(getContext(),response);
+                        statusTimeLine.setMax_id(sl.getMax_id());
+                        statusListCache.clear();
+                        if (sl.getStatuses() == null ||sl.getStatuses().size() == 0){
+                            List<LP_STATUS> LPSTATUSES = LitePal.offset(statusList.size()).limit(20).order("idstr desc").find(LP_STATUS.class);
+                            for (LP_STATUS l : LPSTATUSES){
+                                statusListCache.add(Status.getStatusFromJson(l.getJson()));
+                            }
+                        }else {
+                            statusListCache.addAll(sl.getStatuses());
                         }
-                    }else {
-                        statusListCache.addAll(statusTimeLine.getStatuses());
+                        Message message = new Message();
+                        message.what = MESSAGE_FROM_GET_MORE;
+                        handler.sendMessage(message);
                     }
-                    Message message = new Message();
-                    message.what = MESSAGE_FROM_GET_MORE;
-                    handler.sendMessage(message);
-                }
 
-                @Override
-                public void onError(Exception e) {
-                    Message message = new Message();
-                    message.what = MESSAGE_FROM_ERROR;
-                    handler.sendMessage(message);
-                }
-            });
+                    @Override
+                    public void onError(Exception e) {
+                        Message message = new Message();
+                        message.what = MESSAGE_FROM_ERROR;
+                        handler.sendMessage(message);
+                    }
+                });
+            }
         }
+
     }
 
     /**

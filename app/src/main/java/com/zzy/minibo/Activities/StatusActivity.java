@@ -26,8 +26,10 @@ import com.bumptech.glide.Glide;
 import com.sina.weibo.sdk.auth.AccessTokenKeeper;
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
 import com.zzy.minibo.Adapter.CommentAdapter;
+import com.zzy.minibo.Adapter.EmotionsAdapter;
 import com.zzy.minibo.Members.Comment;
 import com.zzy.minibo.Members.LP_COMMENTS;
+import com.zzy.minibo.Members.LP_EMOTIONS;
 import com.zzy.minibo.Members.LP_USER;
 import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.Members.User;
@@ -52,9 +54,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -66,6 +70,7 @@ public class StatusActivity extends BaseActivity {
     private static final int CREATE_COMMENT_SUCCESS = 1;
     private static final int FRESH_COMMENT_SUCCESS = 2;
     private static final int GET_MORE_COMMENT_SUCCESS = 3;
+    private static final int REPOST_STATUS = 10000;
 
 
     private Oauth2AccessToken accessToken;
@@ -74,6 +79,7 @@ public class StatusActivity extends BaseActivity {
 
     //微博内容相关
     private Status mStatus;
+    private Status mRepostStatus;
     private User mUser;
     private CircleImageView mUserIcon;
     private TextView mUserName;
@@ -112,8 +118,12 @@ public class StatusActivity extends BaseActivity {
     private TextView commentEditOthers;
     //编辑菜单
     private CheckBox isRepostCheckBox;
-    private ImageView editMenu_photo;
+    private ImageView editMenu_emotions;
+    private RecyclerView emotionsLayout;
+    private List<String> emotions_path = new ArrayList<>();
     private ImageView editMenu_at;
+
+    private boolean isRefreshing = false;
 
 
     @SuppressLint("HandlerLeak")
@@ -129,11 +139,13 @@ public class StatusActivity extends BaseActivity {
                     }else {
                         noCommentText.setVisibility(View.GONE);
                     }
-//                    mCommentsNum.setText("全部评论("+TextFilter.NumberFliter(String.valueOf(commentList.size()))+")");
+                    if (commentList.size() > Integer.valueOf(mStatus.getAttitudes_count())){
+                        mCommentsNum.setText("全部评论("+String.valueOf(commentList.size())+")");
+                    }
                     commentAdapter.notifyDataSetChanged();
                     break;
                 case CREATE_COMMENT_SUCCESS:
-                    refreshLayout.setVisibility(View.VISIBLE);
+//                    refreshLayout.setVisibility(View.VISIBLE);
                     commentEditLayout.setVisibility(View.GONE);
                     noCommentText.setVisibility(View.GONE);
                     commentAdapter.notifyDataSetChanged();
@@ -185,7 +197,7 @@ public class StatusActivity extends BaseActivity {
             public void callback(int i) {
                 Intent intent = new Intent(getBaseContext(), PicturesActivity.class);
                 intent.putExtra("currentPosition",i);
-                intent.putExtra("isLoacl",mStatus.isLocal());
+                intent.putExtra("isLocal",mStatus.isLocal());
                 if (mStatus.getRetweeted_status() == null){
                     intent.putStringArrayListExtra("urls", (ArrayList<String>) mStatus.getPic_urls());
                 }else {
@@ -218,6 +230,16 @@ public class StatusActivity extends BaseActivity {
 
         //底部菜单
         mRepost = findViewById(R.id.status_repost);
+        mRepost.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getBaseContext(),StatusEditActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putParcelable("Status",mStatus);
+                intent.putExtras(bundle);
+                startActivityForResult(intent,REPOST_STATUS);
+            }
+        });
         mComments = findViewById(R.id.status_comment);
         mComments.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -294,10 +316,14 @@ public class StatusActivity extends BaseActivity {
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                isRefreshing = true;
                 searchEdittext.setText("");
                 searchEdittext.clearFocus();
-                isSearching = false;
-                getCommentData();
+                if (commentList.size() <= Integer.valueOf(mStatus.getComments_count())){
+                    getCommentData();
+                }else {
+                    refreshLayout.setRefreshing(false);
+                }
             }
         });
         progressBar = findViewById(R.id.status_comment_progressbar);
@@ -330,15 +356,49 @@ public class StatusActivity extends BaseActivity {
             }
         });
         commentEditView = findViewById(R.id.comment_edit);
+        commentEditView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                emotionsLayout.setVisibility(View.GONE);
+            }
+        });
         commentEditOthers = findViewById(R.id.comment_edit_others);
         commentEditOthers.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 commentEditLayout.setVisibility(View.GONE);
+                emotionsLayout.setVisibility(View.GONE);
                 KeyBoardManager.hideKeyBoard(getBaseContext(),commentEditView);
             }
         });
-        editMenu_at = findViewById(R.id.comment_edit_menu_at);
+        editMenu_emotions = findViewById(R.id.comment_edit_menu_add_emotion);
+        editMenu_emotions.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                KeyBoardManager.hideKeyBoard(getBaseContext(),commentEditView);
+                emotionsLayout.setVisibility(View.VISIBLE);
+            }
+        });
+        emotionsLayout = findViewById(R.id.comment_edit_menu_emotions);
+        List<LP_EMOTIONS> lp_emotions = LitePal.findAll(LP_EMOTIONS.class);
+        for (LP_EMOTIONS l : lp_emotions){
+            emotions_path.add(l.getValue());
+        }
+        EmotionsAdapter emotionsAdapter = new EmotionsAdapter(emotions_path,this);
+        emotionsAdapter.setSimpleIntCallback(new SimpleIntCallback() {
+            @Override
+            public void callback(int i) {
+                int curPostion = commentEditView.getSelectionStart();
+                StringBuilder sb = new StringBuilder(commentEditView.getText().toString());
+                sb.insert(curPostion,emotions_path.get(i));
+                commentEditView.setText(TextFilter.statusTextFliter(getBaseContext(),sb.toString(),null));
+                commentEditView.setSelection(curPostion+emotions_path.get(i).length());
+            }
+        });
+        StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(8,StaggeredGridLayoutManager.VERTICAL);
+        emotionsLayout.setLayoutManager(staggeredGridLayoutManager);
+        emotionsLayout.setAdapter(emotionsAdapter);
+
     }
 
 
@@ -437,6 +497,9 @@ public class StatusActivity extends BaseActivity {
 
 
         mCommentsNum.setText("全部评论("+TextFilter.NumberFliter(mStatus.getComments_count())+")");
+        if (mStatus.getIsLike() == 1){
+            mLikes.setSelected(true);
+        }
         mLikes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -497,12 +560,9 @@ public class StatusActivity extends BaseActivity {
      * 获取更多评论
      */
     private void getMoreStatus() {
-//        if (commentList.size() >= Integer.valueOf(mStatus.getComments_count())){
-//            Toast toast_all = Toast.makeText(this,null,Toast.LENGTH_SHORT);
-//            toast_all.setText("已加载全部评论");
-//            toast_all.show();
-//            return;
-//        }
+        if (commentList.size() >= Integer.valueOf(mStatus.getComments_count())){
+            return;
+        }
         if (isSearching){
             Toast toast_search = Toast.makeText(this,null,Toast.LENGTH_SHORT);
             toast_search.setText("搜索界面暂不支持加载更多");
@@ -547,6 +607,29 @@ public class StatusActivity extends BaseActivity {
     }
 
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (data != null){
+            switch (requestCode){
+                case REPOST_STATUS:
+                    if (resultCode == RESULT_OK){
+                        Bundle bundle = data.getExtras();
+                        if (bundle != null){
+                            Intent intent = new Intent();
+                            intent.putExtras(bundle);
+                            setResult(RESULT_OK,intent);
+                        }
+                    }
+                    break;
+                default:
+                    super.onActivityResult(requestCode, resultCode, data);
+            }
+
+        }else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
     private void findString(String str) {
         if (!isSearching){
             commentListCache.clear();
@@ -570,4 +653,9 @@ public class StatusActivity extends BaseActivity {
         commentAdapter.notifyDataSetChanged();
     }
 
+    @Override
+    public void onBackPressed() {
+
+        super.onBackPressed();
+    }
 }

@@ -54,13 +54,13 @@ public final class TextFilter {
                     }
                     Drawable drawable = Drawable.createFromPath(Environment.getExternalStorageDirectory()+"/MiniBo/emotions/["+stringBuilder.toString()+"]");
                     if (drawable != null){
-                        drawable.setBounds(8,0,44,36);
+                        drawable.setBounds(8,0,42,34);
                         CenterAlignImageSpan centerAlignImageSpan = new CenterAlignImageSpan(drawable);
                         spannableStringBuilder.append("["+stringBuilder.toString()+"]",centerAlignImageSpan, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                     }else {
                         spannableStringBuilder.append("[").append(stringBuilder.toString()).append("]");
                     }
-                    spannableStringBuilder.append("\u00A0");
+//                    spannableStringBuilder.append("\u00A0");
                     break;
                 case '@' ://识别ID
                     int id_start = i;
@@ -83,7 +83,7 @@ public final class TextFilter {
                         SpannableString spannableUsername = new SpannableString("@"+username.toString());
                         spannableUsername.setSpan(userIdClickSpan_name,0,username.toString().length()+1,Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                         spannableStringBuilder.append(spannableUsername);
-                        if (id_start != text.length()-1){
+                        if (id_start < text.length()-1){
                             spannableStringBuilder.append(text.charAt(id_start));
                         }
                         i = id_start;

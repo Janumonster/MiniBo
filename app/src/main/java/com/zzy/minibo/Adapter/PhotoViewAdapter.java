@@ -54,7 +54,6 @@ public class PhotoViewAdapter extends PagerAdapter {
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
         photoView.setLayoutParams(params);
         RequestOptions options = new RequestOptions();
-        options.placeholder(R.drawable.image_placeholder);
         Glide.with(mActivity)
                 .asFile()
                 .load(uri)

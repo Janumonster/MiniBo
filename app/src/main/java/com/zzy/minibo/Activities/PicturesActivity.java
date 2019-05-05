@@ -93,10 +93,10 @@ public class PicturesActivity extends BaseActivity {
     private void initData() {
         Intent intent = getIntent();
         currentPosition = intent.getIntExtra("currentPosition",0);
-        isLoacl = intent.getBooleanExtra("isLoacl",false);
+        isLoacl = intent.getBooleanExtra("isLocal",false);
         mOriginList = intent.getStringArrayListExtra("urls");
         listLength = mOriginList.size();
-        picCountText_tv.setText(String.valueOf(currentPosition+1)+" | "+listLength);
+        picCountText_tv.setText((currentPosition+1)+" | "+listLength);
         if (!isLoacl){
             for (String str : mOriginList){
                 mPicturesUrls.add("http://wx4.sinaimg.cn/large/" + str);

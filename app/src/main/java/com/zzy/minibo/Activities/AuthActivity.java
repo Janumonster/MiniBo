@@ -2,6 +2,7 @@ package com.zzy.minibo.Activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
@@ -17,6 +18,8 @@ import com.sina.weibo.sdk.auth.Oauth2AccessToken;
 import com.sina.weibo.sdk.auth.WbAuthListener;
 import com.sina.weibo.sdk.auth.WbConnectErrorMessage;
 import com.sina.weibo.sdk.auth.sso.SsoHandler;
+import com.zzy.minibo.Members.LP_EMOTIONS;
+import com.zzy.minibo.MyApplication;
 import com.zzy.minibo.R;
 import com.zzy.minibo.Utils.Constants;
 import com.zzy.minibo.Utils.FilesManager;
@@ -30,6 +33,8 @@ import org.json.JSONObject;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import androidx.annotation.Nullable;
 import okhttp3.OkHttpClient;
@@ -51,9 +56,7 @@ public class AuthActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth);
         installWBSdk(this);
-
         permission = findViewById(R.id.btn_auth);
-
         mAccessToken = AccessTokenKeeper.readAccessToken(this);
         if (mAccessToken.isSessionValid()){
             Toast.makeText(this,"欢迎回来！", Toast.LENGTH_SHORT).show();
@@ -69,7 +72,6 @@ public class AuthActivity extends BaseActivity {
                 mSsoHandler.authorize(new SelfWbAuthListener());
             }
         });
-
     }
 
     private void installWBSdk(Context context) {
@@ -135,6 +137,7 @@ public class AuthActivity extends BaseActivity {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
                         saveEomtions(jsonObject.getString("value"),jsonObject.getString("url"));
                     }
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -173,6 +176,10 @@ public class AuthActivity extends BaseActivity {
                         FileOutputStream fileOutputStream = new FileOutputStream(path+value);
                         bitmap.compress(Bitmap.CompressFormat.PNG,100,fileOutputStream);
                         fileOutputStream.close();
+                        LP_EMOTIONS lp_emotions = new LP_EMOTIONS();
+                        lp_emotions.setValue(value);
+                        lp_emotions.setPath(path+value);
+                        lp_emotions.save();
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

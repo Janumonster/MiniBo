@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <litepal>
     <dbname value = "miniBoDB"/>
-    <version value = "5"/>
+    <version value = "6"/>
     <list>
         <mapping class ="com.zzy.minibo.Members.LP_STATUS"/>
         <mapping class="com.zzy.minibo.Members.LP_USER"/>
         <mapping class="com.zzy.minibo.Members.LP_COMMENTS"/>
+        <mapping class="com.zzy.minibo.Members.LP_EMOTIONS"/>
     </list>
 </litepal>

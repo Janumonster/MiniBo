@@ -2,9 +2,9 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="30dp"
+    android:layout_height="wrap_content"
     android:padding="2dp"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:background="#fff">
 
     <!--<CheckBox-->
@@ -24,9 +24,19 @@
         <!--android:src="@drawable/ic_insert_photo_grey_500_24dp"/>-->
 
     <ImageView
-        android:id="@+id/comment_edit_menu_at"
+        android:id="@+id/comment_edit_menu_add_emotion"
         android:layout_width="100dp"
-        android:layout_height="match_parent"
-        android:src="@drawable/ic_at_comment_edit_menu"/>
+        android:layout_height="30dp"
+        android:padding="2dp"
+        android:src="@drawable/ic_tag_faces_black_36dp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/comment_edit_menu_emotions"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="4dp"
+        android:visibility="gone"
+        android:layout_gravity="center_horizontal">
+    </androidx.recyclerview.widget.RecyclerView>
 
 </LinearLayout>

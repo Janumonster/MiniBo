@@ -25,6 +25,7 @@ import com.zzy.minibo.Utils.WBClickSpan.UserIdClickSpan;
 import com.zzy.minibo.WBListener.PictureTapCallback;
 import com.zzy.minibo.WBListener.RepostStatusCallback;
 import com.zzy.minibo.WBListener.SimpleIntCallback;
+import com.zzy.minibo.WBListener.StatusTapCallback;
 import com.zzy.minibo.WBListener.StatusTextFliterCallback;
 
 import java.util.ArrayList;
@@ -44,6 +45,11 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
     private boolean isGetBottom = false;
     private PictureTapCallback pictureTapCallback;
     private RepostStatusCallback repostStatusCallback;
+    private StatusTapCallback statusTapCallback;
+
+    public void setStatusTapCallback(StatusTapCallback statusTapCallback) {
+        this.statusTapCallback = statusTapCallback;
+    }
 
     public void setPictureTapCallback(PictureTapCallback pictureTapCallback) {
         this.pictureTapCallback = pictureTapCallback;
@@ -158,11 +164,12 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
             viewHolder.repostStatusLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(mContext, StatusActivity.class);
-                    Bundle bundle = new Bundle();
-                    bundle.putParcelable("status",repost_status);
-                    intent.putExtras(bundle);
-                    mContext.startActivity(intent);
+                    statusTapCallback.callback(i,true);
+//                    Intent intent = new Intent(mContext, StatusActivity.class);
+//                    Bundle bundle = new Bundle();
+//                    bundle.putParcelable("status",repost_status);
+//                    intent.putExtras(bundle);
+//                    mContext.startActivity(intent);
                 }
             });
             viewHolder.repostUsername.setText("@"+repost_status.getUser().getScreen_name());
@@ -205,11 +212,12 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
         viewHolder.statusBody.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(mContext, StatusActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putParcelable("status",status);
-                intent.putExtras(bundle);
-                mContext.startActivity(intent);
+                statusTapCallback.callback(i,false);
+//                Intent intent = new Intent(mContext, StatusActivity.class);
+//                Bundle bundle = new Bundle();
+//                bundle.putParcelable("status",status);
+//                intent.putExtras(bundle);
+//                mContext.startActivity(intent);
             }
         });
         viewHolder.userImage.setOnClickListener(new View.OnClickListener() {
@@ -245,11 +253,12 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
         viewHolder.statusCommentNum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(mContext, StatusActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putParcelable("status",status);
-                intent.putExtras(bundle);
-                mContext.startActivity(intent);
+                statusTapCallback.callback(i,false);
+//                Intent intent = new Intent(mContext, StatusActivity.class);
+//                Bundle bundle = new Bundle();
+//                bundle.putParcelable("status",status);
+//                intent.putExtras(bundle);
+//                mContext.startActivity(intent);
             }
         });
         //微博点赞按钮

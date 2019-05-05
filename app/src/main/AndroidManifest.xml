@@ -18,8 +18,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true"
-        tools:ignore="AllowBackup,GoogleAppIndexingWarning,InnerclassSeparator,UnusedAttribute">
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning">
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.zzy.minibo.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_path"/>
+        </provider>
         <!-- 启动界面 -->
         <activity android:name=".Activities.LaunchActivity">
             <intent-filter>
@@ -51,7 +60,15 @@
         <activity
             android:name=".Activities.PicturesActivity"
             android:launchMode="singleTop" />
+        <activity android:name=".Activities.CropActivity"
+            android:launchMode="singleTop"/>
+        <activity android:name=".Activities.GalleryActivity"
+            android:launchMode="singleTop"/>
+        <activity android:name=".Activities.PhotoActivity"
+            android:launchMode="singleTop"/>
 
     </application>
+
+
 
 </manifest>
