@@ -171,7 +171,6 @@ public final class TextFilter {
      * Sun_Apr_07_19:46:42_+0800_2019
      */
     public static String TimeFliter(String statusTime){
-        Log.d("TimeFliter",statusTime);
         StringBuilder stringBuilder = new StringBuilder();
         long t = System.currentTimeMillis();
         Calendar calendar = Calendar.getInstance();

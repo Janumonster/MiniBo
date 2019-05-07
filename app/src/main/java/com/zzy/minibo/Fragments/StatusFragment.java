@@ -3,6 +3,7 @@ package com.zzy.minibo.Fragments;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -261,36 +262,53 @@ public class StatusFragment extends Fragment {
      * 初始化微博列表，第一次请求
      */
     private void getInitialStatus() {
-        if (accessToken != null){
-            ParamsOfStatusTL paramsOfStatusTL = new ParamsOfStatusTL.Builder()
-                    .access_token(accessToken.getToken())
-                    .build();
-            WBApiConnector.getStatusesHomeTimeline(paramsOfStatusTL, new HttpCallBack() {
-                @Override
-                public void onSuccess(String response) {
-                    statusTimeLine = StatusTimeLine.getStatusesLine(getContext(),response);
-                    statusList = statusTimeLine.getStatuses();
-                    statusListCache.clear();
-                    if (statusList.size() == 0){
-                        List<LP_STATUS> LPSTATUSES = LitePal.limit(20).order("idstr desc").find(LP_STATUS.class);
-                        for (LP_STATUS l : LPSTATUSES){
-                            statusListCache.add(Status.getStatusFromJson(l.getJson()));
-                        }
-                        statusList.addAll(statusListCache);
-                    }
-                    Message message = new Message();
-                    message.what = MESSAGE_FROM_INITIAL;
-                    handler.sendMessage(message);
-                }
 
-                @Override
-                public void onError(Exception e) {
-                    Message message = new Message();
-                    message.what = MESSAGE_FROM_ERROR;
-                    handler.sendMessage(message);
+        if (statusList.size() == 0){
+            List<LP_STATUS> LPSTATUSES = LitePal.findAll(LP_STATUS.class);
+            int length = LPSTATUSES.size();
+            for (int i = 0;i < length; i++){
+                statusListCache.add(Status.getStatusFromJson(LPSTATUSES.get(length-i-1).getJson()));
+                if (statusListCache.size() >= 20){
+                    break;
                 }
-            });
+            }
+            statusList.addAll(statusListCache);
         }
+        Message message = new Message();
+        message.what = MESSAGE_FROM_INITIAL;
+        handler.sendMessage(message);
+
+
+//        if (accessToken != null){
+//            ParamsOfStatusTL paramsOfStatusTL = new ParamsOfStatusTL.Builder()
+//                    .access_token(accessToken.getToken())
+//                    .build();
+//            WBApiConnector.getStatusesHomeTimeline(paramsOfStatusTL, new HttpCallBack() {
+//                @Override
+//                public void onSuccess(String response) {
+//                    statusTimeLine = StatusTimeLine.getStatusesLine(getContext(),response);
+//                    statusList = statusTimeLine.getStatuses();
+//                    statusListCache.clear();
+//                    if (statusList.size() == 0){
+//                        List<LP_STATUS> LPSTATUSES = LitePal.limit(20).order("idstr desc").find(LP_STATUS.class);
+//                        for (LP_STATUS l : LPSTATUSES){
+//                            statusListCache.add(Status.getStatusFromJson(l.getJson()));
+//                        }
+//                        statusList.addAll(statusListCache);
+//                    }
+//                    Message message = new Message();
+//                    message.what = MESSAGE_FROM_INITIAL;
+//                    handler.sendMessage(message);
+//                }
+//
+//                @Override
+//                public void onError(Exception e) {
+//                    Message message = new Message();
+//                    message.what = MESSAGE_FROM_ERROR;
+//                    handler.sendMessage(message);
+//                }
+//            });
+//        }
     }
 
 
@@ -334,6 +352,11 @@ public class StatusFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.zzy.minibo.Activities;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
@@ -21,6 +22,7 @@ import com.sina.weibo.sdk.auth.Oauth2AccessToken;
 import com.zzy.minibo.Adapter.EmotionsAdapter;
 import com.zzy.minibo.Members.ImageBean;
 import com.zzy.minibo.Members.LP_EMOTIONS;
+import com.zzy.minibo.Members.LP_STATUS;
 import com.zzy.minibo.Members.LP_USER;
 import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.Members.User;
@@ -32,7 +34,9 @@ import com.zzy.minibo.WBListener.SimpleIntCallback;
 
 import org.litepal.LitePal;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -242,24 +246,58 @@ public class StatusEditActivity extends BaseActivity {
     }
 
     private Status StatusPacker(){
+        StringBuilder stringBuilder = new StringBuilder();
+        String time = TextFilter.createTimeString();
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+        Date date = new Date(System.currentTimeMillis());
+        stringBuilder.append("{\"created_at\":").append("\"").append(time).append("\",");
+        stringBuilder.append("\"id\":").append(simpleDateFormat.format(date)).append(",");
+        stringBuilder.append("\"idstr\":").append("\"").append(simpleDateFormat.format(date)).append("\",");
+        stringBuilder.append("\"user\":");
         Status status = new Status();
         User mUser = null;
         List<LP_USER> lp_users = LitePal.where("uidstr = ?",accessToken.getUid()).find(LP_USER.class);
         for (LP_USER l : lp_users){
             mUser = User.makeJsonToUser(l.getJson());
+            stringBuilder.append(l.getJson()).append(",");
         }
         status.setLocal(true);
+        stringBuilder.append("\"can_edit\":").append("true,");
         status.setUser(mUser);
         status.setPic_urls(selectedPath);
-        status.setCreated_at(TextFilter.createTimeString());
+        stringBuilder.append("\"pic_urls\":[");
+        for (int i = 0 ;i < selectedPath.size();i++){
+            if (i == selectedPath.size()-1){
+                stringBuilder.append("{\"thumbnail_pic\":\"").append(selectedPath.get(i)).append("\"}");
+            }else {
+                stringBuilder.append("{\"thumbnail_pic\":\"").append(selectedPath.get(i)).append("\"},");
+            }
+        }
+        stringBuilder.append("],");
+        status.setCreated_at(time);
         status.setText(mEdittextView.getText().toString());
+        if (selectedPath.size() != 0 && status.getText().length() == 0){
+            status.setText("分享图片");
+        }
+        stringBuilder.append("\"text\":\"").append(status.getText()).append("\",");
         if (isRepost){
             status.setRetweeted_status(repostStatus.getRetweeted_status());
+            List<LP_STATUS> lp_statuses = LitePal.where("idstr = ?",repostStatus.getIdstr()).find(LP_STATUS.class);
+            for (LP_STATUS l : lp_statuses){
+                stringBuilder.append("\"retweeted_status\":").append(l.getJson()).append(",");
+            }
         }
         status.setReposts_count("0");
         status.setComments_count("0");
         status.setAttitudes_count("0");
-
+        stringBuilder.append("\"reposts_count\":0," +
+                "\"comments_count\":0," +
+                "\"attitudes_count\":0 }");
+        LP_STATUS lp_status = new LP_STATUS();
+        lp_status.setIdstr(simpleDateFormat.format(date));
+        lp_status.setJson(stringBuilder.toString());
+        Log.d(TAG, "StatusPacker: "+stringBuilder.toString());
+        lp_status.save();
         return status;
     }
 

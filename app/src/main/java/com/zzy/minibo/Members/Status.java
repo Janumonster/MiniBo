@@ -133,10 +133,18 @@ public class Status implements Parcelable{
                 status.setText(jsonObject.getString("text"));
                 List<String> urls = new ArrayList<>();
                 JSONArray jsonArray =jsonObject.getJSONArray("pic_urls");
-                for (int i = 0;i<jsonArray.length();i++){
-                    String str = jsonArray.getJSONObject(i).getString("thumbnail_pic");
-                    str = str.substring(32);
-                    urls.add(str);
+                if (!jsonObject.getBoolean("can_edit")){
+                    for (int i = 0;i<jsonArray.length();i++){
+                        String str = jsonArray.getJSONObject(i).getString("thumbnail_pic");
+                        str = str.substring(32);
+                        urls.add(str);
+                    }
+                }else {
+                    status.setLocal(true);
+                    for (int i = 0;i<jsonArray.length();i++){
+                        String str = jsonArray.getJSONObject(i).getString("thumbnail_pic");
+                        urls.add(str);
+                    }
                 }
                 status.setPic_urls(urls);
                 status.setReposts_count(jsonObject.getString("reposts_count"));

@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -38,6 +39,7 @@ public class PhotoViewAdapter extends PagerAdapter {
 
     private Activity mActivity;
     private List<String> pics;
+    private boolean isLocal;
 
     public PhotoViewAdapter(Activity activity,List<String> list){
         this.mActivity = activity;
@@ -54,15 +56,24 @@ public class PhotoViewAdapter extends PagerAdapter {
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
         photoView.setLayoutParams(params);
         photoView.setImage(ImageSource.resource(R.drawable.ic_placeholder));
-        Glide.with(mActivity)
-                .asFile()
-                .load(uri)
-                .into(new SimpleTarget<File>(){
-                    @Override
-                    public void onResourceReady(@NonNull File resource, @Nullable Transition<? super File> transition) {
-                        photoView.setImage(ImageSource.uri(resource.getPath()));
-                    }
-                });
+        if (isLocal){
+            File file = new File(uri);
+            if (file.exists()){
+                photoView.setImage(ImageSource.uri(file.getPath()));
+            }
+
+        }else {
+            Glide.with(mActivity)
+                    .asFile()
+                    .load(uri)
+                    .into(new SimpleTarget<File>(){
+                        @Override
+                        public void onResourceReady(@NonNull File resource, @Nullable Transition<? super File> transition) {
+                            photoView.setImage(ImageSource.uri(resource.getPath()));
+                        }
+                    });
+        }
+
 
         container.addView(photoView);
         photoView.setOnClickListener(new View.OnClickListener() {
@@ -95,4 +106,11 @@ public class PhotoViewAdapter extends PagerAdapter {
         return POSITION_NONE;
     }
 
+    public void setIsLocal(boolean isLocal) {
+        this.isLocal = isLocal;
+    }
+
+    public boolean getIsLocal() {
+        return isLocal;
+    }
 }

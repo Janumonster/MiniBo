@@ -1,6 +1,5 @@
 package com.zzy.minibo.Members;
 
-import org.litepal.annotation.Column;
 import org.litepal.crud.LitePalSupport;
 
 public class LP_STATUS extends LitePalSupport {
@@ -23,4 +22,5 @@ public class LP_STATUS extends LitePalSupport {
     public void setJson(String json) {
         this.json = json;
     }
+
 }

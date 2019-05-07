@@ -105,6 +105,7 @@ public class PicturesActivity extends BaseActivity {
             mPicturesUrls.addAll(mOriginList);
         }
         mOriginPhotoViewAdapter = new PhotoViewAdapter(this, mPicturesUrls);
+        mOriginPhotoViewAdapter.setIsLocal(isLoacl);
         viewPager.setAdapter(mOriginPhotoViewAdapter);
         viewPager.setCurrentItem(currentPosition);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
