@@ -115,7 +115,7 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
         if (status.getUser() != null){
             Glide.with(mContext)
                     .load(status.getUser().getAvatar_large())
-//                    .placeholder(R.drawable.icon_user)
+                    .placeholder(R.drawable.icon_user)
                     .into(viewHolder.userImage);
             viewHolder.userName.setText(status.getUser().getScreen_name());
         }

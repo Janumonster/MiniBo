@@ -1,5 +1,6 @@
 package com.zzy.minibo.Activities;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.database.Cursor;
@@ -35,6 +36,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import pub.devrel.easypermissions.EasyPermissions;
 
 public class GalleryActivity extends BaseActivity {
 
@@ -149,7 +152,7 @@ public class GalleryActivity extends BaseActivity {
                         }
                     }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-                        imageUri = FileProvider.getUriForFile(GalleryActivity.this,"com.minibo.provider",file);
+                        imageUri = FileProvider.getUriForFile(GalleryActivity.this,"com.zzy.minibo.provider",file);
                     }else {
                         imageUri = Uri.fromFile(file);
                     }
@@ -162,7 +165,10 @@ public class GalleryActivity extends BaseActivity {
                     Bundle bundle = new Bundle();
                     bundle.putParcelableArrayList("imageList", (ArrayList<? extends Parcelable>) mImageBeanList);
                     intent.putExtras(bundle);
-                    startActivityForResult(intent, REQUEST_CODE_PREVIEW);
+                    if(EasyPermissions.hasPermissions(getBaseContext(), Manifest.permission.CAMERA)){
+                        startActivityForResult(intent, REQUEST_CODE_PREVIEW);
+                    }
+
                 }
             }
         });
@@ -247,19 +253,22 @@ public class GalleryActivity extends BaseActivity {
                     while (mCursor.moveToNext()) {
                         // 获取图片的路径
                         String path = mCursor.getString(mCursor.getColumnIndex(MediaStore.Images.Media.DATA));
-                        int size = mCursor.getInt(mCursor.getColumnIndex(MediaStore.Images.Media.SIZE)) / 1024;
-                        String displayName = mCursor.getString(mCursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME));
-                        //用于展示相册初始化界面
-                        ImageBean imageBean = new ImageBean(path, size, displayName);
-                        for (int i = 0; i < seclectedList.size();i++){
-                            if (seclectedList.get(i).getPath().equals(imageBean.getPath())){
-                                imageBean.setSelected(true);
-                                break;
+                        File file = new File(path);
+                        if (file.exists()){
+                            int size = mCursor.getInt(mCursor.getColumnIndex(MediaStore.Images.Media.SIZE)) / 1024;
+                            String displayName = mCursor.getString(mCursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME));
+                            //用于展示相册初始化界面
+                            ImageBean imageBean = new ImageBean(path, size, displayName);
+                            for (int i = 0; i < seclectedList.size();i++){
+                                if (seclectedList.get(i).getPath().equals(imageBean.getPath())){
+                                    imageBean.setSelected(true);
+                                    break;
+                                }
                             }
-                        }
-                        mImageBeanList.add(imageBean);
+                            mImageBeanList.add(imageBean);
 //                        // 获取该图片的父路径名
 //                        String dirPath = new File(path).getParentFile().getAbsolutePath();
+                        }
                     }
                     mCursor.close();
                     Message message = new Message();

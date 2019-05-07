@@ -185,6 +185,9 @@ public class PhotoActivity extends BaseActivity {
 
             }
         });
+        if (selectedNum == mImageBeanList.size() && selectedNum != 0){
+            editBtn.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

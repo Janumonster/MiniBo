@@ -84,6 +84,7 @@
             android:layout_height="match_parent"
             android:text="编辑"
             android:textColor="#fff"
+            android:visibility="invisible"
             android:gravity="center"/>
 
         <TextView

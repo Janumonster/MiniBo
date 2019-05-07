@@ -53,11 +53,10 @@ public class PhotoViewAdapter extends PagerAdapter {
         photoView.setScaleAndCenter(1.0f,new PointF(0,0));
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
         photoView.setLayoutParams(params);
-        RequestOptions options = new RequestOptions();
+        photoView.setImage(ImageSource.resource(R.drawable.ic_placeholder));
         Glide.with(mActivity)
                 .asFile()
                 .load(uri)
-                .apply(options)
                 .into(new SimpleTarget<File>(){
                     @Override
                     public void onResourceReady(@NonNull File resource, @Nullable Transition<? super File> transition) {

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -90,11 +91,10 @@ public class NineGlideView extends NineImageLayout {
     @SuppressLint("CheckResult")
     @Override
     protected void displayImage(ClickImageView imageView, String url) {
-        RequestOptions options = new RequestOptions();
-        options.placeholder(R.drawable.loading_drawable);
+        Log.d("TEST", "displayImage: "+url);
         Glide.with(mContext)
                 .load(url)
-                .apply(options)
+                .placeholder(R.drawable.ic_placeholder)
                 .into(imageView);
     }
 
