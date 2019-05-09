@@ -4,8 +4,10 @@ import android.util.ArrayMap;
 import android.util.Log;
 
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
+import com.zzy.minibo.Utils.AllParams.ParamsOfCommentReply;
 import com.zzy.minibo.Utils.AllParams.ParamsOfComments;
 import com.zzy.minibo.Utils.AllParams.ParamsOfCreateComment;
+import com.zzy.minibo.Utils.AllParams.ParamsOfCreateStatus;
 import com.zzy.minibo.Utils.AllParams.ParamsOfStatusTL;
 import com.zzy.minibo.Utils.AllParams.ParamsOfUserInfo;
 import com.zzy.minibo.Utils.AllParams.ParamsOfUserTimeLine;
@@ -16,8 +18,10 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
+import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public final class WBApiConnector {
@@ -38,6 +42,10 @@ public final class WBApiConnector {
     private static final String STATUS_COMMENTS = "https://api.weibo.com/2/comments/show.json";
 
     private static final String COMMENT_CREATE = "https://api.weibo.com/2/comments/create.json";
+
+    private static final String COMMENT_REPLY = "https://api.weibo.com/2/comments/reply.json";
+
+    private static final String STATUS_CREATE = "https://api.weibo.com/2/statuses/share.json";
 
 
     /**
@@ -225,18 +233,22 @@ public final class WBApiConnector {
 
     public static void createComment(ParamsOfCreateComment params,final HttpCallBack callBack){
         final Map<String,String> map = new ArrayMap<>();
-//        map.put("source",params.getSource());
         map.put("access_token",params.getAccess_token());
         map.put("comment",params.getComment());
         map.put("id",params.getIdstr());
         map.put("comment_ori",String.valueOf(params.getComment_ori()));
+        final FormBody.Builder formbodybuilder = new FormBody.Builder();
+        for (String key:map.keySet()){
+            formbodybuilder.add(key,map.get(key));
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
+                RequestBody requestBody = formbodybuilder.build();
                 OkHttpClient client = new OkHttpClient();
                 Request request = new Request.Builder()
-                        .get()
-                        .url(buildURLWithParams(COMMENT_CREATE,map))
+                        .post(requestBody)
+                        .url(COMMENT_CREATE)
                         .build();
 
                 try {
@@ -271,6 +283,69 @@ public final class WBApiConnector {
                     }
                 } catch (IOException e) {
                     callBack.onError(e);
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    public static void createStatus(ParamsOfCreateStatus params, final HttpCallBack callBack){
+        final Map<String,String> map = new ArrayMap<>();
+        map.put("access_token",params.getAccess_token());
+        map.put("status",params.getStatus());
+        map.put("pics", String.valueOf(params.getPics().imageList));
+        final FormBody.Builder formbodybuilder = new FormBody.Builder();
+        for (String key:map.keySet()){
+            formbodybuilder.add(key,map.get(key));
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                RequestBody requestBody = formbodybuilder.build();
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder()
+                        .post(requestBody)
+                        .url(STATUS_CREATE)
+                        .build();
+
+                try {
+                    Response response = client.newCall(request).execute();
+                    if (request != null){
+                        callBack.onSuccess(response.body().string());
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    public static void createCommentReply(ParamsOfCommentReply params, final HttpCallBack callBack){
+        final Map<String,String> map = new ArrayMap<>();
+        map.put("access_token",params.getAccess_token());
+        map.put("cid",params.getCid());
+        map.put("id",params.getId());
+        map.put("comment",params.getComment());
+        final FormBody.Builder formbodybuilder = new FormBody.Builder();
+        for (String key:map.keySet()){
+            formbodybuilder.add(key,map.get(key));
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                RequestBody requestBody = formbodybuilder.build();
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder()
+                        .post(requestBody)
+                        .url(COMMENT_REPLY)
+                        .build();
+
+                try {
+                    Response response = client.newCall(request).execute();
+                    if (request != null){
+                        callBack.onSuccess(response.body().string());
+                    }
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }

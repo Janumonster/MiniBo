@@ -3,6 +3,7 @@ package com.zzy.minibo.Activities;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -17,6 +18,8 @@ import android.widget.Toast;
 import android.widget.Toolbar;
 
 import com.bumptech.glide.Glide;
+import com.sina.weibo.sdk.api.ImageObject;
+import com.sina.weibo.sdk.api.MultiImageObject;
 import com.sina.weibo.sdk.auth.AccessTokenKeeper;
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
 import com.zzy.minibo.Adapter.EmotionsAdapter;
@@ -28,12 +31,16 @@ import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.Members.User;
 import com.zzy.minibo.MyViews.NineGlideView;
 import com.zzy.minibo.R;
+import com.zzy.minibo.Utils.AllParams.ParamsOfCreateStatus;
 import com.zzy.minibo.Utils.KeyBoardManager;
 import com.zzy.minibo.Utils.TextFilter;
+import com.zzy.minibo.Utils.WBApiConnector;
+import com.zzy.minibo.WBListener.HttpCallBack;
 import com.zzy.minibo.WBListener.SimpleIntCallback;
 
 import org.litepal.LitePal;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -208,11 +215,29 @@ public class StatusEditActivity extends BaseActivity {
         statusSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Status status = StatusPacker();
+                Oauth2AccessToken accessToken = AccessTokenKeeper.readAccessToken(getBaseContext());
+                ParamsOfCreateStatus paramsOfCreateStatus = new ParamsOfCreateStatus();
+                paramsOfCreateStatus.setAccess_token(accessToken.getToken());
+                paramsOfCreateStatus.setStatus(mEdittextView.getText().toString()+"https://www.baidu.com");
+                if (selectedPath.size() != 0){
+                    paramsOfCreateStatus.setPics(getMultiImageObject());
+                }
+                WBApiConnector.createStatus(paramsOfCreateStatus, new HttpCallBack() {
+                    @Override
+                    public void onSuccess(String response) {
+                        Log.d(TAG, "onSuccess: "+response);
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+
+                    }
+                });
+//                Status status = StatusPacker();
                 Intent intent = new Intent();
-                Bundle bundle = new Bundle();
-                bundle.putParcelable("Status",status);
-                intent.putExtras(bundle);
+//                Bundle bundle = new Bundle();
+//                bundle.putParcelable("Status",status);
+//                intent.putExtras(bundle);
                 setResult(RESULT_OK,intent);
                 KeyBoardManager.hideKeyBoard(getBaseContext(),mEdittextView);
                 finish();
@@ -299,6 +324,18 @@ public class StatusEditActivity extends BaseActivity {
         Log.d(TAG, "StatusPacker: "+stringBuilder.toString());
         lp_status.save();
         return status;
+    }
+
+    private MultiImageObject getMultiImageObject(){
+        MultiImageObject multiImageObject = new MultiImageObject();
+        //pathList设置的是本地本件的路径,并且是当前应用可以访问的路径，现在不支持网络路径（多图分享依靠微博最新版本的支持，所以当分享到低版本的微博应用时，多图分享失效
+        // 可以通过WbSdk.hasSupportMultiImage 方法判断是否支持多图分享,h5分享微博暂时不支持多图）多图分享接入程序必须有文件读写权限，否则会造成分享失败
+        ArrayList<Uri> pathList = new ArrayList<Uri>();
+        for (String path : selectedPath){
+            pathList.add(Uri.fromFile(new File(path)));
+        }
+        multiImageObject.setImageList(pathList);
+        return multiImageObject;
     }
 
 }

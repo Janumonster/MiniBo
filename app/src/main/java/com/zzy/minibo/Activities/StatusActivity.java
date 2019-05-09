@@ -8,12 +8,9 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.text.SpannableString;
-import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -30,17 +27,17 @@ import com.zzy.minibo.Adapter.EmotionsAdapter;
 import com.zzy.minibo.Members.Comment;
 import com.zzy.minibo.Members.LP_COMMENTS;
 import com.zzy.minibo.Members.LP_EMOTIONS;
-import com.zzy.minibo.Members.LP_USER;
 import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.Members.User;
 import com.zzy.minibo.MyViews.NineGlideView;
 import com.zzy.minibo.R;
+import com.zzy.minibo.Utils.AllParams.ParamsOfCommentReply;
 import com.zzy.minibo.Utils.AllParams.ParamsOfComments;
+import com.zzy.minibo.Utils.AllParams.ParamsOfCreateComment;
 import com.zzy.minibo.WBListener.HttpCallBack;
 import com.zzy.minibo.Utils.KeyBoardManager;
 import com.zzy.minibo.Utils.TextFilter;
 import com.zzy.minibo.Utils.WBApiConnector;
-import com.zzy.minibo.Utils.WBClickSpan.UserIdClickSpan;
 import com.zzy.minibo.WBListener.SimpleIntCallback;
 
 import org.json.JSONArray;
@@ -50,8 +47,6 @@ import org.litepal.LitePal;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -99,6 +94,7 @@ public class StatusActivity extends BaseActivity {
 
     //评论列表
     private TextView mCommentsNum;
+    private String mReplyCommentId;
     private EditText searchEdittext;
     private ImageButton searchBtn;
     private boolean isSearching = false;
@@ -111,7 +107,7 @@ public class StatusActivity extends BaseActivity {
     private LinearLayout progressBar;
 
     //编辑
-    private String mTextCache = null;
+    private String mCommentUserNameCache = null;
     private LinearLayout commentEditLayout;
     private ImageButton commentSendBtn;
     private EditText commentEditView;
@@ -124,6 +120,7 @@ public class StatusActivity extends BaseActivity {
     private ImageView editMenu_at;
 
     private boolean isRefreshing = false;
+    private boolean isReply = false;
 
 
     @SuppressLint("HandlerLeak")
@@ -145,7 +142,11 @@ public class StatusActivity extends BaseActivity {
                     commentAdapter.notifyDataSetChanged();
                     break;
                 case CREATE_COMMENT_SUCCESS:
-//                    refreshLayout.setVisibility(View.VISIBLE);
+                    isReply = false;
+                    Comment comment = Comment.getCommentsFromJson((String) msg.obj);
+                    commentList.add(0,comment);
+                    commentEditView.setText("");
+                    refreshLayout.setRefreshing(false);
                     commentEditLayout.setVisibility(View.GONE);
                     noCommentText.setVisibility(View.GONE);
                     commentAdapter.notifyDataSetChanged();
@@ -287,8 +288,10 @@ public class StatusActivity extends BaseActivity {
         commentAdapter.setSimpleCallback(new SimpleIntCallback() {
             @Override
             public void callback(int i) {
-                mTextCache = commentList.get(i).getUser().getScreen_name();
-                commentEditView.setHint("回复 @"+mTextCache+" :");
+                isReply = true;
+                mReplyCommentId = commentList.get(i).getIdstr();
+                mCommentUserNameCache = commentList.get(i).getUser().getScreen_name();
+                commentEditView.setHint("回复 @"+ mCommentUserNameCache +" :");
                 commentEditLayout.setVisibility(View.VISIBLE);
                 KeyBoardManager.showKeyBoard(getBaseContext(),commentEditView);
             }
@@ -335,24 +338,56 @@ public class StatusActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 KeyBoardManager.hideKeyBoard(getBaseContext(),commentEditView);
-                Comment comment = new Comment();
-                User user;
-                List<LP_USER> lp_users = LitePal.where("uidstr = ?",accessToken.getUid()).find(LP_USER.class);
-                if (lp_users != null){
-                    user = User.makeJsonToUser(lp_users.get(0).getJson());
-                    comment.setUser(user);
-                }
-                if (mTextCache != null && !mTextCache.equals(mUser.getScreen_name())){
-                    comment.setText("回复@"+mTextCache+":"+TextFilter.statusTextFliter(getBaseContext(), commentEditView.getText().toString(), null).toString());
+                String commenttext = null;
+                Oauth2AccessToken accessToken = AccessTokenKeeper.readAccessToken(getBaseContext());
+                if (isReply){
+                    commenttext = "回复@"+ mCommentUserNameCache +":"+commentEditView.getText().toString();
+                    ParamsOfCommentReply paramsOfCommentReply = new ParamsOfCommentReply();
+                    paramsOfCommentReply.setAccess_token(accessToken.getToken());
+                    paramsOfCommentReply.setCid(mReplyCommentId);
+                    paramsOfCommentReply.setId(mStatus.getIdstr());
+                    paramsOfCommentReply.setComment(commenttext);
+                    Log.d(TAG, "onClick: "+paramsOfCommentReply.getCid()+"\n" +
+                            paramsOfCommentReply.getId()+"\n");
+                    WBApiConnector.createCommentReply(paramsOfCommentReply, new HttpCallBack() {
+                        @Override
+                        public void onSuccess(String response) {
+                            Log.d(TAG, "onSuccess: "+response);
+                            Message message = new Message();
+                            message.obj = response;
+                            message.what = CREATE_COMMENT_SUCCESS;
+                            handler.sendMessage(message);
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+
+                        }
+                    });
+
                 }else {
-                    comment.setText(TextFilter.statusTextFliter(getBaseContext(), commentEditView.getText().toString(), null).toString());
+                    commenttext = commentEditView.getText().toString();
+                    ParamsOfCreateComment paramsOfCreateComment = new ParamsOfCreateComment.Builder()
+                            .access_token(accessToken.getToken())
+                            .comment(commenttext)
+                            .idstr(mStatus.getIdstr())
+                            .build();
+                    WBApiConnector.createComment(paramsOfCreateComment, new HttpCallBack() {
+                        @Override
+                        public void onSuccess(String response) {
+                            Message message = new Message();
+                            message.obj = response;
+                            message.what = CREATE_COMMENT_SUCCESS;
+                            handler.sendMessage(message);
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+
+                        }
+                    });
                 }
-                comment.setCreate_at(TextFilter.createTimeString());
-                commentList.add(0,comment);
-                commentEditView.setText("");
-                Message message = new Message();
-                message.what = CREATE_COMMENT_SUCCESS;
-                handler.sendMessage(message);
+
             }
         });
         commentEditView = findViewById(R.id.comment_edit);

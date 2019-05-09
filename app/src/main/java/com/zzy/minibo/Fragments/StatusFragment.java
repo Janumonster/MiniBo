@@ -44,6 +44,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import okhttp3.RequestBody;
+
 import static android.app.Activity.RESULT_OK;
 
 public class StatusFragment extends Fragment {
@@ -262,53 +264,40 @@ public class StatusFragment extends Fragment {
      * 初始化微博列表，第一次请求
      */
     private void getInitialStatus() {
-
-        if (statusList.size() == 0){
-            List<LP_STATUS> LPSTATUSES = LitePal.findAll(LP_STATUS.class);
-            int length = LPSTATUSES.size();
-            for (int i = 0;i < length; i++){
-                statusListCache.add(Status.getStatusFromJson(LPSTATUSES.get(length-i-1).getJson()));
-                if (statusListCache.size() >= 20){
-                    break;
+        if (accessToken != null){
+            ParamsOfStatusTL paramsOfStatusTL = new ParamsOfStatusTL.Builder()
+                    .access_token(accessToken.getToken())
+                    .build();
+            WBApiConnector.getStatusesHomeTimeline(paramsOfStatusTL, new HttpCallBack() {
+                @Override
+                public void onSuccess(String response) {
+                    statusTimeLine = StatusTimeLine.getStatusesLine(getContext(),response);
+                    statusList = statusTimeLine.getStatuses();
+                    statusListCache.clear();
+                    if (statusList.size() == 0){
+                        List<LP_STATUS> LPSTATUSES = LitePal.findAll(LP_STATUS.class);
+                        int length = LPSTATUSES.size();
+                        for (int i = 0;i < length; i++){
+                            statusListCache.add(Status.getStatusFromJson(LPSTATUSES.get(length-i-1).getJson()));
+                            if (statusListCache.size() >= 20){
+                                break;
+                            }
+                        }
+                        statusList.addAll(statusListCache);
+                    }
+                    Message message = new Message();
+                    message.what = MESSAGE_FROM_INITIAL;
+                    handler.sendMessage(message);
                 }
-            }
-            statusList.addAll(statusListCache);
+
+                @Override
+                public void onError(Exception e) {
+                    Message message = new Message();
+                    message.what = MESSAGE_FROM_ERROR;
+                    handler.sendMessage(message);
+                }
+            });
         }
-        Message message = new Message();
-        message.what = MESSAGE_FROM_INITIAL;
-        handler.sendMessage(message);
-
-
-//        if (accessToken != null){
-//            ParamsOfStatusTL paramsOfStatusTL = new ParamsOfStatusTL.Builder()
-//                    .access_token(accessToken.getToken())
-//                    .build();
-//            WBApiConnector.getStatusesHomeTimeline(paramsOfStatusTL, new HttpCallBack() {
-//                @Override
-//                public void onSuccess(String response) {
-//                    statusTimeLine = StatusTimeLine.getStatusesLine(getContext(),response);
-//                    statusList = statusTimeLine.getStatuses();
-//                    statusListCache.clear();
-//                    if (statusList.size() == 0){
-//                        List<LP_STATUS> LPSTATUSES = LitePal.limit(20).order("idstr desc").find(LP_STATUS.class);
-//                        for (LP_STATUS l : LPSTATUSES){
-//                            statusListCache.add(Status.getStatusFromJson(l.getJson()));
-//                        }
-//                        statusList.addAll(statusListCache);
-//                    }
-//                    Message message = new Message();
-//                    message.what = MESSAGE_FROM_INITIAL;
-//                    handler.sendMessage(message);
-//                }
-//
-//                @Override
-//                public void onError(Exception e) {
-//                    Message message = new Message();
-//                    message.what = MESSAGE_FROM_ERROR;
-//                    handler.sendMessage(message);
-//                }
-//            });
-//        }
     }
 
 
@@ -322,29 +311,7 @@ public class StatusFragment extends Fragment {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                //刷新过程
-                final ParamsOfStatusTL paramsOfStatusTL = new ParamsOfStatusTL.Builder()
-                        .access_token(accessToken.getToken())
-                        .since_id(statusTimeLine.getSince_id())
-                        .build();
-                WBApiConnector.getStatusesHomeTimeline(paramsOfStatusTL, new HttpCallBack() {
-                    @Override
-                    public void onSuccess(String response) {
-                        statusTimeLine = StatusTimeLine.getStatusesLine(getContext(),response);
-                        statusListCache.clear();
-                        statusListCache.addAll(statusTimeLine.getStatuses());
-                        Message message = new Message();
-                        message.what = MESSAGE_FROM_REFRESH;
-                        handler.sendMessage(message);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Message message = new Message();
-                        message.what = MESSAGE_FROM_ERROR;
-                        handler.sendMessage(message);
-                    }
-                });
+               RefreshStatus();
             }
         });
     }
@@ -357,6 +324,32 @@ public class StatusFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
+    }
+
+    private void RefreshStatus(){
+        //刷新过程
+        final ParamsOfStatusTL paramsOfStatusTL = new ParamsOfStatusTL.Builder()
+                .access_token(accessToken.getToken())
+                .since_id(statusTimeLine.getSince_id())
+                .build();
+        WBApiConnector.getStatusesHomeTimeline(paramsOfStatusTL, new HttpCallBack() {
+            @Override
+            public void onSuccess(String response) {
+                statusTimeLine = StatusTimeLine.getStatusesLine(getContext(),response);
+                statusListCache.clear();
+                statusListCache.addAll(statusTimeLine.getStatuses());
+                Message message = new Message();
+                message.what = MESSAGE_FROM_REFRESH;
+                handler.sendMessage(message);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Message message = new Message();
+                message.what = MESSAGE_FROM_ERROR;
+                handler.sendMessage(message);
+            }
+        });
     }
 
     @Override
@@ -375,12 +368,8 @@ public class StatusFragment extends Fragment {
                     break;
                 case CREATE_STATUS_CODE:
                     if (resultCode == RESULT_OK){
-                        Bundle bundle = data.getExtras();
-                        if (bundle != null) {
-                            Status status = bundle.getParcelable("Status");
-                            statusList.add(0,status);
-                            statusAdapter.notifyDataSetChanged();
-                        }
+                       swipeRefreshLayout.setRefreshing(true);
+                        RefreshStatus();
                     }
                     break;
             }

@@ -129,7 +129,7 @@ public final class TextFilter {
                     Matcher matcher_short = patternShort.matcher(address_short_text);
                     if (matcher_short.find()){
                         WebUrlClickSpan webUrlClickSpan = new WebUrlClickSpan(context,matcher_short.group(0));
-                        SpannableString spannableStringUrl = new SpannableString("☍网页链接 ");
+                        SpannableString spannableStringUrl = new SpannableString("☞网页链接 ");
                         spannableStringUrl.setSpan(webUrlClickSpan,0,5,Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                         spannableStringBuilder.append(spannableStringUrl);
                         i = i + 19;
@@ -180,26 +180,21 @@ public final class TextFilter {
         if (year >= mYear + 1){
             stringBuilder.append(mYear).append("-");
             stringBuilder.append(getMonth(statusTime.substring(4,7))).append("-").append(statusTime.substring(8,10));
-            Log.d("TimeFliter ", "一年前："+stringBuilder.toString());
             return stringBuilder.toString();
         }else {
             int month = calendar.get(Calendar.MONTH)+1;
             int mMonth = getMonth(statusTime.substring(4,7));
-            Log.d("TimeFliter ", "month = "+mMonth+statusTime.substring(4,7)+month);
             if (month >= mMonth + 1){
                 stringBuilder.append(mMonth).append("-").append(statusTime.substring(8,10)).append(" ").append(statusTime.substring(11,16));
-                Log.d("TimeFliter ", "一个月前："+stringBuilder.toString());
                 return stringBuilder.toString();
             }else {
                 int day = calendar.get(Calendar.DAY_OF_MONTH);
                 int mDay = Integer.valueOf(statusTime.substring(8,10));
                 if (day > mDay + 1){
                     stringBuilder.append(mMonth).append("-").append(statusTime.substring(8,10)).append(" ").append(statusTime.substring(11,16));
-                    Log.d("TimeFliter ", "2天前："+stringBuilder.toString());
                     return stringBuilder.toString();
                 } else if(day == mDay + 1){
                     stringBuilder.append("昨天 ").append(statusTime.substring(11,16));
-                    Log.d("TimeFliter ", "1天前，不超过2天："+stringBuilder.toString());
                     return stringBuilder.toString();
                 } else {
                     int hour = calendar.get(Calendar.HOUR_OF_DAY);
@@ -214,15 +209,12 @@ public final class TextFilter {
 
                     if(timePass >= 60){
                         stringBuilder.append(timePass / 60).append("小时前");
-                        Log.d("TimeFliter ", "n小时前："+stringBuilder.toString());
                         return stringBuilder.toString();
                     }else if (timePass >= 1){
                         stringBuilder.append(timePass).append("分钟前");
-                        Log.d("TimeFliter ", "1分钟前，不超过一小时："+stringBuilder.toString());
                         return stringBuilder.toString();
                     }else {
                         stringBuilder.append("刚刚");
-                        Log.d("TimeFliter ", "不超过1分钟："+stringBuilder.toString());
                         return stringBuilder.toString();
                     }
                 }
