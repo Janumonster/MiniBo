@@ -1,7 +1,9 @@
 package com.zzy.minibo.Activities;
 
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
@@ -10,6 +12,7 @@ import android.widget.TextView;
 import com.zzy.minibo.Adapter.MainPagerAdapter;
 import com.zzy.minibo.Fragments.MenuFragment;
 import com.zzy.minibo.Fragments.StatusFragment;
+import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.Members.User;
 import com.zzy.minibo.MyViews.MBViewPager;
 import com.zzy.minibo.R;
@@ -17,6 +20,7 @@ import com.zzy.minibo.R;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener{
@@ -116,5 +120,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         selectedTv.setTypeface(Typeface.DEFAULT_BOLD);
         unSelectedTv.setTypeface(Typeface.DEFAULT);
     }
+
 
 }

@@ -96,7 +96,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
 
     @Override
     public int getItemCount() {
-        return mImageBeanList.size()+1;
+        return mImageBeanList == null ? 1 : mImageBeanList.size()+1;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

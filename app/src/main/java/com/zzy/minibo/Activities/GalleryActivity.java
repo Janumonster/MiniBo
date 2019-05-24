@@ -86,8 +86,19 @@ public class GalleryActivity extends BaseActivity {
     }
 
     private void initView() {
+        Intent intent = getIntent();
+        Bundle bundle = intent.getExtras();
+        if (bundle != null){
+            seclectedList = bundle.getParcelableArrayList("imageList");
+        }
         toobarLayout = findViewById(R.id.gallery_toolbar_layout);
         backBtn = findViewById(R.id.gallery_toolbar_back_iv_btn);
+        backBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
         selectedCount = findViewById(R.id.gallery_selected_num);
         galleryRecyclerView = findViewById(R.id.gallery_recycler_body);
         bottomLayout = findViewById(R.id.gallery_bottom_bar);
@@ -98,13 +109,12 @@ public class GalleryActivity extends BaseActivity {
                 if (selectedNum != 0){
                     List<ImageBean> list = new ArrayList<>();
                     for (ImageBean imageBean : mImageBeanList){
-                        if (imageBean.isSelected()){
+                        if (imageBean!= null && imageBean.isSelected()){
                             list.add(imageBean);
                         }
                     }
                     Intent intent = new Intent(getBaseContext(),PhotoActivity.class);
                     intent.putExtra("selected_num",selectedNum);
-                    intent.putExtra("unCrop",false);
                     Bundle bundle = new Bundle();
                     bundle.putParcelableArrayList("imageList", (ArrayList<? extends Parcelable>)list);
                     intent.putExtras(bundle);
@@ -151,11 +161,7 @@ public class GalleryActivity extends BaseActivity {
                             e.printStackTrace();
                         }
                     }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-                        imageUri = FileProvider.getUriForFile(GalleryActivity.this,"com.zzy.minibo.provider",file);
-                    }else {
-                        imageUri = Uri.fromFile(file);
-                    }
+                    imageUri = FileProvider.getUriForFile(GalleryActivity.this,"com.zzy.minibo.provider",file);
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
                     startActivityForResult(intent,TAKE_PHOTO);
                 }else {
@@ -187,7 +193,7 @@ public class GalleryActivity extends BaseActivity {
         }
         switch (requestCode){
             case REQUEST_CODE_PREVIEW:
-                if (resultCode == RESULT_OK && data != null){
+                if ((resultCode == RESULT_OK || resultCode == PhotoActivity.RESULT_BACK)&& data != null){
                     int num = data.getIntExtra("selected_num",0);
                     if (selectedNum != num){
                         selectedNum = num;
@@ -200,22 +206,48 @@ public class GalleryActivity extends BaseActivity {
                     }
                 }else if (resultCode == PhotoActivity.RESULT_DONE){
                     Intent intent = data;
-                    setResult(REQUEST_CODE_DONE,intent);
+                    setResult(RESULT_OK,intent);
                     finish();
                 }
                 break;
             case TAKE_PHOTO:
-                ImageBean imageBean = new ImageBean("file:///storage/emulated/0/DCIM/Camera/"+fileName,0,null);
-                seclectedList.add(0,imageBean);
-                this.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file:///storage/emulated/0/DCIM/Camera/"+fileName)));
+                if(resultCode == RESULT_OK){
+                    this.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file:///storage/emulated/0/DCIM/Camera/"+fileName)));
+                    ImageBean imageBean = new ImageBean(filePath+"/"+fileName,0,null);
+                    imageBean.setSelected(true);
+                    mImageBeanList.add(0,imageBean);
+                    seclectedList.add(0,imageBean);
+                    galleryAdapter.notifyDataSetChanged();
+                    selectedNum ++;
+                    selectedCount.setText(String.valueOf(selectedNum));
+                }
+//                Intent backIntent = new Intent();
+//                Bundle bundle1 = new Bundle();
+//                bundle1.putParcelableArrayList("imageList", (ArrayList<? extends Parcelable>) seclectedList);
+//                backIntent.putExtras(bundle1);
+//                setResult(RESULT_OK,backIntent);
+//                finish();
                 break;
             case REQUEST_CODE_DONE:
-                Intent intent = new Intent();
-                if (bundle != null) {
-                    intent.putExtras(bundle);
+                if (resultCode == PhotoActivity.RESULT_BACK && data != null){
+                    int num = data.getIntExtra("selected_num",0);
+                    if (selectedNum != num){
+                        selectedNum = num;
+                        selectedCount.setText(String.valueOf(selectedNum));
+                        if (bundle != null) {
+                            List<ImageBean> list = bundle.getParcelableArrayList("imageList");
+                            seclectedList.clear();
+                            seclectedList.addAll(list);
+                        }
+                    }
+                }else {
+                    Intent intent = new Intent();
+                    if (bundle != null) {
+                        intent.putExtras(bundle);
+                    }
+                    setResult(RESULT_OK,intent);
+                    finish();
                 }
-                setResult(RESULT_OK,intent);
-                finish();
                 break;
         }
     }
@@ -229,7 +261,7 @@ public class GalleryActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        refreshGallery();
+//        refreshGallery();
     }
 
     private void getPhotos() {

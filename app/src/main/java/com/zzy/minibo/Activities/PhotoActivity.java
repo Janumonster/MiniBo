@@ -30,7 +30,8 @@ import java.util.List;
 
 public class PhotoActivity extends BaseActivity {
 
-    public static final int RESULT_DONE = 10001;
+    public static final int RESULT_DONE = 1;
+    public static final int RESULT_BACK = 2;
 
     private int currentPostion = 0;
     private int selectedNum = 0;
@@ -73,7 +74,7 @@ public class PhotoActivity extends BaseActivity {
                 Bundle bundle = new Bundle();
                 bundle.putParcelableArrayList("imageList", (ArrayList<? extends Parcelable>) selectedImageList);
                 intent.putExtras(bundle);
-                setResult(RESULT_OK,intent);
+                setResult(RESULT_BACK,intent);
                 finish();
             }
         });
@@ -99,7 +100,7 @@ public class PhotoActivity extends BaseActivity {
                     if (selectedNum > 9){
                         selectedBtn.setSelected(false);
                         selectedNum --;
-                        Toast.makeText(getBaseContext(),"您只能选9张",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getBaseContext(),"您只能选1张",Toast.LENGTH_SHORT).show();
                         return;
                     }
                 }
@@ -112,9 +113,7 @@ public class PhotoActivity extends BaseActivity {
         editBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!unCrop){
-                    startUCorp();
-                }
+                startUCorp();
             }
         });
         selectedNumText = findViewById(R.id.photo_selected_num);
@@ -123,6 +122,7 @@ public class PhotoActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent();
+                intent.putExtra("isCrop",iscrop);
                 Bundle bundle = new Bundle();
                 bundle.putParcelableArrayList("imageList", (ArrayList<? extends Parcelable>) selectedImageList);
                 intent.putExtras(bundle);
@@ -147,7 +147,6 @@ public class PhotoActivity extends BaseActivity {
     private void initData() {
         Intent intent = getIntent();
         currentPostion = intent.getIntExtra("position",0);
-        unCrop = intent.getBooleanExtra("unCrop",true);
         selectedNum = intent.getIntExtra("selected_num",0);
         selectedNumText.setText(String.valueOf(selectedNum));
         Bundle bundle = intent.getExtras();
@@ -161,7 +160,7 @@ public class PhotoActivity extends BaseActivity {
             photoViewAdapter = new GalleryPhotoViewAdapter(this,mImageBeanList);
             photoViewPager.setAdapter(photoViewAdapter);
             for (ImageBean imageBean : mImageBeanList){
-                if (imageBean.isSelected()){
+                if (imageBean != null && imageBean.isSelected()){
                     selectedImageList.add(imageBean);
                 }
             }
@@ -185,46 +184,42 @@ public class PhotoActivity extends BaseActivity {
 
             }
         });
-        if (selectedNum == mImageBeanList.size() && selectedNum != 0){
-            editBtn.setVisibility(View.VISIBLE);
-        }
     }
 
     @Override
     public void onBackPressed() {
         Intent intent = new Intent();
         intent.putExtra("selected_num",selectedNum);
-        intent.putExtra("ucrop",iscrop);
         Bundle bundle = new Bundle();
         bundle.putParcelableArrayList("imageList", (ArrayList<? extends Parcelable>) selectedImageList);
         intent.putExtras(bundle);
-        setResult(RESULT_OK,intent);
+        setResult(RESULT_BACK,intent);
         finish();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (data != null){
-            switch (requestCode){
-                case UCrop.REQUEST_CROP:
-                    if (resultCode == RESULT_OK){
-                        Uri uri = UCrop.getOutput(data);
-                        ImageBean imageBean = null;
-                        if (uri != null) {
-                            imageBean = new ImageBean(uri.getPath(),0,null);
-                            imageBean.setSelected(true);
-                        }
-                        selectedImageList.set(currentPostion,imageBean);
-                        mImageBeanList.set(currentPostion,imageBean);
-                        photoViewAdapter.notifyDataSetChanged();
-                        getBaseContext().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case UCrop.REQUEST_CROP:
+                if (resultCode == RESULT_OK) {
+                    Uri uri = null;
+                    if (data != null) {
+                        uri = UCrop.getOutput(data);
                     }
-                    iscrop = true;
-                    break;
-            }
-
-        }else {
-            super.onActivityResult(requestCode, resultCode, data);
+                    ImageBean imageBean = null;
+                    if (uri != null) {
+                        imageBean = new ImageBean(uri.getPath(), 0, null);
+                        imageBean.setSelected(true);
+                    }
+                    selectedImageList.set(currentPostion, imageBean);
+                    mImageBeanList.set(currentPostion, imageBean);
+                    photoViewAdapter.notifyDataSetChanged();
+                    getBaseContext().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
+                }
+                iscrop = true;
+                break;
         }
+
     }
 }

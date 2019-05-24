@@ -9,11 +9,13 @@ import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.sina.weibo.sdk.auth.AccessTokenKeeper;
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
+import com.zzy.minibo.Activities.AuthActivity;
 import com.zzy.minibo.Activities.UserCenterActivity;
 import com.zzy.minibo.Members.LP_USER;
 import com.zzy.minibo.Members.User;
@@ -40,6 +42,7 @@ public class MenuFragment extends Fragment {
     private TextView mUserStatusNum_tv;
     private TextView mUserFriendNum_tv;
     private TextView mUserFansNum_tv;
+    private Button mExitButton;
 
     private User mUser;
     private  Oauth2AccessToken accessToken;
@@ -82,7 +85,7 @@ public class MenuFragment extends Fragment {
         mUserStatusNum_tv = view.findViewById(R.id.fg_menu_tv_status);
         mUserFriendNum_tv = view.findViewById(R.id.fg_menu_tv_friends);
         mUserFansNum_tv = view.findViewById(R.id.fg_menu_tv_fans);
-
+        mExitButton = view.findViewById(R.id.fg_menu_btn_exit);
         accessToken = AccessTokenKeeper.readAccessToken(getContext());
 
         if (accessToken != null && accessToken.isSessionValid()){
@@ -122,6 +125,16 @@ public class MenuFragment extends Fragment {
                 Intent intent = new Intent(getContext(), UserCenterActivity.class);
                 intent.putExtras(bundle);
                 startActivity(intent);
+            }
+        });
+
+        mExitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AccessTokenKeeper.clear(getContext());
+                Intent intent = new Intent(getContext(), AuthActivity.class);
+                getActivity().startActivity(intent);
+                getActivity().finish();
             }
         });
 

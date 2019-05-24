@@ -28,6 +28,9 @@ public class Status implements Parcelable{
 
     private boolean isLocal = false;
 
+
+    private List<Comment> commentList = new ArrayList<>();
+
     /**
      * -------根据接口给出的Field--------------------------------------------------------------------
      */
@@ -77,10 +80,12 @@ public class Status implements Parcelable{
 
     }
 
+
     protected Status(Parcel in) {
         type = in.readInt();
         isLike = in.readInt();
         isLocal = in.readByte() != 0;
+        commentList = in.createTypedArrayList(Comment.CREATOR);
         create_at = in.readString();
         id = in.readLong();
         idstr = in.readString();
@@ -150,12 +155,16 @@ public class Status implements Parcelable{
                 status.setReposts_count(jsonObject.getString("reposts_count"));
                 status.setComments_count(jsonObject.getString("comments_count"));
                 status.setAttitudes_count(jsonObject.getString("attitudes_count"));
+
+                LP_STATUS LPSTATUS = new LP_STATUS();
+                LPSTATUS.setIdstr(status.idstr);
+                LPSTATUS.setJson(json);
                 if (!LitePal.isExist(LP_STATUS.class,"idstr = "+status.idstr)){
-                    LP_STATUS LPSTATUS = new LP_STATUS();
-                    LPSTATUS.setIdstr(status.idstr);
-                    LPSTATUS.setJson(json);
                     LPSTATUS.save();
+                }else {
+                    LPSTATUS.updateAll("idstr = "+status.getIdstr());
                 }
+
                 status.setRetweeted_status(Status.getStatusFromJson(jsonObject.getString("retweeted_status")));
                 status.setGeo(jsonObject.getString("geo"));
                 status.setSource(jsonObject.getString("source"));
@@ -184,8 +193,6 @@ public class Status implements Parcelable{
     }
 
 
-
-
     /**
      * ---------------序列化------------------------------------------------------------------------
      */
@@ -199,6 +206,7 @@ public class Status implements Parcelable{
         dest.writeInt(type);
         dest.writeInt(isLike);
         dest.writeByte((byte) (isLocal ? 1 : 0));
+        dest.writeTypedList(commentList);
         dest.writeString(create_at);
         dest.writeLong(id);
         dest.writeString(idstr);
@@ -219,6 +227,7 @@ public class Status implements Parcelable{
         dest.writeString(attitudes_count);
         dest.writeByte((byte) (isLongText ? 1 : 0));
     }
+
     /**
      * -------------------------用于描述微博的类型---------------------------------------------------
      */
@@ -234,6 +243,13 @@ public class Status implements Parcelable{
      * --------------------------getter 和 setter---------------------------------------------------
      */
 
+    public List<Comment> getCommentList() {
+        return commentList;
+    }
+
+    public void setCommentList(List<Comment> commentList) {
+        this.commentList = commentList;
+    }
     public boolean isLocal() {
         return isLocal;
     }

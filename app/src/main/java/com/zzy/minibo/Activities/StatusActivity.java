@@ -27,6 +27,9 @@ import com.zzy.minibo.Adapter.EmotionsAdapter;
 import com.zzy.minibo.Members.Comment;
 import com.zzy.minibo.Members.LP_COMMENTS;
 import com.zzy.minibo.Members.LP_EMOTIONS;
+import com.zzy.minibo.Members.LP_LikeStatusId;
+import com.zzy.minibo.Members.LP_STATUS;
+import com.zzy.minibo.Members.LP_USER;
 import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.Members.User;
 import com.zzy.minibo.MyViews.NineGlideView;
@@ -45,8 +48,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.litepal.LitePal;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -56,6 +63,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import de.hdodenhof.circleimageview.CircleImageView;
+import jackmego.com.jieba_android.JiebaSegmenter;
 
 public class StatusActivity extends BaseActivity {
 
@@ -71,6 +79,7 @@ public class StatusActivity extends BaseActivity {
     private Oauth2AccessToken accessToken;
     private Activity activity;
     private Toolbar toolbar;
+    private int position = 0;
 
     //微博内容相关
     private Status mStatus;
@@ -256,6 +265,10 @@ public class StatusActivity extends BaseActivity {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.putExtra("isLike",mStatus.getIsLike());
+                intent.putExtra("num",position);
+                setResult(RESULT_OK,intent);
                 finish();
             }
         });
@@ -294,6 +307,13 @@ public class StatusActivity extends BaseActivity {
                 commentEditView.setHint("回复 @"+ mCommentUserNameCache +" :");
                 commentEditLayout.setVisibility(View.VISIBLE);
                 KeyBoardManager.showKeyBoard(getBaseContext(),commentEditView);
+            }
+        });
+        commentAdapter.setSimpleIntCallback_user(new SimpleIntCallback() {
+            @Override
+            public void callback(int i) {
+                User user = commentList.get(i).getUser();
+                openUserCenter(user);
             }
         });
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -338,56 +358,17 @@ public class StatusActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 KeyBoardManager.hideKeyBoard(getBaseContext(),commentEditView);
-                String commenttext = null;
-                Oauth2AccessToken accessToken = AccessTokenKeeper.readAccessToken(getBaseContext());
-                if (isReply){
-                    commenttext = "回复@"+ mCommentUserNameCache +":"+commentEditView.getText().toString();
-                    ParamsOfCommentReply paramsOfCommentReply = new ParamsOfCommentReply();
-                    paramsOfCommentReply.setAccess_token(accessToken.getToken());
-                    paramsOfCommentReply.setCid(mReplyCommentId);
-                    paramsOfCommentReply.setId(mStatus.getIdstr());
-                    paramsOfCommentReply.setComment(commenttext);
-                    Log.d(TAG, "onClick: "+paramsOfCommentReply.getCid()+"\n" +
-                            paramsOfCommentReply.getId()+"\n");
-                    WBApiConnector.createCommentReply(paramsOfCommentReply, new HttpCallBack() {
-                        @Override
-                        public void onSuccess(String response) {
-                            Log.d(TAG, "onSuccess: "+response);
-                            Message message = new Message();
-                            message.obj = response;
-                            message.what = CREATE_COMMENT_SUCCESS;
-                            handler.sendMessage(message);
-                        }
-
-                        @Override
-                        public void onError(Exception e) {
-
-                        }
-                    });
-
+                if (!mStatus.isLocal()){
+                    sendComment();
                 }else {
-                    commenttext = commentEditView.getText().toString();
-                    ParamsOfCreateComment paramsOfCreateComment = new ParamsOfCreateComment.Builder()
-                            .access_token(accessToken.getToken())
-                            .comment(commenttext)
-                            .idstr(mStatus.getIdstr())
-                            .build();
-                    WBApiConnector.createComment(paramsOfCreateComment, new HttpCallBack() {
-                        @Override
-                        public void onSuccess(String response) {
-                            Message message = new Message();
-                            message.obj = response;
-                            message.what = CREATE_COMMENT_SUCCESS;
-                            handler.sendMessage(message);
-                        }
-
-                        @Override
-                        public void onError(Exception e) {
-
-                        }
-                    });
+                    Comment comment = CommentPacker();
+                    commentList.add(0,comment);
+                    commentAdapter.notifyDataSetChanged();
+                    Toast.makeText(getBaseContext(),"评论成功",Toast.LENGTH_SHORT).show();
                 }
-
+                commentEditView.setText("");
+                emotionsLayout.setVisibility(View.GONE);
+                commentEditLayout.setVisibility(View.GONE);
             }
         });
         commentEditView = findViewById(R.id.comment_edit);
@@ -430,15 +411,24 @@ public class StatusActivity extends BaseActivity {
                 commentEditView.setSelection(curPostion+emotions_path.get(i).length());
             }
         });
-        StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(8,StaggeredGridLayoutManager.VERTICAL);
+        StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(7,StaggeredGridLayoutManager.VERTICAL);
         emotionsLayout.setLayoutManager(staggeredGridLayoutManager);
         emotionsLayout.setAdapter(emotionsAdapter);
 
     }
 
+    private void openUserCenter(User mUser) {
+        Intent intent = new Intent(this,UserCenterActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("User",mUser);
+        intent.putExtras(bundle);
+        startActivity(intent);
+    }
+
 
     private void initData() {
         Intent intent = getIntent();
+        position = intent.getIntExtra("position",0);
         Bundle bundle = intent.getExtras();
         if (bundle != null){
             mStatus = bundle.getParcelable("status");
@@ -464,14 +454,16 @@ public class StatusActivity extends BaseActivity {
                     .load(mUser.getAvatar_large())
                     .into(mUserIcon);
             mUserName.setText(mUser.getScreen_name());
+            mUserIcon.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    openUserCenter(mUser);
+                }
+            });
             mUserName.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(context,UserCenterActivity.class);
-                    Bundle bundle = new Bundle();
-                    bundle.putParcelable("User",mUser);
-                    intent.putExtras(bundle);
-                    startActivity(intent);
+                    openUserCenter(mUser);
                 }
             });
         }else {
@@ -524,7 +516,11 @@ public class StatusActivity extends BaseActivity {
                 mRepostStatusPictures.setVisibility(View.VISIBLE);
                 List<String> urls_repost = new ArrayList<>();
                 for (int m = 0;m < repostStatus.getPic_urls().size();m++){
-                    urls_repost.add(repostStatus.getBmiddle_pic()+repostStatus.getPic_urls().get(m));
+                    if(repostStatus.isLocal()){
+                        urls_repost.add(repostStatus.getPic_urls().get(m));
+                    }else {
+                        urls_repost.add(repostStatus.getBmiddle_pic()+repostStatus.getPic_urls().get(m));
+                    }
                 }
                 mRepostStatusPictures.setUrlList(urls_repost);
             }
@@ -532,16 +528,23 @@ public class StatusActivity extends BaseActivity {
 
 
         mCommentsNum.setText("全部评论("+TextFilter.NumberFliter(mStatus.getComments_count())+")");
-        if (mStatus.getIsLike() == 1){
+        if (LitePal.isExist(LP_LikeStatusId.class,"status_id = "+mStatus.getIdstr())){
             mLikes.setSelected(true);
         }
         mLikes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                LP_LikeStatusId lp_likeStatusId = new LP_LikeStatusId();
+                lp_likeStatusId.setStatus_id(mStatus.getIdstr());
                 if (mLikes.isSelected()){
                     mLikes.setSelected(false);
+                    if (LitePal.isExist(LP_LikeStatusId.class,"status_id = "+mStatus.getIdstr())){
+                        LitePal.deleteAll(LP_LikeStatusId.class,"status_id = "+mStatus.getIdstr());
+                    }
                 }else {
                     mLikes.setSelected(true);
+                    lp_likeStatusId.setLike_num(Integer.valueOf(mStatus.getAttitudes_count())+1);
+                    lp_likeStatusId.save();
                 }
             }
         });
@@ -552,6 +555,11 @@ public class StatusActivity extends BaseActivity {
      * 初始化评论数据
      */
     private void getCommentData() {
+        if(!WBApiConnector.isNetworkAvailable(this)){
+            Toast.makeText(this,"网络不可用",Toast.LENGTH_SHORT).show();
+            refreshLayout.setRefreshing(false);
+            return;
+        }
         ParamsOfComments paramsOfComments = new ParamsOfComments.Builder()
                 .access_token(accessToken.getToken())
                 .statusId(mStatus.getIdstr())
@@ -571,12 +579,16 @@ public class StatusActivity extends BaseActivity {
                     e.printStackTrace();
                 }
 
+                List<LP_COMMENTS> lp_comments_list = LitePal.where("status_id = ?",mStatus.getIdstr()).find(LP_COMMENTS.class);
+                for (LP_COMMENTS lp_comments : lp_comments_list){
+                    commentList.add(0,Comment.getCommentsFromJson(lp_comments.getJson()));
+                }
+
                 if (commentList.size() == 0){
-                    List<LP_COMMENTS> lp_comments_list = LitePal.limit(Integer.valueOf(mStatus.getComments_count())).find(LP_COMMENTS.class);
-                    for (LP_COMMENTS lp_comments : lp_comments_list){
-                        commentList.add(Comment.getCommentsFromJson(lp_comments.getJson()));
+                    List<LP_COMMENTS> list = LitePal.limit(Integer.valueOf(mStatus.getComments_count())).find(LP_COMMENTS.class);
+                    for (LP_COMMENTS lp_comments : list){
+                        commentList.add(0,Comment.getCommentsFromJson(lp_comments.getJson()));
                     }
-                    Log.d(TAG, "onSuccess: commentSize:"+lp_comments_list.size());
                 }
 
                 Message message = new Message();
@@ -595,6 +607,10 @@ public class StatusActivity extends BaseActivity {
      * 获取更多评论
      */
     private void getMoreStatus() {
+        if(!WBApiConnector.isNetworkAvailable(this)){
+            Toast.makeText(this,"网络不可用",Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (commentList.size() >= Integer.valueOf(mStatus.getComments_count())){
             return;
         }
@@ -665,6 +681,11 @@ public class StatusActivity extends BaseActivity {
         }
     }
 
+    /**
+     * 检索评论
+     * @param str
+     */
+
     private void findString(String str) {
         if (!isSearching){
             commentListCache.clear();
@@ -676,10 +697,14 @@ public class StatusActivity extends BaseActivity {
             isSearching = false;
         }else {
             isSearching = true;
+            JiebaSegmenter jiebaSegmenter = JiebaSegmenter.getJiebaSegmenterSingleton();
+            ArrayList<String> stringArrayList = jiebaSegmenter.getDividedString(str);
             List<Comment> comments = new ArrayList<>();
             for (Comment c : commentListCache){
-                if (c.getText().contains(str)){
-                    comments.add(c);
+                for (String string : stringArrayList){
+                    if (c.getText().contains(string)){
+                        comments.add(c);
+                    }
                 }
             }
             commentList.clear();
@@ -690,7 +715,102 @@ public class StatusActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-
         super.onBackPressed();
+    }
+
+    private void sendComment(){
+        String commenttext = null;
+        if (isReply){
+            commenttext = "回复@"+ mCommentUserNameCache +":"+commentEditView.getText().toString();
+            ParamsOfCommentReply paramsOfCommentReply = new ParamsOfCommentReply();
+            paramsOfCommentReply.setAccess_token(accessToken.getToken());
+            paramsOfCommentReply.setCid(mReplyCommentId);
+            paramsOfCommentReply.setId(mStatus.getIdstr());
+            Log.d(TAG, "onClick: "+mReplyCommentId+" "+mStatus.getUser().getName());
+            paramsOfCommentReply.setComment(commenttext);
+            paramsOfCommentReply.setWithout_mentions(1);
+            WBApiConnector.createCommentReply(paramsOfCommentReply, new HttpCallBack() {
+                @Override
+                public void onSuccess(String response) {
+                    Log.d(TAG, "onSuccess: "+response);
+                    Message message = new Message();
+                    message.obj = response;
+                    message.what = CREATE_COMMENT_SUCCESS;
+                    handler.sendMessage(message);
+                }
+
+                @Override
+                public void onError(Exception e) {
+
+                }
+            });
+        }else {
+            commenttext = commentEditView.getText().toString();
+            ParamsOfCreateComment paramsOfCreateComment = new ParamsOfCreateComment.Builder()
+                    .access_token(accessToken.getToken())
+                    .comment(commenttext)
+                    .idstr(mStatus.getIdstr())
+                    .build();
+            WBApiConnector.createComment(paramsOfCreateComment, new HttpCallBack() {
+                @Override
+                public void onSuccess(String response) {
+                    Message message = new Message();
+                    message.obj = response;
+                    message.what = CREATE_COMMENT_SUCCESS;
+                    handler.sendMessage(message);
+                }
+
+                @Override
+                public void onError(Exception e) {
+
+                }
+            });
+        }
+    }
+
+
+    /**
+     * comment打包
+     * @return comment
+     */
+    private Comment CommentPacker(){
+        //创建一个Comment
+        Comment comment = new Comment();
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+        Date date = new Date(System.currentTimeMillis());
+        String userJson = null;
+        List<LP_USER> lp_users = LitePal.where("uidstr = ?",accessToken.getUid()).find(LP_USER.class);
+        for (LP_USER l : lp_users){
+            userJson = l.getJson();
+        }
+        String statusJson = null;
+        List<LP_STATUS> lp_statuses = LitePal.where("idstr = ?",mStatus.getIdstr()).find(LP_STATUS.class);
+        for (LP_STATUS s : lp_statuses){
+            statusJson = s.getJson();
+        }
+
+        comment.setIdstr(simpleDateFormat.format(date));
+        comment.setUser(User.makeJsonToUser(userJson));
+        comment.setStatus(Status.getStatusFromJson(statusJson));
+        comment.setText(commentEditView.getText().toString());
+        comment.setCreate_at(TextFilter.createTimeString());
+
+        //将创建的comment保存到数据库
+        LP_COMMENTS lp_comments = new LP_COMMENTS();
+        lp_comments.setUser_id(comment.getUser().getUID());
+        lp_comments.setStatus_id(comment.getStatus().getIdstr());
+        lp_comments.setIdstr(comment.getIdstr());
+        String commentJson = "{" +
+                "\"user\":" + userJson + "," +
+                "\"status\":" + statusJson + "," +
+                "\"id\":" + comment.getIdstr() + "," +
+                "\"idstr\":" + "\"" + comment.getIdstr() + "\"," +
+                "\"text\":" + "\"" + comment.getText() + "\"," +
+                "\"created_at\":" + "\"" + comment.getCreate_at() + "\"" +
+                "}";
+        lp_comments.setJson(commentJson);
+        lp_comments.save();
+
+        return  comment;
     }
 }

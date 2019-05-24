@@ -7,6 +7,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -14,6 +16,7 @@ import com.bumptech.glide.Glide;
 import com.sina.weibo.sdk.auth.AccessTokenKeeper;
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
 import com.zzy.minibo.Adapter.StatusAdapter;
+import com.zzy.minibo.Fragments.StatusFragment;
 import com.zzy.minibo.Members.LP_USER;
 import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.Members.StatusTimeLine;
@@ -23,6 +26,9 @@ import com.zzy.minibo.Utils.AllParams.ParamsOfUserTimeLine;
 import com.zzy.minibo.WBListener.HttpCallBack;
 import com.zzy.minibo.Utils.TextFilter;
 import com.zzy.minibo.Utils.WBApiConnector;
+import com.zzy.minibo.WBListener.PictureTapCallback;
+import com.zzy.minibo.WBListener.RepostStatusCallback;
+import com.zzy.minibo.WBListener.StatusTapCallback;
 
 import org.litepal.LitePal;
 
@@ -30,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -46,9 +53,10 @@ public class UserCenterActivity extends BaseActivity {
     private static final int GET_USER_INFO_FROM_API = 2;
 
     private User mUser;
-    private Toolbar mToolbar;
+//    private Toolbar mToolbar;
     private List<Status> statusList = new ArrayList<>();
 
+    private ImageView cover_image;
     private CircleImageView mUserIcon_civ;
     private TextView mUserName_tv;
     private TextView mUserLocationAndGender_tv;
@@ -56,6 +64,11 @@ public class UserCenterActivity extends BaseActivity {
     private TextView mUserFollowers_tv;
     private TextView mUserFriends_tv;
     private RecyclerView mUserStatus_rv;
+    private ConstraintLayout mStatusLayout;
+    private LinearLayout linearLayout;
+    private TextView verified;
+    private TextView creatime;
+    private ImageView backBtn;
 
     private StatusAdapter statusAdapter;
     private Intent mIntent;
@@ -96,26 +109,75 @@ public class UserCenterActivity extends BaseActivity {
     }
 
     private void initView() {
-        mToolbar = findViewById(R.id.uc_toolbar);
+//        mToolbar = findViewById(R.id.uc_toolbar);
+        cover_image = findViewById(R.id.uc_top_image);
         mUserIcon_civ = findViewById(R.id.uc_civ_user_img);
         mUserName_tv = findViewById(R.id.uc_tv_user_name);
         mUserLocationAndGender_tv = findViewById(R.id.uc_tv_user_location_gender);
         mDescription = findViewById(R.id.uc_tv_user_description);
         mUserFollowers_tv = findViewById(R.id.uc_tv_user_followers);
         mUserFriends_tv = findViewById(R.id.uc_tv_user_friends);
-        mUserStatus_rv = findViewById(R.id.uc_rv_status_list);
-
-        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+//        mUserStatus_rv = findViewById(R.id.uc_rv_status_list);
+//        mStatusLayout = findViewById(R.id.uc_status_list);
+        linearLayout = findViewById(R.id.uc_more_detial);
+        verified = findViewById(R.id.uc_verified);
+        creatime = findViewById(R.id.uc_create_time);
+        backBtn = findViewById(R.id.uc_back_btn);
+        backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
+//        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                finish();
+//            }
+//        });
         statusAdapter = new StatusAdapter(statusList,this);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
-        mUserStatus_rv.setLayoutManager(linearLayoutManager);
-        mUserStatus_rv.setAdapter(statusAdapter);
+//        statusAdapter.setRepostStatusCallback(new RepostStatusCallback() {
+//            @Override
+//            public void callback(int position) {
+//                Intent intent = new Intent(getBaseContext(),StatusEditActivity.class);
+//                Bundle bundle = new Bundle();
+//                bundle.putParcelable("Status",statusList.get(position));
+//                intent.putExtras(bundle);
+//                startActivityForResult(intent, StatusFragment.REPOST_STATUS_CODE);
+//            }
+//        });
+//        statusAdapter.setStatusTapCallback(new StatusTapCallback() {
+//            @Override
+//            public void callback(int position, boolean isRepost) {
+//                Intent intent = new Intent(getBaseContext(), StatusActivity.class);
+//                Bundle bundle = new Bundle();
+//                if (isRepost){
+//                    bundle.putParcelable("status",statusList.get(position).getRetweeted_status());
+//                }else {
+//                    bundle.putParcelable("status",statusList.get(position));
+//                }
+//                intent.putExtras(bundle);
+//                startActivityForResult(intent,StatusFragment.REPOST_STATUS_CODE);
+//            }
+//        });
+//        statusAdapter.setPictureTapCallback(new PictureTapCallback() {
+//            @Override
+//            public void callback(int statusPosition, int postion, int from, boolean islocal) {
+//                Intent intent = new Intent(getBaseContext(), PicturesActivity.class);
+//                intent.putExtra("currentPosition",postion);
+//                intent.putExtra("isLocal",islocal);
+//                if (from == 0){ // 0，外部微博，1为转发微博，这里进行判断
+//                    intent.putStringArrayListExtra("urls", (ArrayList<String>) statusList.get(statusPosition).getPic_urls());
+//                } else {
+//                    intent.putStringArrayListExtra("urls", (ArrayList<String>) statusList.get(statusPosition).getRetweeted_status().getPic_urls());
+//                }
+//                startActivity(intent);
+//            }
+//        });
+//        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+//        linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
+//        mUserStatus_rv.setLayoutManager(linearLayoutManager);
+//        mUserStatus_rv.setAdapter(statusAdapter);
     }
 
     private void initData(){
@@ -129,40 +191,54 @@ public class UserCenterActivity extends BaseActivity {
             }
         }
         if (mUser != null){
+//            Oauth2AccessToken accessToken = AccessTokenKeeper.readAccessToken(this);
+//            if (mUser.getUID().equals(accessToken.getUid())){
+//                linearLayout.setVisibility(View.GONE);
+//                mStatusLayout.setVisibility(View.VISIBLE);
+//                ParamsOfUserTimeLine paramsOfUserTimeLine = new ParamsOfUserTimeLine.Builder()
+//                        .access_token(accessToken.getToken())
+//                        .uid(mUser.getUID())
+//                        .screen_name(mUser.getScreen_name())
+//                        .feature(FEATURE_ALL)
+//                        .build();
+//                WBApiConnector.getStatusUserTimeLine(paramsOfUserTimeLine, new HttpCallBack() {
+//                    @Override
+//                    public void onSuccess(String response) {
+//                        StatusTimeLine statusTimeLine = StatusTimeLine.getStatusesLine(getApplicationContext(),response);
+//                        statusList.addAll(statusTimeLine.getStatuses());
+//                        Message message = new Message();
+//                        message.what = GET_USER_STATUS_SUCCESS;
+//                        handler.sendMessage(message);
+//                    }
+//
+//                    @Override
+//                    public void onError(Exception e) {
+//                        Message message = new Message();
+//                        message.what = GET_USER_STATUS_ERROR;
+//                        handler.sendMessage(message);
+//                    }
+//                });
+//            }
+            if (mUser.getCover_image_phone() != null){
+                Glide.with(this)
+                        .load(mUser.getCover_image_phone())
+                        .into(cover_image);
+            }
             Glide.with(this)
                     .load(mUser.getAvatar_large())
-//                    .placeholder(R.drawable.icon_user)
+                    .placeholder(R.drawable.icon_user)
                     .into(mUserIcon_civ);
             mUserName_tv.setText(mUser.getScreen_name());
             mUserLocationAndGender_tv.setText(getUserLocationAndGenderString());
             mDescription.setText(mUser.getDescription());
             mUserFollowers_tv.setText(TextFilter.NumberFliter(String.valueOf(mUser.getFollowers_count())));
             mUserFriends_tv.setText(TextFilter.NumberFliter(String.valueOf(mUser.getFriends_count())));
+            creatime.setText("创建时间："+TextFilter.getCreateTime(mUser.getCreated_at()));
+            if (mUser.isVerified()){
+                verified.setText("认证信息："+mUser.getVerified_reason());
+            }
 
-            Oauth2AccessToken accessToken = AccessTokenKeeper.readAccessToken(this);
-            ParamsOfUserTimeLine paramsOfUserTimeLine = new ParamsOfUserTimeLine.Builder()
-                    .access_token(accessToken.getToken())
-                    .uid(mUser.getUID())
-                    .screen_name(mUser.getScreen_name())
-                    .feature(FEATURE_ALL)
-                    .build();
-            WBApiConnector.getStatusUserTimeLine(paramsOfUserTimeLine, new HttpCallBack() {
-                @Override
-                public void onSuccess(String response) {
-                    StatusTimeLine statusTimeLine = StatusTimeLine.getStatusesLine(getApplicationContext(),response);
-                    statusList.addAll(statusTimeLine.getStatuses());
-                    Message message = new Message();
-                    message.what = GET_USER_STATUS_SUCCESS;
-                    handler.sendMessage(message);
-                }
 
-                @Override
-                public void onError(Exception e) {
-                    Message message = new Message();
-                    message.what = GET_USER_STATUS_ERROR;
-                    handler.sendMessage(message);
-                }
-            });
         }
 
     }

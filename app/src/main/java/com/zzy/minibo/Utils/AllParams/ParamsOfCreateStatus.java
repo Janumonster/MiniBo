@@ -1,6 +1,9 @@
 package com.zzy.minibo.Utils.AllParams;
 
 import com.sina.weibo.sdk.api.MultiImageObject;
+import com.zzy.minibo.Members.ImageBean;
+
+import java.util.List;
 
 public class ParamsOfCreateStatus {
 
@@ -8,17 +11,15 @@ public class ParamsOfCreateStatus {
 
     private String status;
 
-    private MultiImageObject pics;
+    private List<ImageBean> paths;
 
-    public MultiImageObject getPics() {
-        return pics;
+    public List<ImageBean> getPaths() {
+        return paths;
     }
 
-    public void setPics(MultiImageObject pics) {
-        this.pics = pics;
+    public void setPaths(List<ImageBean> paths) {
+        this.paths = paths;
     }
-
-
 
     public String getAccess_token() {
         return access_token;

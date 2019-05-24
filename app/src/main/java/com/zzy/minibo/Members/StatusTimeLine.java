@@ -83,7 +83,7 @@ public class StatusTimeLine {
                 statusesTimeLine.setSince_id(jsonObject.getString("since_id"));
                 statusesTimeLine.setMax_id(jsonObject.getString("max_id"));
 
-                Log.d(TAG, "getStatusesLine: "+ statusesTimeLine.toString());
+//                Log.d(TAG, "getStatusesLine: "+ statusesTimeLine.toString());
             } catch (JSONException e) {
                 e.printStackTrace();
             }

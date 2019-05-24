@@ -27,12 +27,13 @@ public class CommentAdapter extends RecyclerView.Adapter <CommentAdapter.ViewHol
     private List<Comment> commentList;
     private Context mContext;
 
-    private SimpleIntCallback simpleCallback = new SimpleIntCallback() {
-        @Override
-        public void callback(int i) {
+    private SimpleIntCallback simpleCallback;
 
-        }
-    };
+    private SimpleIntCallback simpleIntCallback_user;
+
+    public void setSimpleIntCallback_user(SimpleIntCallback simpleIntCallback_user) {
+        this.simpleIntCallback_user = simpleIntCallback_user;
+    }
 
     public void setSimpleCallback(SimpleIntCallback simpleCallback) {
         this.simpleCallback = simpleCallback;
@@ -78,12 +79,23 @@ public class CommentAdapter extends RecyclerView.Adapter <CommentAdapter.ViewHol
         if (user != null){
             Glide.with(mContext)
                     .load(user.getAvatar_large())
-//                    .placeholder(R.drawable.icon_user)
+                    .placeholder(R.drawable.icon_user)
                     .into(viewHolder.circleImageView);
             viewHolder.userName.setText(user.getScreen_name());
         }
+        viewHolder.circleImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                simpleIntCallback_user.callback(i);
+            }
+        });
+        viewHolder.userName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                simpleIntCallback_user.callback(i);
+            }
+        });
         viewHolder.commentText.setText(TextFilter.statusTextFliter(mContext, comment.getText(), null));
-        viewHolder.commentText.setMovementMethod(new LinkMovementMethod());
         viewHolder.createAt.setText(TextFilter.TimeFliter(comment.getCreate_at()));
         viewHolder.likeNum.setOnClickListener(new View.OnClickListener() {
             @Override

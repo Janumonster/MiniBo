@@ -51,6 +51,8 @@ public class PhotoViewAdapter extends PagerAdapter {
     @Override
     public Object instantiateItem(@NonNull final ViewGroup container, int position) {
         final String uri = pics.get(position);
+        boolean isGif = false;
+        ImageView imageView = new ImageView(mActivity);
         final SubsamplingScaleImageView photoView = new SubsamplingScaleImageView(mActivity);
         photoView.setScaleAndCenter(1.0f,new PointF(0,0));
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
@@ -73,9 +75,21 @@ public class PhotoViewAdapter extends PagerAdapter {
                         }
                     });
         }
+        if (uri.substring(uri.length()-4).equals(".gif")){
+            isGif = true;
+            Glide.with(mActivity).load(uri).into(imageView);
+            container.addView(imageView);
+        }else {
+            container.addView(photoView);
+        }
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mActivity.finish();
+                mActivity.overridePendingTransition(R.anim.old_act_in,R.anim.new_act_out);
+            }
+        });
 
-
-        container.addView(photoView);
         photoView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -83,7 +97,7 @@ public class PhotoViewAdapter extends PagerAdapter {
                 mActivity.overridePendingTransition(R.anim.old_act_in,R.anim.new_act_out);
             }
         });
-        return photoView;
+        return isGif ? imageView:photoView;
     }
 
     @Override

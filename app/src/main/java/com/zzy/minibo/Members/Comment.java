@@ -1,11 +1,14 @@
 package com.zzy.minibo.Members;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.litepal.LitePal;
 import org.litepal.crud.LitePalSupport;
 
-public class Comment {
+public class Comment implements Parcelable {
 
     private String create_at;
     private long id;
@@ -15,6 +18,33 @@ public class Comment {
     private String idstr;
     private Status status;
     private Comment reply_comment;
+
+    public Comment(){
+
+    }
+
+    protected Comment(Parcel in) {
+        create_at = in.readString();
+        id = in.readLong();
+        text = in.readString();
+        user = in.readParcelable(User.class.getClassLoader());
+        mid = in.readString();
+        idstr = in.readString();
+        status = in.readParcelable(Status.class.getClassLoader());
+        reply_comment = in.readParcelable(Comment.class.getClassLoader());
+    }
+
+    public static final Creator<Comment> CREATOR = new Creator<Comment>() {
+        @Override
+        public Comment createFromParcel(Parcel in) {
+            return new Comment(in);
+        }
+
+        @Override
+        public Comment[] newArray(int size) {
+            return new Comment[size];
+        }
+    };
 
     public static Comment getCommentsFromJson(String json){
         if (json == null)return null;
@@ -105,5 +135,22 @@ public class Comment {
 
     public void setReply_comment(Comment reply_comment) {
         this.reply_comment = reply_comment;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(create_at);
+        dest.writeLong(id);
+        dest.writeString(text);
+        dest.writeParcelable(user, flags);
+        dest.writeString(mid);
+        dest.writeString(idstr);
+        dest.writeParcelable(status, flags);
+        dest.writeParcelable(reply_comment, flags);
     }
 }

@@ -10,11 +10,19 @@ import android.text.format.Time;
 import android.util.Log;
 
 import com.google.android.material.tabs.TabLayout;
+import com.google.gson.JsonObject;
+import com.sina.weibo.sdk.auth.AccessTokenKeeper;
+import com.zzy.minibo.Members.URLHolder;
+import com.zzy.minibo.WBListener.HttpCallBack;
 import com.zzy.minibo.WBListener.StatusTextFliterCallback;
 import com.zzy.minibo.Utils.WBClickSpan.StatusDetialClickSpan;
 import com.zzy.minibo.Utils.WBClickSpan.TopicClickSpan;
 import com.zzy.minibo.Utils.WBClickSpan.UserIdClickSpan;
 import com.zzy.minibo.Utils.WBClickSpan.WebUrlClickSpan;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -36,10 +44,10 @@ public final class TextFilter {
         return null;
     }
 
-    public static SpannableStringBuilder statusTextFliter(Context context, String text, final StatusTextFliterCallback callback){
-        SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder();
+    public static SpannableStringBuilder statusTextFliter(final Context context, String text, final StatusTextFliterCallback callback){
+        final SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder();
         int i = 0;
-        while (i < text.length()){
+        while (text != null && i < text.length()){
             switch (text.charAt(i)){
                 case '[' ://识别表情
                     StringBuilder stringBuilder = new StringBuilder();
@@ -54,7 +62,7 @@ public final class TextFilter {
                     }
                     Drawable drawable = Drawable.createFromPath(Environment.getExternalStorageDirectory()+"/MiniBo/emotions/["+stringBuilder.toString()+"]");
                     if (drawable != null){
-                        drawable.setBounds(8,0,42,34);
+                        drawable.setBounds(4,0,42,38);
                         CenterAlignImageSpan centerAlignImageSpan = new CenterAlignImageSpan(drawable);
                         spannableStringBuilder.append("["+stringBuilder.toString()+"]",centerAlignImageSpan, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                     }else {
@@ -126,9 +134,13 @@ public final class TextFilter {
                     }
                     String base_short = "http://t.cn/(.{7})( ?)";
                     Pattern patternShort = Pattern.compile(base_short);
-                    Matcher matcher_short = patternShort.matcher(address_short_text);
+                    final Matcher matcher_short = patternShort.matcher(address_short_text);
                     if (matcher_short.find()){
+                        if (callback != null){
+                            callback.callback(matcher_short.group(0),false);
+                        }
                         WebUrlClickSpan webUrlClickSpan = new WebUrlClickSpan(context,matcher_short.group(0));
+                        Log.d(TAG, "statusTextFliter: "+matcher_short.group(0));
                         SpannableString spannableStringUrl = new SpannableString("☞网页链接 ");
                         spannableStringUrl.setSpan(webUrlClickSpan,0,5,Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                         spannableStringBuilder.append(spannableStringUrl);
@@ -171,6 +183,7 @@ public final class TextFilter {
      * Sun_Apr_07_19:46:42_+0800_2019
      */
     public static String TimeFliter(String statusTime){
+        if (statusTime == null)return null;
         StringBuilder stringBuilder = new StringBuilder();
         long t = System.currentTimeMillis();
         Calendar calendar = Calendar.getInstance();
@@ -220,6 +233,12 @@ public final class TextFilter {
                 }
             }
         }
+    }
+
+    public static String getCreateTime(String time){
+        StringBuilder sb = new StringBuilder();
+        sb.append(time.substring(26)).append("年").append(getMonth(time.substring(4,7))).append("月").append(time.substring(8,10)).append("日");
+        return sb.toString();
     }
 
 

@@ -54,10 +54,12 @@
         android:backgroundTint="@color/colorMain"
         android:clickable="true"
         android:focusable="true"
+        android:padding="4dp"
+        android:src="@drawable/ic_mode_edit_white_24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:borderWidth="0dp"
-        app:elevation="4dp"
+        app:elevation="8dp"
         app:rippleColor="#B83F1A"
         app:fabSize="mini"/>
 

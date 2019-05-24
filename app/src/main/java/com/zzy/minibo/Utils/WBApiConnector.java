@@ -1,9 +1,16 @@
 package com.zzy.minibo.Utils;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.provider.MediaStore;
 import android.util.ArrayMap;
 import android.util.Log;
 
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
+import com.zzy.minibo.Members.ImageBean;
 import com.zzy.minibo.Utils.AllParams.ParamsOfCommentReply;
 import com.zzy.minibo.Utils.AllParams.ParamsOfComments;
 import com.zzy.minibo.Utils.AllParams.ParamsOfCreateComment;
@@ -14,11 +21,15 @@ import com.zzy.minibo.Utils.AllParams.ParamsOfUserTimeLine;
 import com.zzy.minibo.WBListener.HttpCallBack;
 import com.zzy.minibo.WBListener.PicDownloadCallback;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
 import okhttp3.FormBody;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -290,22 +301,40 @@ public final class WBApiConnector {
     }
 
     public static void createStatus(ParamsOfCreateStatus params, final HttpCallBack callBack){
-        final Map<String,String> map = new ArrayMap<>();
-        map.put("access_token",params.getAccess_token());
-        map.put("status",params.getStatus());
-        map.put("pics", String.valueOf(params.getPics().imageList));
-        final FormBody.Builder formbodybuilder = new FormBody.Builder();
-        for (String key:map.keySet()){
-            formbodybuilder.add(key,map.get(key));
+        final RequestBody requestBody;
+        if (params.getPaths() != null && params.getPaths().size() != 0){
+            final MultipartBody.Builder multibuilder = new MultipartBody.Builder();
+            multibuilder.setType(MultipartBody.FORM);
+            multibuilder.addFormDataPart("access_token",params.getAccess_token());
+            multibuilder.addFormDataPart("status",params.getStatus());
+            for (ImageBean imageBean:params.getPaths()){
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = true;
+                BitmapFactory.decodeFile(imageBean.getPath(), options);
+                String type = options.outMimeType;
+                File file = new File(imageBean.getPath());
+                Log.d(TAG, "createStatus: "+imageBean.getPath());
+                if (file.exists()){
+                    multibuilder.addFormDataPart("pic",imageBean.getDisplayname(),RequestBody.create(MediaType.parse(type),file));
+                }
+
+            }
+            requestBody = multibuilder.build();
+        }else {
+            FormBody.Builder builder = new FormBody.Builder();
+            builder.add("access_token",params.getAccess_token());
+            builder.addEncoded("status",params.getStatus());
+            requestBody = builder.build();
         }
+
         new Thread(new Runnable() {
             @Override
             public void run() {
-                RequestBody requestBody = formbodybuilder.build();
+
                 OkHttpClient client = new OkHttpClient();
                 Request request = new Request.Builder()
-                        .post(requestBody)
                         .url(STATUS_CREATE)
+                        .post(requestBody)
                         .build();
 
                 try {
@@ -326,6 +355,7 @@ public final class WBApiConnector {
         map.put("cid",params.getCid());
         map.put("id",params.getId());
         map.put("comment",params.getComment());
+        map.put("without_mention",String.valueOf(params.getWithout_mentions()));
         final FormBody.Builder formbodybuilder = new FormBody.Builder();
         for (String key:map.keySet()){
             formbodybuilder.add(key,map.get(key));
@@ -405,4 +435,24 @@ public final class WBApiConnector {
             }
         }).start();
     }
+
+    public static boolean isNetworkAvailable(Context context) {
+
+        ConnectivityManager manager = (ConnectivityManager) context
+                .getApplicationContext().getSystemService(
+                        Context.CONNECTIVITY_SERVICE);
+
+        if (manager == null) {
+            return false;
+        }
+
+        NetworkInfo networkinfo = manager.getActiveNetworkInfo();
+
+        if (networkinfo == null || !networkinfo.isAvailable()) {
+            return false;
+        }
+
+        return true;
+    }
+
 }

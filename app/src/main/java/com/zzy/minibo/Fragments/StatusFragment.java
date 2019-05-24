@@ -1,9 +1,7 @@
 package com.zzy.minibo.Fragments;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -20,10 +18,13 @@ import com.zzy.minibo.Activities.PicturesActivity;
 import com.zzy.minibo.Activities.StatusActivity;
 import com.zzy.minibo.Activities.StatusEditActivity;
 import com.zzy.minibo.Adapter.StatusAdapter;
+import com.zzy.minibo.Members.Comment;
+import com.zzy.minibo.Members.LP_COMMENTS;
 import com.zzy.minibo.Members.LP_STATUS;
 import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.Members.StatusTimeLine;
 import com.zzy.minibo.R;
+import com.zzy.minibo.Utils.AllParams.ParamsOfCreateComment;
 import com.zzy.minibo.Utils.AllParams.ParamsOfStatusTL;
 import com.zzy.minibo.WBListener.HttpCallBack;
 import com.zzy.minibo.Utils.WBApiConnector;
@@ -112,6 +113,7 @@ public class StatusFragment extends Fragment {
                         @Override
                         public void callback(int position, boolean isRepost) {
                             Intent intent = new Intent(getContext(), StatusActivity.class);
+                            intent.putExtra("position",position);
                             Bundle bundle = new Bundle();
                             if (isRepost){
                                 bundle.putParcelable("status",statusList.get(position).getRetweeted_status());
@@ -221,6 +223,11 @@ public class StatusFragment extends Fragment {
      * 加载更多微博
      */
     private void getMoreStatus() {
+        if(!WBApiConnector.isNetworkAvailable(getContext())){
+            Toast.makeText(getContext(),"网络不可用",Toast.LENGTH_SHORT).show();
+            progress_layout.setVisibility(View.GONE);
+            return;
+        }
         if (!isGettingMore){
             isGettingMore = true;
             progress_layout.setVisibility(View.VISIBLE);
@@ -264,40 +271,20 @@ public class StatusFragment extends Fragment {
      * 初始化微博列表，第一次请求
      */
     private void getInitialStatus() {
-        if (accessToken != null){
-            ParamsOfStatusTL paramsOfStatusTL = new ParamsOfStatusTL.Builder()
-                    .access_token(accessToken.getToken())
-                    .build();
-            WBApiConnector.getStatusesHomeTimeline(paramsOfStatusTL, new HttpCallBack() {
-                @Override
-                public void onSuccess(String response) {
-                    statusTimeLine = StatusTimeLine.getStatusesLine(getContext(),response);
-                    statusList = statusTimeLine.getStatuses();
-                    statusListCache.clear();
-                    if (statusList.size() == 0){
-                        List<LP_STATUS> LPSTATUSES = LitePal.findAll(LP_STATUS.class);
-                        int length = LPSTATUSES.size();
-                        for (int i = 0;i < length; i++){
-                            statusListCache.add(Status.getStatusFromJson(LPSTATUSES.get(length-i-1).getJson()));
-                            if (statusListCache.size() >= 20){
-                                break;
-                            }
-                        }
-                        statusList.addAll(statusListCache);
-                    }
-                    Message message = new Message();
-                    message.what = MESSAGE_FROM_INITIAL;
-                    handler.sendMessage(message);
-                }
 
-                @Override
-                public void onError(Exception e) {
-                    Message message = new Message();
-                    message.what = MESSAGE_FROM_ERROR;
-                    handler.sendMessage(message);
-                }
-            });
+        List<LP_STATUS> LPSTATUSES = LitePal.findAll(LP_STATUS.class);
+        int length = LPSTATUSES.size();
+        for (int i = length-1 ;i > length-20 ; i--){
+            Status status = Status.getStatusFromJson(LPSTATUSES.get(i).getJson());
+            if (LPSTATUSES.get(i).isLocal()){
+                status.setLocal(true);
+            }
+            statusListCache.add(status);
         }
+        statusList.addAll(statusListCache);
+        Message message = new Message();
+        message.what = MESSAGE_FROM_INITIAL;
+        handler.sendMessage(message);
     }
 
 
@@ -327,6 +314,11 @@ public class StatusFragment extends Fragment {
     }
 
     private void RefreshStatus(){
+        if(!WBApiConnector.isNetworkAvailable(getContext())){
+            Toast.makeText(getContext(),"网络不可用",Toast.LENGTH_SHORT).show();
+            swipeRefreshLayout.setRefreshing(false);
+            return;
+        }
         //刷新过程
         final ParamsOfStatusTL paramsOfStatusTL = new ParamsOfStatusTL.Builder()
                 .access_token(accessToken.getToken())
@@ -354,27 +346,51 @@ public class StatusFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (data != null){
-            switch (requestCode){
-                case REPOST_STATUS_CODE:
-                    if (resultCode == RESULT_OK){
-                        Bundle bundle = data.getExtras();
-                        if (bundle != null) {
-                            Status status = bundle.getParcelable("Status");
-                            statusList.add(0,status);
-                            statusAdapter.notifyDataSetChanged();
+        switch (requestCode){
+            case REPOST_STATUS_CODE:
+                if (resultCode == RESULT_OK){
+                    Bundle bundle = null;
+                    if (data != null) {
+                        bundle = data.getExtras();
+                        int isLike = data.getIntExtra("isLike",0);
+                        String num = data.getStringExtra("num");
+                        if (num != null){
+                            statusList.get(Integer.valueOf(num)).setIsLike(isLike);
                         }
                     }
-                    break;
-                case CREATE_STATUS_CODE:
-                    if (resultCode == RESULT_OK){
-                       swipeRefreshLayout.setRefreshing(true);
-                        RefreshStatus();
+                    if (bundle != null) {
+                        Status status = bundle.getParcelable("Status");
+                        if (status != null){
+                            statusList.add(0,status);
+                        }
                     }
-                    break;
-            }
-        }else {
-            super.onActivityResult(requestCode, resultCode, data);
+                    statusAdapter.notifyDataSetChanged();
+                    Toast.makeText(getContext(),"转发完成",Toast.LENGTH_SHORT).show();
+                    mStatus_rv.scrollToPosition(0);
+                }
+                break;
+            case CREATE_STATUS_CODE:
+                if (resultCode == RESULT_OK){
+                    Bundle bundle = null;
+                    if (data != null) {
+                        bundle = data.getExtras();
+                    }
+                    if (bundle != null) {
+                        Status status = bundle.getParcelable("Status");
+                        if (status != null){
+                            statusList.add(0,status);
+                        }
+                    }
+//                        swipeRefreshLayout.setRefreshing(true);
+//                        RefreshStatus();
+                    statusAdapter.notifyDataSetChanged();
+                    Toast.makeText(getContext(),"发送完成",Toast.LENGTH_SHORT).show();
+                    mStatus_rv.scrollToPosition(0);
+                }
+                break;
         }
+        super.onActivityResult(requestCode, resultCode, data);
+
     }
+
 }

@@ -3,6 +3,8 @@ package com.zzy.minibo.Activities;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,12 +27,14 @@ import com.sina.weibo.sdk.auth.Oauth2AccessToken;
 import com.zzy.minibo.Adapter.EmotionsAdapter;
 import com.zzy.minibo.Members.ImageBean;
 import com.zzy.minibo.Members.LP_EMOTIONS;
+import com.zzy.minibo.Members.LP_RepostCount;
 import com.zzy.minibo.Members.LP_STATUS;
 import com.zzy.minibo.Members.LP_USER;
 import com.zzy.minibo.Members.Status;
 import com.zzy.minibo.Members.User;
 import com.zzy.minibo.MyViews.NineGlideView;
 import com.zzy.minibo.R;
+import com.zzy.minibo.Utils.AllParams.ParamsOfCreateComment;
 import com.zzy.minibo.Utils.AllParams.ParamsOfCreateStatus;
 import com.zzy.minibo.Utils.KeyBoardManager;
 import com.zzy.minibo.Utils.TextFilter;
@@ -38,6 +42,8 @@ import com.zzy.minibo.Utils.WBApiConnector;
 import com.zzy.minibo.WBListener.HttpCallBack;
 import com.zzy.minibo.WBListener.SimpleIntCallback;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.litepal.LitePal;
 
 import java.io.File;
@@ -58,6 +64,8 @@ public class StatusEditActivity extends BaseActivity {
     public static final int REPOST_FROM_STATUS = 1;
     public static final int SELECT_PICTURE = 1001;
 
+
+    private boolean hasCrop = false;
     //
     private Toolbar toolbar;
     private EditText mEdittextView;
@@ -108,9 +116,15 @@ public class StatusEditActivity extends BaseActivity {
                     mEdittextView.setText(TextFilter.statusTextFliter(this, str1,null));
                     Status status = repostStatus.getRetweeted_status();
                     if (status.getPic_urls() != null && status.getPic_urls().size() > 0){
-                        Glide.with(this)
-                                .load(status.getThumbnail_pic()+status.getPic_urls().get(0))
-                                .into(repostImage);
+                        if (status.isLocal()){
+                            Glide.with(this)
+                                    .load(status.getPic_urls().get(0))
+                                    .into(repostImage);
+                        }else {
+                            Glide.with(this)
+                                    .load(status.getThumbnail_pic()+status.getPic_urls().get(0))
+                                    .into(repostImage);
+                        }
                     }else {
                         Glide.with(this)
                                 .load(status.getUser().getAvatar_hd())
@@ -120,9 +134,15 @@ public class StatusEditActivity extends BaseActivity {
                     repostText.setText(status.getText());
                 }else {
                     if (repostStatus.getPic_urls() != null && repostStatus.getPic_urls().size() > 0){
-                        Glide.with(this)
-                                .load(repostStatus.getThumbnail_pic()+repostStatus.getPic_urls().get(0))
-                                .into(repostImage);
+                        if (repostStatus.isLocal()){
+                            Glide.with(this)
+                                    .load(repostStatus.getPic_urls().get(0))
+                                    .into(repostImage);
+                        }else {
+                            Glide.with(this)
+                                    .load(repostStatus.getThumbnail_pic()+repostStatus.getPic_urls().get(0))
+                                    .into(repostImage);
+                        }
                     }else {
                         Glide.with(this)
                                 .load(repostStatus.getUser().getAvatar_hd())
@@ -207,7 +227,7 @@ public class StatusEditActivity extends BaseActivity {
                 mEdittextView.setSelection(curPostion+emotionsPath.get(i).length());
             }
         });
-        StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(8,StaggeredGridLayoutManager.VERTICAL);
+        StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(7,StaggeredGridLayoutManager.VERTICAL);
         emotionsRecycler.setLayoutManager(staggeredGridLayoutManager);
         emotionsRecycler.setAdapter(emotionsAdapter);
 //        atFriends = findViewById(R.id.edit_add_at);
@@ -215,81 +235,152 @@ public class StatusEditActivity extends BaseActivity {
         statusSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Oauth2AccessToken accessToken = AccessTokenKeeper.readAccessToken(getBaseContext());
-                ParamsOfCreateStatus paramsOfCreateStatus = new ParamsOfCreateStatus();
-                paramsOfCreateStatus.setAccess_token(accessToken.getToken());
-                paramsOfCreateStatus.setStatus(mEdittextView.getText().toString()+"https://www.baidu.com");
-                if (selectedPath.size() != 0){
-                    paramsOfCreateStatus.setPics(getMultiImageObject());
-                }
-                WBApiConnector.createStatus(paramsOfCreateStatus, new HttpCallBack() {
-                    @Override
-                    public void onSuccess(String response) {
-                        Log.d(TAG, "onSuccess: "+response);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-
-                    }
-                });
-//                Status status = StatusPacker();
-                Intent intent = new Intent();
-//                Bundle bundle = new Bundle();
-//                bundle.putParcelable("Status",status);
-//                intent.putExtras(bundle);
-                setResult(RESULT_OK,intent);
+                Toast.makeText(getBaseContext(),"发送中。。",Toast.LENGTH_SHORT).show();
+                sendStatus();
                 KeyBoardManager.hideKeyBoard(getBaseContext(),mEdittextView);
-                finish();
             }
         });
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (data != null){
-            switch (requestCode){
-                case SELECT_PICTURE:
-                    if (resultCode == RESULT_OK){
-                        Bundle bundle = data.getExtras();
-                        if (bundle != null){
-                            selectedList.clear();
-                            selectedList = bundle.getParcelableArrayList("imageList");
-                            for (ImageBean l : selectedList){
-                                selectedPath.add(l.getPath());
-                            }
-                        }
+    private void sendStatus() {
+        if(!WBApiConnector.isNetworkAvailable(getBaseContext())){
+            Toast.makeText(this,"网络不可用",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        final Oauth2AccessToken accessToken = AccessTokenKeeper.readAccessToken(getBaseContext());
+
+        if(isRepost || selectedPath.size() != 1 || hasCrop){
+            LP_RepostCount lp_repostCount = new LP_RepostCount();
+            if (repostStatus != null){
+                lp_repostCount.setStatus_id(repostStatus.getIdstr());
+                if (LitePal.isExist(LP_RepostCount.class,"status_id = "+repostStatus.getIdstr())){
+                    List<LP_RepostCount> lp_repostCounts = LitePal.where("status_id = ?",repostStatus.getIdstr()).find(LP_RepostCount.class);
+                    int count = 0;
+                    for (LP_RepostCount l:lp_repostCounts){
+                        count = l.getRepost_count();
                     }
-                    mNineGlideView.setUrlList(selectedPath);
-                    break;
+                    lp_repostCount.setRepost_count(count+1);
+                    lp_repostCount.updateAll("status_id = ?",repostStatus.getIdstr());
+                }else {
+                    lp_repostCount.setRepost_count(1);
+                    lp_repostCount.save();
+                }
             }
+            Status status = StatusPacker();
+            Intent intent = new Intent();
+            Bundle bundle = new Bundle();
+            bundle.putParcelable("Status",status);
+            intent.putExtras(bundle);
+            setResult(RESULT_OK,intent);
+            finish();
         }else {
-            super.onActivityResult(requestCode,resultCode,data);
+            ParamsOfCreateStatus paramsOfCreateStatus = new ParamsOfCreateStatus();
+            paramsOfCreateStatus.setAccess_token(accessToken.getToken());
+            String status = mEdittextView.getText().toString();
+            if (status.equals("")){
+                paramsOfCreateStatus.setStatus("分享图片 https://www.baidu.com");
+            }else {
+                paramsOfCreateStatus.setStatus(status + "https://www.baidu.com");
+            }
+
+            if (selectedPath.size() != 0){
+                paramsOfCreateStatus.setPaths(selectedList);
+            }
+            WBApiConnector.createStatus(paramsOfCreateStatus, new HttpCallBack() {
+                @Override
+                public void onSuccess(String response){
+                    Log.d(TAG, "onSuccess: "+response);
+                    Status status = Status.getStatusFromJson(response);
+                    Intent intent = new Intent();
+                    Bundle bundle = new Bundle();
+                    bundle.putParcelable("Status",status);
+                    intent.putExtras(bundle);
+                    setResult(RESULT_OK,intent);
+                    Toast.makeText(getBaseContext(),"发送完成",Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+
+                @Override
+                public void onError(Exception e) {
+
+                }
+            });
         }
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case SELECT_PICTURE:
+                if (resultCode == RESULT_OK && data != null) {
+                        Bundle bundle = null;
+                        hasCrop = data.getBooleanExtra("isCrop",false);
+                        bundle = data.getExtras();
+                        if (bundle != null) {
+                            selectedList.clear();
+                            selectedPath.clear();
+                            selectedList = bundle.getParcelableArrayList("imageList");
+                            if (selectedList != null) {
+                                for (ImageBean l : selectedList) {
+                                    selectedPath.add(l.getPath());
+                                }
+                            }
+                        }
+                }
+                mNineGlideView.setUrlList(selectedPath);
+                break;
+        }
 
     }
 
     private Status StatusPacker(){
         StringBuilder stringBuilder = new StringBuilder();
-        String time = TextFilter.createTimeString();
         @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
         Date date = new Date(System.currentTimeMillis());
+        Status status = new Status();
+        status.setIdstr(simpleDateFormat.format(date));
+        User mUser = null;
+        String userJSON = null;
+        String time = TextFilter.createTimeString();
+        List<LP_USER> lp_users = LitePal.where("uidstr = ?",accessToken.getUid()).find(LP_USER.class);
+        for (LP_USER l : lp_users){
+            userJSON = l.getJson();
+        }
+        if (null != userJSON)
+        mUser = User.makeJsonToUser(userJSON);
+        status.setUser(mUser);
+        status.setLocal(true);
+        status.setPic_urls(selectedPath);
+        status.setCreated_at(time);
+        if (isRepost){
+            if (repostStatus.getRetweeted_status() != null){
+                status.setRetweeted_status(repostStatus.getRetweeted_status());
+            }else {
+                status.setRetweeted_status(repostStatus);
+            }
+        }
+        status.setText(mEdittextView.getText().toString());
+        if (selectedPath.size() != 0 && status.getText().length() == 0){
+            status.setText("分享图片");
+        }
+        if (selectedPath.size()!=0){
+            status.setPic_urls(selectedPath);
+        }else {
+            status.setPic_urls(null);
+        }
+
+        status.setReposts_count("0");
+        status.setComments_count("0");
+        status.setAttitudes_count("0");
+
         stringBuilder.append("{\"created_at\":").append("\"").append(time).append("\",");
         stringBuilder.append("\"id\":").append(simpleDateFormat.format(date)).append(",");
         stringBuilder.append("\"idstr\":").append("\"").append(simpleDateFormat.format(date)).append("\",");
         stringBuilder.append("\"user\":");
-        Status status = new Status();
-        User mUser = null;
-        List<LP_USER> lp_users = LitePal.where("uidstr = ?",accessToken.getUid()).find(LP_USER.class);
-        for (LP_USER l : lp_users){
-            mUser = User.makeJsonToUser(l.getJson());
-            stringBuilder.append(l.getJson()).append(",");
-        }
-        status.setLocal(true);
+        stringBuilder.append(userJSON).append(",");
         stringBuilder.append("\"can_edit\":").append("true,");
-        status.setUser(mUser);
-        status.setPic_urls(selectedPath);
         stringBuilder.append("\"pic_urls\":[");
         for (int i = 0 ;i < selectedPath.size();i++){
             if (i == selectedPath.size()-1){
@@ -299,30 +390,28 @@ public class StatusEditActivity extends BaseActivity {
             }
         }
         stringBuilder.append("],");
-        status.setCreated_at(time);
-        status.setText(mEdittextView.getText().toString());
-        if (selectedPath.size() != 0 && status.getText().length() == 0){
-            status.setText("分享图片");
-        }
         stringBuilder.append("\"text\":\"").append(status.getText()).append("\",");
-        if (isRepost){
-            status.setRetweeted_status(repostStatus.getRetweeted_status());
-            List<LP_STATUS> lp_statuses = LitePal.where("idstr = ?",repostStatus.getIdstr()).find(LP_STATUS.class);
+        if (isRepost && repostStatus != null){
+            String statusID = "";
+            if (repostStatus.getRetweeted_status() != null){
+                statusID = repostStatus.getRetweeted_status().getIdstr();
+            }else {
+                statusID = repostStatus.getIdstr();
+            }
+            List<LP_STATUS> lp_statuses = LitePal.where("idstr = ?",statusID).find(LP_STATUS.class);
             for (LP_STATUS l : lp_statuses){
                 stringBuilder.append("\"retweeted_status\":").append(l.getJson()).append(",");
             }
         }
-        status.setReposts_count("0");
-        status.setComments_count("0");
-        status.setAttitudes_count("0");
         stringBuilder.append("\"reposts_count\":0," +
                 "\"comments_count\":0," +
                 "\"attitudes_count\":0 }");
+
         LP_STATUS lp_status = new LP_STATUS();
         lp_status.setIdstr(simpleDateFormat.format(date));
         lp_status.setJson(stringBuilder.toString());
-        Log.d(TAG, "StatusPacker: "+stringBuilder.toString());
         lp_status.save();
+
         return status;
     }
 

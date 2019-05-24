@@ -205,6 +205,18 @@
         <!--</RelativeLayout>-->
 
     <!--</LinearLayout>-->
+    
+    <Button
+        android:id="@+id/fg_menu_btn_exit"
+        android:layout_width="180dp"
+        android:layout_height="40dp"
+        android:layout_marginBottom="100dp"
+        android:background="@drawable/bg_btn_exit"
+        android:text="取消授权"
+        android:textColor="#fff"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
 
     <TextView
         android:layout_width="match_parent"
@@ -212,6 +224,6 @@
         android:layout_marginTop="20dp"
         android:text="更多功能计划中。。。"
         android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@+id/fg_menu_ll_top"/>
+        app:layout_constraintTop_toBottomOf="@id/fg_menu_ll_top"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

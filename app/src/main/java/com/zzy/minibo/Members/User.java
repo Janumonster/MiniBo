@@ -20,6 +20,7 @@ public class User extends LitePalSupport implements Parcelable{
     private String screen_name = null;//用户昵称
     private String name = null;//用户昵称
 
+
     private String description;//用户简介
     private String domain = null;//用户的个性域名
     private String weihao = null;//用户的微号
@@ -34,6 +35,7 @@ public class User extends LitePalSupport implements Parcelable{
     private String profile_image_url = null;//用户头像地址（中）50*50
     private String avatar_large = null;//用户头像地址（大）180*180
     private String avatar_hd = null;//用户头像地址（高清/原图）
+    private String cover_image_phone = null;
 
     private String gender = null;//m：男，f：女,n:未知
 
@@ -52,8 +54,15 @@ public class User extends LitePalSupport implements Parcelable{
     private boolean allow_all_comment = false;//是否允许别人评论
     private boolean geo_enabled = false;//是否允许标识用户地理位置
 
-
     /**********************************************************************************************/
+
+    public String getCover_image_phone() {
+        return cover_image_phone;
+    }
+
+    public void setCover_image_phone(String cover_image_phone) {
+        this.cover_image_phone = cover_image_phone;
+    }
     public String getStatusId() {
         return statusId;
     }
@@ -286,6 +295,7 @@ public class User extends LitePalSupport implements Parcelable{
         profile_image_url = in.readString();
         avatar_large = in.readString();
         avatar_hd = in.readString();
+        cover_image_phone = in.readString();
         gender = in.readString();
         followers_count = in.readInt();
         friends_count = in.readInt();
@@ -365,6 +375,7 @@ public class User extends LitePalSupport implements Parcelable{
         parcel.writeString(profile_image_url);
         parcel.writeString(avatar_large);
         parcel.writeString(avatar_hd);
+        parcel.writeString(cover_image_phone);
         parcel.writeString(gender);
         parcel.writeInt(followers_count);
         parcel.writeInt(friends_count);
@@ -379,6 +390,7 @@ public class User extends LitePalSupport implements Parcelable{
 
 
     public static User makeJsonToUser(String json){
+        Log.d(TAG, "getUserInfoFromJSON: " + json);
         if (null != json) {
             User mUser = new User();
             try {
@@ -411,11 +423,12 @@ public class User extends LitePalSupport implements Parcelable{
                 mUser.setStatuses_count(jsonObject.getInt("statuses_count"));
                 mUser.setCreated_at(jsonObject.getString("created_at"));
                 mUser.setFollow_me(jsonObject.getBoolean("follow_me"));
+                mUser.setCover_image_phone(jsonObject.getString("cover_image"));
                 mUser.setLastStatus(jsonObject.getString("status"));
+                mUser.setGeo_enabled(jsonObject.getBoolean("geo_enabled"));
                 mUser.setAllow_all_act_msg(jsonObject.getBoolean("allow_all_act_msg"));
                 mUser.setAllow_all_comment(jsonObject.getBoolean("allow_all_comment"));
-                mUser.setGeo_enabled(jsonObject.getBoolean("geo_enabled"));
-//                Log.d(TAG, "getUserInfoFromJSON: " + mUser.toString());
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }

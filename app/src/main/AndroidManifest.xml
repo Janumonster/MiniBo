@@ -32,10 +32,13 @@
         <!-- 授权页面 -->
         <activity android:name=".Activities.AuthActivity" />
         <!-- 主界面 -->
-        <activity android:name=".Activities.MainActivity" />
+        <activity android:name=".Activities.MainActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:screenOrientation="portrait" />
         <!--网页-->
         <activity android:name=".Activities.WebActivity"
-            android:windowSoftInputMode="stateVisible|adjustPan" />
+            android:windowSoftInputMode="stateVisible|adjustPan"
+            android:hardwareAccelerated="true"/>
         <!-- 微博界面 -->
         <activity android:name=".Activities.StatusActivity"
             android:windowSoftInputMode="stateVisible|adjustResize"/>
@@ -44,10 +47,6 @@
         <!--发微博界面-->
         <activity android:name=".Activities.StatusEditActivity"
             android:windowSoftInputMode="stateVisible|adjustResize" />
-        <!--好友界面-->
-        <activity android:name=".Activities.FriendshipActivity" />
-        <!--消息界面-->
-        <activity android:name=".Activities.MessageActivity" />
         <!-- 图片界面 -->
         <activity
             android:name=".Activities.PicturesActivity"

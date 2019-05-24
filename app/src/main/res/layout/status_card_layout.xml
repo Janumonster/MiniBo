@@ -84,6 +84,12 @@
                     android:textColor="#000"
                     android:textSize="14sp"/>
 
+                <fm.jiecao.jcvideoplayer_lib.JCVideoPlayerStandard
+                    android:id="@+id/status_card_video"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:visibility="gone"/>
+
                 <com.zzy.minibo.MyViews.NineGlideView
                     android:id="@+id/status_card_images"
                     android:layout_width="match_parent"
@@ -129,6 +135,12 @@
                         android:text="@string/status_repost_text"
                         android:textColor="#000"
                         android:textSize="14sp"/>
+
+                    <fm.jiecao.jcvideoplayer_lib.JCVideoPlayerStandard
+                        android:id="@+id/status_card_repost_video"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:visibility="gone"/>
 
                     <com.zzy.minibo.MyViews.NineGlideView
                         android:id="@+id/status_card_repost_images"
